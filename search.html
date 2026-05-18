@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-secondary:hover { background: var(--color-bg-light); border-color: var(--color-primary-red); }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+        .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-warning { background: var(--color-yellow-light); color: #b45309; }
+        .badge-danger { background: var(--color-red-light); color: #c92a2a; }
+        .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
+        .badge-purple { background: #e9d5ff; color: #7e22ce; }
+
+        .role-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .role-display.admin {
+            color: #c084fc;
+        }
+
+        .role-display.inventory_clerk {
+            color: #60a5fa;
+        }
+
+        .role-display.loa {
+            color: #4ade80;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
+        th { background: var(--color-bg-light); font-weight: 600; font-size: 0.875rem; }
+        tr:hover { background: var(--color-bg-light); }
+
+        /* Transparent Category Pill */
+        .category-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .category-pill.mechanical { background: rgba(56, 182, 255, 0.18); color: #38b6ff; }
+        .category-pill.electrical { background: rgba(200, 92, 255, 0.18); color: #c85cff; }
+        .category-pill.body { background: rgba(255, 61, 104, 0.18); color: #ff3d68; }
+        .category-pill.maintenance { background: rgba(31, 228, 109, 0.18); color: #1fe46d; }
+        body.dark .category-pill { border: 1px solid rgba(255, 255, 255, 0.15); }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            background: transparent;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .tab-btn:focus,
+        .tab-btn:focus-visible,
+        .tab-btn:active {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .tab-btn:hover { 
+            background: rgba(77, 171, 247, 0.2);
+            color: var(--color-primary-blue);
+        }
+
+        .tab-btn.active {
+            background: var(--color-primary-red);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .search-input-wrapper {
+            flex: 3;
+            min-width: 320px;
+            position: relative;
+        }
+        .search-input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            font-size: 0.9375rem;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+        }
+
+        .filter-select {
+            flex: 0.8;
+            padding: 0.875rem 2rem 0.875rem 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px;
+            transition: all 0.2s;
+        }
+
+        body.dark .filter-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aaaaaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+        }
+        
+        /* ===== DARK MODE FIXES FOR SEARCH INPUTS AND FILTERS ===== */
+        body.dark .search-input,
+        body.dark .filter-select {
+            background-color: #1a1a2a !important;
+            color: #ffffff !important;
+            border-color: #3a3a45 !important;
+        }
+        
+        body.dark .search-input::placeholder {
+            color: #9ca3af !important;
+        }
+        
+        body.dark .filter-select option {
+            background: #1a1a2a !important;
+            color: #ffffff !important;
+        }
+        
+        body.dark .search-input:focus,
+        body.dark .filter-select:focus {
+            border-color: var(--color-primary-red) !important;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25) !important;
+            outline: none;
+        }
+        
+        .search-box .btn {
+            flex: 0.5;
+            white-space: nowrap;
+        }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-center { text-align: center; }
+        .text-red { color: var(--color-red); }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Clear Button - Hover Effect (matching Inventory module) */
+        .search-box .btn-secondary:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.25);
+        }
+        
+        /* Dark mode Clear Button hover - matches Inventory page */
+        body.dark .search-box .btn-secondary {
+            background-color: #1a1a2a !important;
+            color: #ffffff !important;
+            border-color: #3a3a45 !important;
+        }
+        
+        body.dark .search-box .btn-secondary:hover {
+            background: #2a2a3a !important;
+            border-color: var(--color-primary-red) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.25) !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                    <div class="sidebar-footer">
+                        <div class="system-status">
+                            <i class="fas fa-network-wired"></i>
+                            <span>Network Status:</span>
+                            <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                        </div>
+                        <div class="system-status" style="margin-top: 0.5rem;">
+                            <i class="fas fa-code-branch"></i>
+                            <span>System Version:</span>
+                            <span>v3.0.0</span>
+                        </div>
+                    </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <script>
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(session);
+        }
+
+        const currentUser = checkAuth();
+
+        function loadProducts() {
+            const stored = localStorage.getItem('eldorado_products');
+            if (stored) return JSON.parse(stored);
+            return [
+                { id: 'p1', uid: 'BRK001', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, minStock: 10, salesCount: 145, brand: 'Bosch', supplier: 'AutoSupply Co.', description: 'High-performance ceramic brake pads with excellent stopping power' },
+                { id: 'p2', uid: 'LED002', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, minStock: 5, salesCount: 85, brand: 'Philips', supplier: 'Lighting Pro', description: 'Ultra-bright LED headlight conversion kit, 6000K white light' },
+                { id: 'p3', uid: 'OIL003', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, minStock: 20, salesCount: 200, brand: 'Castrol', supplier: 'Lube Depot', description: 'Full synthetic 5W-30 motor oil, excellent engine protection' },
+                { id: 'p4', uid: 'MRR004', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, minStock: 5, salesCount: 65, brand: 'Magna', supplier: 'Parts Hub', description: 'Power adjustable side mirror with turn signal indicator' },
+                { id: 'p5', uid: 'FIL005', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, minStock: 10, salesCount: 120, brand: 'Mann', supplier: 'Filter World', description: 'High-flow air filter for improved engine performance' },
+                { id: 'p6', uid: 'ALT006', name: 'Alternator', category: 'electrical', price: 5200, stock: 7, minStock: 3, salesCount: 32, brand: 'Denso', supplier: 'ElectroParts', description: '100 amp alternator, compatible with most vehicles' },
+                { id: 'p7', uid: 'BMP007', name: 'Front Bumper', category: 'body', price: 3450, stock: 5, minStock: 3, salesCount: 28, brand: 'OEM', supplier: 'BodyWorks', description: 'OE quality front bumper cover, primed and ready for paint' }
+            ];
+        }
+
+        function loadUsers() {
+            const stored = localStorage.getItem('eldorado_users');
+            if (stored) return JSON.parse(stored);
+            return [
+                { id: 'u1', username: 'admin', firstName: 'Admin', lastName: 'User', fullName: 'Admin User', role: 'admin', email: 'admin@eldorado.com', active: true },
+                { id: 'u2', username: 'clerk', firstName: 'Jane', lastName: 'Cruz', fullName: 'Jane Cruz', role: 'inventory_clerk', email: 'clerk@eldorado.com', active: true },
+                { id: 'u3', username: 'loa', firstName: 'Mike', lastName: 'Santos', fullName: 'Mike Santos', role: 'loa', email: 'loa@eldorado.com', active: true }
+            ];
+        }
+
+        let products = loadProducts();
+        let users = loadUsers();
+        let sidebarOpen = true;
+
+        function formatCurrency(amount) {
+            return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        }
+
+        function getCategoryLabel(category) {
+            const labels = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
+            return labels[category] || category;
+        }
+
+        function getCategoryIcon(category) {
+            const icons = { mechanical: 'fa-tools', electrical: 'fa-bolt', body: 'fa-car', maintenance: 'fa-oil-can' };
+            return icons[category] || 'fa-tag';
+        }
+
+        function getCategoryPillClass(category) {
+            const classes = { mechanical: 'mechanical', electrical: 'electrical', body: 'body', maintenance: 'maintenance' };
+            return classes[category] || 'mechanical';
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+
+        function getRoleIcon(role) {
+            const icons = {
+                admin: 'fa-crown',
+                inventory_clerk: 'fa-clipboard-check',
+                loa: 'fa-receipt'
+            };
+
+            return icons[role] || 'fa-user';
+        }
+
+        function getStockBadge(stock, minStock = 10) {
+            if (stock === 0) return '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>';
+            if (stock <= minStock) return '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock</span>';
+            return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> In Stock</span>';
+        }
+
+        function renderNavigation() {
+            const navSections = [
+                {
+                    title: "MAIN",
+                    items: [
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                    ]
+                },
+                {
+                    title: "MANAGEMENT",
+                    items: [
+                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                    ]
+                },
+                {
+                    title: "SYSTEM",
+                    items: [
+                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                    ]
+                }
+            ];
+            
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `
+                        <button class="nav-item ${item.id === 'search' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                            <i class="${item.icon}" style="width: 1.25rem;"></i>
+                            <span>${item.label}</span>
+                        </button>
+                    `;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
+                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
+            };
+            if (pages[module]) window.location.href = pages[module];
+        }
+
+        function showTab(tabName) {
+            const tabs = ['item', 'user'];
+            tabs.forEach(tab => {
+                const element = document.getElementById(`${tab}-tab`);
+                if (element) element.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (tabName === 'item') {
+                document.getElementById('itemTabBtn').classList.add('active');
+            } else {
+                document.getElementById('userTabBtn').classList.add('active');
+            }
+            
+            if (tabName === 'item') performItemSearch();
+            else performUserSearch();
+        }
+
+        function performItemSearch() {
+            const searchTerm = document.getElementById('itemSearchInput')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+            const stockFilter = document.getElementById('stockFilter')?.value || '';
+            
+            let results = [...products];
+            
+            if (searchTerm) {
+                results = results.filter(p =>
+                    p.name.toLowerCase().includes(searchTerm) ||
+                    p.uid.toLowerCase().includes(searchTerm) ||
+                    (p.description || '').toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (categoryFilter) {
+                results = results.filter(p => p.category === categoryFilter);
+            }
+            
+            if (stockFilter) {
+                if (stockFilter === 'in_stock') results = results.filter(p => p.stock > (p.minStock || 10));
+                else if (stockFilter === 'low_stock') results = results.filter(p => p.stock <= (p.minStock || 10) && p.stock > 0);
+                else if (stockFilter === 'out_of_stock') results = results.filter(p => p.stock === 0);
+            }
+            
+            const resultCount = results.length;
+            document.getElementById('itemResultCount').innerText = `Search Results (${resultCount} item${resultCount !== 1 ? 's' : ''} found)`;
+            
+            const tbody = document.getElementById('itemResults');
+            if (resultCount === 0) {
+                tbody.innerHTML = '<table><td colspan="7" class="text-center">No products found matching your search criteria</div></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = results.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong><br><small class="text-muted">${p.description?.substring(0, 60) || 'No description'}${p.description?.length > 60 ? '...' : ''}</small></td>
+                    <td><code>${p.uid}</code></td>
+                    <td>
+                        <span class="category-pill ${getCategoryPillClass(p.category)}">
+                            <i class="fas ${getCategoryIcon(p.category)}"></i>
+                            ${getCategoryLabel(p.category)}
+                        </span>
+                    </div></td>
+                    <td class="font-bold" style="color: var(--color-primary-red);">${formatCurrency(p.price)}</div></td>
+                    <td class="${p.stock <= (p.minStock || 10) ? 'text-red' : ''}">${p.stock}</div></td>
+                    <td>${getStockBadge(p.stock, p.minStock || 10)}</div></td>
+                    <td>${p.supplier || '—'}</div></td>
+                </tr>
+            `).join('');
+        }
+
+        function performUserSearch() {
+            const searchTerm = document.getElementById('userSearchInput')?.value.toLowerCase() || '';
+            const searchType = document.getElementById('userSearchType')?.value || 'name';
+            const roleFilter = document.getElementById('roleFilter')?.value || '';
+            
+            let results = [...users];
+            
+            if (searchTerm) {
+                results = results.filter(u => {
+                    if (searchType === 'name') return (u.fullName || '').toLowerCase().includes(searchTerm);
+                    if (searchType === 'username') return u.username.toLowerCase().includes(searchTerm);
+                    if (searchType === 'email') return (u.email || '').toLowerCase().includes(searchTerm);
+                    return u.fullName.toLowerCase().includes(searchTerm) || u.username.toLowerCase().includes(searchTerm);
+                });
+            }
+            
+            if (roleFilter) {
+                results = results.filter(u => u.role === roleFilter);
+            }
+            
+            const resultCount = results.length;
+            document.getElementById('userResultCount').innerText = `Search Results (${resultCount} user${resultCount !== 1 ? 's' : ''} found)`;
+            
+            const tbody = document.getElementById('userResults');
+            if (resultCount === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No users found matching your search criteria</div></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = results.map(u => `
+                <tr>
+                    <td><strong>${u.fullName}</strong></td>
+                    <td><i class="fas fa-at"></i> ${u.username}</td>
+                    <td>${u.email || '—'}</td>
+                    <td>
+                        <div class="role-display ${u.role}">
+                            <i class="fas ${getRoleIcon(u.role)}"></i>
+                            <span>${getRoleDisplayName(u.role)}</span>
+                        </div>
+                    </td>
+                    <td>${u.active !== false ? '<span class="badge badge-success"><i class="fas fa-circle"></i> Active</span>' : '<span class="badge badge-danger"><i class="fas fa-circle"></i> Inactive</span>'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateUserSearchPlaceholder() {
+            const searchType = document.getElementById('userSearchType').value;
+            const input = document.getElementById('userSearchInput');
+
+            if (searchType === 'name') {
+                input.placeholder = 'Search users by full name...';
+            } 
+            else if (searchType === 'username') {
+                input.placeholder = 'Search users by username...';
+            } 
+            else if (searchType === 'email') {
+                input.placeholder = 'Search users by email address...';
+            }
+        }
+
+        function clearItemFilters() {
+            document.getElementById('itemSearchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('stockFilter').value = '';
+            performItemSearch();
+        }
+
+        function clearUserFilters() {
+            document.getElementById('userSearchInput').value = '';
+            document.getElementById('userSearchType').value = 'name';
+            document.getElementById('roleFilter').value = '';
+
+            updateUserSearchPlaceholder();
+            performUserSearch();
+        }
+
+        function renderSearch() {
+            const html = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-3xl font-bold flex items-center gap-2">
+                            <i class="fas fa-search" style="color: var(--color-primary-red);"></i>
+                            Search Module
+                        </h2>
+                        <p class="text-muted mt-1">Search for products and users across the system</p>
+                    </div>
+                    
+                    <div class="tabs">
+                        <button id="itemTabBtn" class="tab-btn active" onclick="showTab('item')">
+                            <i class="fas fa-box"></i> Item Search
+                        </button>
+                        <button id="userTabBtn" class="tab-btn" onclick="showTab('user')">
+                            <i class="fas fa-users"></i> User Search
+                        </button>
+                    </div>
+                    
+                    <div id="item-tab" class="tab-content active">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-boxes"></i> Item Search by Name or UID</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="search-box">
+                                    <div class="search-input-wrapper">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="itemSearchInput" class="search-input" placeholder="Search by product name, UID, or description..." onkeyup="performItemSearch()">
+                                    </div>
+                                    <select id="categoryFilter" class="filter-select" onchange="performItemSearch()">
+                                        <option value="">All Categories</option>
+                                        <option value="mechanical">🔧 Mechanical Components</option>
+                                        <option value="electrical">⚡ Electrical Components</option>
+                                        <option value="body">🚗 Body Parts</option>
+                                        <option value="maintenance">🛢️ Maintenance & Fluids</option>
+                                    </select>
+                                    <select id="stockFilter" class="filter-select" onchange="performItemSearch()">
+                                        <option value="">All Statuses</option>
+                                        <option value="in_stock">✅ In Stock</option>
+                                        <option value="low_stock">⚠️ Low Stock</option>
+                                        <option value="out_of_stock">❌ Out of Stock</option>
+                                    </select>
+                                    <button class="btn btn-secondary" onclick="clearItemFilters()">
+                                        <i class="fas fa-eraser"></i> Clear
+                                    </button>
+                                </div>
+                                
+                                <h3 class="font-bold mb-3" id="itemResultCount">Search Results</h3>
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Product Name</th>
+                                                <th>UID</th>
+                                                <th>Category</th>
+                                                <th>Price</th>
+                                                <th>Stock</th>
+                                                <th>Status</th>
+                                                <th>Supplier</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="itemResults"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="user-tab" class="tab-content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-users"></i> User Search</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="search-box">
+                                    <div class="search-input-wrapper">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="userSearchInput" class="search-input" placeholder="Search by name, username, or email..." onkeyup="performUserSearch()">
+                                    </div>
+                                    <select id="userSearchType" class="filter-select" onchange="updateUserSearchPlaceholder(); performUserSearch()">
+                                        <option value="name">Search by Name</option>
+                                        <option value="username">Search by Username</option>
+                                        <option value="email">Search by Email</option>
+                                    </select>
+                                    <select id="roleFilter" class="filter-select" onchange="performUserSearch()">
+                                        <option value="">All Roles</option>
+                                        <option value="admin">Administrator</option>
+                                        <option value="inventory_clerk">Inventory Clerk</option>
+                                        <option value="loa">LOA (Cashier)</option>
+                                    </select>
+                                    <button class="btn btn-secondary" onclick="clearUserFilters()">
+                                        <i class="fas fa-eraser"></i> Clear
+                                    </button>
+                                </div>
+                                
+                                <h3 class="font-bold mb-3" id="userResultCount">Search Results</h3>
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Full Name</th>
+                                                <th>Username</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="userResults"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            performItemSearch();
+            performUserSearch();
+            updateUserSearchPlaceholder();
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.querySelector('main');
+            if (sidebarOpen) {
+                sidebar.classList.remove('sidebar-closed');
+                main.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('sidebar-closed');
+                main.classList.add('sidebar-closed');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const icon = document.querySelector('#darkModeToggle i');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
+        }
+
+        document.getElementById('userName').innerText = currentUser?.fullName || 'User';
+        document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+        }
+        
+        renderNavigation();
+        renderSearch();
+        
+        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        window.navigateTo = navigateTo;
+        window.showTab = showTab;
+        window.performItemSearch = performItemSearch;
+        window.performUserSearch = performUserSearch;
+        window.clearItemFilters = clearItemFilters;
+        window.clearUserFilters = clearUserFilters;
+    </script>
+</body>
+</html>

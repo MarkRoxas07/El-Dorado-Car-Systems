@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Support - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+            
+            /* Soft Color Palette - ADD THIS */
+            --soft-sky: #5ccbf5;
+            --soft-blue: #7ab8ff;
+            --soft-indigo: #98a2ff;
+            --soft-violet: #b59cff;
+            --soft-purple: #cfa4ff;
+            --soft-pink: #f78fc4;
+            --soft-rose: #ff92a3;
+            --soft-red: #ff9b9b;
+            --soft-orange: #ffb070;
+            --soft-peach: #ffbf9f;
+            --soft-yellow: #ffc94d;
+            --soft-lime: #b7e95f;
+            --soft-green: #72e59a;
+            --soft-emerald: #5cddb2;
+            --soft-mint: #55dcc8;
+            --soft-cyan: #4fdcf3;
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        /* Spacing utility */
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-success { background: var(--color-green); color: white; }
+        .btn-success:hover { background: #3b9e4e; }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+        .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
+
+        .contact-card {
+            background: var(--color-bg-light);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .contact-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--color-border);
+            padding: 1rem 0;
+            cursor: pointer;
+        }
+        .faq-question {
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-answer {
+            margin-top: 0.75rem;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            display: none;
+        }
+        .faq-answer.show {
+            display: block;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--color-text-primary); }
+        .input, select, textarea {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+            font-size: 0.875rem;
+        }
+        .input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+        }
+        textarea { resize: vertical; min-height: 100px; }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-center { text-align: center; }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-message {
+            background: var(--color-green-light);
+            color: #15803d;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="system-status">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Status:</span>
+                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                    </div>
+                    <div class="system-status" style="margin-top: 0.5rem;">
+                        <i class="fas fa-code-branch"></i>
+                        <span>System Version:</span>
+                        <span>v3.0.0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <script>
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(session);
+        }
+
+        const currentUser = checkAuth();
+
+        function addAuditLog(action, details) {
+            const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+            logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString(), module: 'Help', severity: 'info' });
+            if (logs.length > 100) logs.pop();
+            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+
+                function renderNavigation() {
+            const navSections = [
+                {
+                    title: "MAIN",
+                    items: [
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                    ]
+                },
+                {
+                    title: "MANAGEMENT",
+                    items: [
+                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                    ]
+                },
+                {
+                    title: "SYSTEM",
+                    items: [
+                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                    ]
+                }
+            ];
+            
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `
+                        <button class="nav-item ${item.id === 'help' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                            <i class="${item.icon}" style="width: 1.25rem;"></i>
+                            <span>${item.label}</span>
+                        </button>
+                    `;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
+                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
+            };
+            if (pages[module]) window.location.href = pages[module];
+        }
+
+        function toggleFAQ(faqId) {
+            const answer = document.getElementById(`faq-answer-${faqId}`);
+            const icon = document.getElementById(`faq-icon-${faqId}`);
+            if (answer.classList.contains('show')) {
+                answer.classList.remove('show');
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                answer.classList.add('show');
+                icon.className = 'fas fa-chevron-up';
+            }
+        }
+
+        function submitSupportTicket() {
+            const name = document.getElementById('supportName').value.trim();
+            const email = document.getElementById('supportEmail').value.trim();
+            const category = document.getElementById('supportCategory').value;
+            const message = document.getElementById('supportMessage').value.trim();
+
+            if (!name || !email || !message) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            const ticketId = 'TKT-' + Date.now().toString().slice(-8);
+            const successDiv = document.getElementById('successMessage');
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> Support ticket #${ticketId} has been submitted successfully. Our team will contact you within 24 hours.`;
+            successDiv.style.display = 'block';
+
+            document.getElementById('supportName').value = '';
+            document.getElementById('supportEmail').value = '';
+            document.getElementById('supportCategory').value = 'technical';
+            document.getElementById('supportMessage').value = '';
+
+            addAuditLog('Support Ticket', `Support ticket #${ticketId} submitted by ${name}`);
+
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function renderHelp() {
+            const html = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-3xl font-bold flex items-center gap-2">
+                            <i class="fas fa-question-circle" style="color: var(--color-primary-red);"></i>
+                            Help & Support
+                        </h2>
+                        <p class="text-muted mt-1">Get assistance with using the El Dorado Car Components system</p>
+                    </div>
+                    
+                    <!-- Quick Contact Cards (3 cards with soft colors) -->
+                    <div class="grid grid-cols-3">
+                        <div class="contact-card" style="background: var(--soft-sky);">
+                            <i class="fas fa-headset" style="font-size: 2rem; color: white;"></i>
+                            <h3 class="font-bold mt-2" style="color: white;">24/7 Support</h3>
+                            <p class="text-sm" style="color: rgba(255,255,255,0.9);">Available anytime</p>
+                        </div>
+                        <div class="contact-card" style="background: var(--soft-yellow);">
+                            <i class="fas fa-envelope" style="font-size: 2rem; color: white;"></i>
+                            <h3 class="font-bold mt-2" style="color: white;">Email Us</h3>
+                            <p class="text-sm" style="color: rgba(255,255,255,0.9);">support@eldorado.com</p>
+                        </div>
+                        <div class="contact-card" style="background: var(--soft-green);">
+                            <i class="fas fa-phone-alt" style="font-size: 2rem; color: white;"></i>
+                            <h3 class="font-bold mt-2" style="color: white;">Call Us</h3>
+                            <p class="text-sm" style="color: rgba(255,255,255,0.9);">(02) 8123-4567</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2">
+                        <!-- FAQ Section -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-question"></i> Frequently Asked Questions</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="faq-item" onclick="toggleFAQ(1)">
+                                    <div class="faq-question">
+                                        <span><i class="fas fa-user-lock"></i> How do I reset my password?</span>
+                                        <i class="fas fa-chevron-down" id="faq-icon-1"></i>
+                                    </div>
+                                    <div class="faq-answer" id="faq-answer-1">
+                                        To reset your password, contact your system administrator. They can reset your password from the User Registration module. For security reasons, password resets are only handled by administrators.
+                                    </div>
+                                </div>
+                                <div class="faq-item" onclick="toggleFAQ(2)">
+                                    <div class="faq-question">
+                                        <span><i class="fas fa-boxes"></i> How do I add new products to inventory?</span>
+                                        <i class="fas fa-chevron-down" id="faq-icon-2"></i>
+                                    </div>
+                                    <div class="faq-answer" id="faq-answer-2">
+                                        Navigate to the Inventory Module and click the "Add Product" button. Fill in the product details including name, category, price, stock quantity, and supplier information. Click "Save" to add the product to your inventory.
+                                    </div>
+                                </div>
+                                <div class="faq-item" onclick="toggleFAQ(3)">
+                                    <div class="faq-question">
+                                        <span><i class="fas fa-chart-line"></i> How do I generate sales reports?</span>
+                                        <i class="fas fa-chevron-down" id="faq-icon-3"></i>
+                                    </div>
+                                    <div class="faq-answer" id="faq-answer-3">
+                                        Go to the Reports Module. You can view sales by category, inventory turnover, and top-selling products. Use the "Export" buttons to download reports as CSV files for further analysis.
+                                    </div>
+                                </div>
+                                <div class="faq-item" onclick="toggleFAQ(4)">
+                                    <div class="faq-question">
+                                        <span><i class="fas fa-users"></i> What are the different user roles?</span>
+                                        <i class="fas fa-chevron-down" id="faq-icon-4"></i>
+                                    </div>
+                                    <div class="faq-answer" id="faq-answer-4">
+                                        <strong>Administrator:</strong> Full system access including user management and maintenance.<br>
+                                        <strong>Inventory Clerk:</strong> Can manage products and process sales.<br>
+                                        <strong>LOA (Cashier):</strong> Limited access for processing sales transactions only.
+                                    </div>
+                                </div>
+                                <div class="faq-item" onclick="toggleFAQ(5)">
+                                    <div class="faq-question">
+                                        <span><i class="fas fa-database"></i> How do I backup my data?</span>
+                                        <i class="fas fa-chevron-down" id="faq-icon-5"></i>
+                                    </div>
+                                    <div class="faq-answer" id="faq-answer-5">
+                                        Administrators can create backups from the System Maintenance Module. Click "Create Backup" to save your current data. You can also export data as JSON files for safekeeping.
+                                    </div>
+                                </div>
+                                <div class="faq-item" onclick="toggleFAQ(6)">
+                                    <div class="faq-question">
+                                        <span><i class="fas fa-moon"></i> How do I enable dark mode?</span>
+                                        <i class="fas fa-chevron-down" id="faq-icon-6"></i>
+                                    </div>
+                                    <div class="faq-answer" id="faq-answer-6">
+                                        Click the moon/sun icon in the top-right corner of any page to toggle between light and dark mode. Your preference will be saved for future sessions.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Support Ticket Form -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Submit Support Ticket</h3>
+                            </div>
+                            <div class="card-content">
+                                <div id="successMessage" class="success-message"></div>
+                                <div class="form-group">
+                                    <label><i class="fas fa-user"></i> Full Name *</label>
+                                    <input type="text" id="supportName" class="input" placeholder="Enter your full name">
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fas fa-envelope"></i> Email Address *</label>
+                                    <input type="email" id="supportEmail" class="input" placeholder="your@email.com">
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fas fa-tag"></i> Category *</label>
+                                    <select id="supportCategory" class="input">
+                                        <option value="technical">Technical Issue</option>
+                                        <option value="billing">Billing Question</option>
+                                        <option value="feature">Feature Request</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fas fa-comment"></i> Message *</label>
+                                    <textarea id="supportMessage" class="input" placeholder="Describe your issue or question..."></textarea>
+                                </div>
+                                <button class="btn btn-primary" onclick="submitSupportTicket()" style="width: 100%;">
+                                    <i class="fas fa-paper-plane"></i> Submit Ticket
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Status - Updated with unique icons -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-check-circle"></i> System Status</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="grid grid-cols-2">
+                                <div class="text-center">
+                                    <i class="fas fa-server" style="color: var(--color-green); font-size: 2rem;"></i>
+                                    <div class="font-bold mt-1">Database</div>
+                                    <div class="text-sm text-muted">Operational</div>
+                                </div>
+                                <div class="text-center">
+                                    <i class="fas fa-shield-alt" style="color: var(--color-green); font-size: 2rem;"></i>
+                                    <div class="font-bold mt-1">Backup System</div>
+                                    <div class="text-sm text-muted">Ready</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.querySelector('main');
+            if (sidebarOpen) {
+                sidebar.classList.remove('sidebar-closed');
+                main.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('sidebar-closed');
+                main.classList.add('sidebar-closed');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const icon = document.querySelector('#darkModeToggle i');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
+        }
+
+        let sidebarOpen = true;
+
+        // Initialize
+        if (currentUser) {
+            document.getElementById('userName').innerText = currentUser?.fullName || 'User';
+            document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
+        }
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+        }
+        
+        renderNavigation();
+        renderHelp();
+        
+        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        window.navigateTo = navigateTo;
+        window.toggleFAQ = toggleFAQ;
+        window.submitSupportTicket = submitSupportTicket;
+    </script>
+</body>
+</html>

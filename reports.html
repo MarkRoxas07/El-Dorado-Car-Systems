@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --color-orange: #ffa94d;
+            --color-teal: #20c997;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-secondary:hover { background: var(--color-bg-light); border-color: var(--color-primary-red); }
+        .btn-success { background: var(--color-green); color: white; }
+        .btn-success:hover { background: #3b9e4e; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+                .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .stat-card { display: flex; align-items: center; justify-content: space-between; }
+        .border-l-4 { border-left: 4px solid; }
+        .border-l-green { border-left-color: var(--color-green); }
+        .border-l-blue { border-left-color: var(--color-primary-blue); }
+        .border-l-yellow { border-left-color: #ffd43b; }
+        .border-l-red { border-left-color: var(--color-red); }
+        .border-l-purple { border-left-color: var(--color-purple); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-warning { background: var(--color-yellow-light); color: #b45309; }
+        .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
+        th { background: var(--color-bg-light); font-weight: 600; font-size: 0.875rem; }
+        tr:hover { background: var(--color-bg-light); }
+
+        /* Tabs - Glass Morphism Style */
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            background: transparent;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .tab-btn:focus,
+        .tab-btn:focus-visible,
+        .tab-btn:active {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .tab-btn:hover { 
+            background: rgba(77, 171, 247, 0.2);
+            color: var(--color-primary-blue);
+        }
+
+        .tab-btn.active {
+            background: var(--color-primary-red);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .legend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-center { text-align: center; }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="system-status">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Status:</span>
+                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                    </div>
+                    <div class="system-status" style="margin-top: 0.5rem;">
+                        <i class="fas fa-code-branch"></i>
+                        <span>System Version:</span>
+                        <span>v3.0.0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <script>
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(session);
+        }
+
+        const currentUser = checkAuth();
+
+        function loadProducts() {
+            const stored = localStorage.getItem('eldorado_products');
+            if (stored) return JSON.parse(stored);
+            return [
+                { id: 'p1', uid: 'BRK001', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, salesCount: 145 },
+                { id: 'p2', uid: 'LED002', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, salesCount: 85 },
+                { id: 'p3', uid: 'OIL003', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, salesCount: 200 },
+                { id: 'p4', uid: 'MRR004', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, salesCount: 65 },
+                { id: 'p5', uid: 'FIL005', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, salesCount: 120 },
+                { id: 'p6', uid: 'ALT006', name: 'Alternator', category: 'electrical', price: 5200, stock: 7, salesCount: 32 },
+                { id: 'p7', uid: 'BMP007', name: 'Front Bumper', category: 'body', price: 3450, stock: 5, salesCount: 28 }
+            ];
+        }
+
+        function loadSales() {
+            const stored = localStorage.getItem('eldorado_sales');
+            if (stored) return JSON.parse(stored);
+            return [
+                { receiptNo: 'RCP-2024-0001', customerName: 'John Smith', items: [{ name: 'Brake Pads Set', quantity: 2, price: 1250 }], total: 2500, paymentMethod: 'Cash', date: new Date().toLocaleString(), cashier: 'admin' },
+                { receiptNo: 'RCP-2024-0002', customerName: 'Maria Garcia', items: [{ name: 'Engine Oil', quantity: 3, price: 450 }], total: 1350, paymentMethod: 'GCash', date: new Date().toLocaleString(), cashier: 'clerk' }
+            ];
+        }
+
+        let products = loadProducts();
+        let sales = loadSales();
+        let sidebarOpen = true;
+
+        function formatCurrency(amount) {
+            return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        }
+
+        function getCategoryLabel(category) {
+            const labels = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
+            return labels[category] || category;
+        }
+
+        function getCategoryColor(category) {
+            const colors = { mechanical: '#4dabf7', electrical: '#ffa94d', body: '#20c997', maintenance: '#9775fa' };
+            return colors[category] || '#adb5bd';
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+
+        function renderNavigation() {
+            const navSections = [
+                {
+                    title: "MAIN",
+                    items: [
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                    ]
+                },
+                {
+                    title: "MANAGEMENT",
+                    items: [
+                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                    ]
+                },
+                {
+                    title: "SYSTEM",
+                    items: [
+                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                    ]
+                }
+            ];
+            
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `
+                        <button class="nav-item ${item.id === 'reports' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                            <i class="${item.icon}" style="width: 1.25rem;"></i>
+                            <span>${item.label}</span>
+                        </button>
+                    `;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
+                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
+            };
+            if (pages[module]) window.location.href = pages[module];
+        }
+
+        function exportToCSV(data, filename) {
+            const headers = Object.keys(data[0]);
+            const csvRows = [headers.join(',')];
+            for (const row of data) {
+                const values = headers.map(header => {
+                    const val = row[header]?.toString().replace(/,/g, ' ') || '';
+                    return `"${val}"`;
+                });
+                csvRows.push(values.join(','));
+            }
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportSalesReport() {
+            const salesData = sales.map(s => ({
+                'Receipt No': s.receiptNo,
+                'Customer Name': s.customerName,
+                'Items': s.items.map(i => `${i.name} x${i.quantity}`).join('; '),
+                'Total': s.total,
+                'Payment Method': s.paymentMethod,
+                'Cashier': s.cashier,
+                'Date': s.date
+            }));
+            exportToCSV(salesData, `sales_report_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportInventoryReport() {
+            const inventoryData = products.map(p => ({
+                'Product Name': p.name,
+                'UID': p.uid,
+                'Category': getCategoryLabel(p.category),
+                'Price': p.price,
+                'Stock': p.stock,
+                'Units Sold': p.salesCount,
+                'Total Value': p.price * p.stock
+            }));
+            exportToCSV(inventoryData, `inventory_report_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function showTab(tabName, clickedButton) {
+            // Hide all tab contents
+            const tabs = ['overview', 'inventory', 'products', 'sales-detail'];
+            tabs.forEach(tab => {
+                const element = document.getElementById(`${tab}-tab`);
+                if (element) element.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Update active state on buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            } else {
+                // Find button by tab name
+                const buttonMap = {
+                    'overview': 0,
+                    'inventory': 1,
+                    'products': 2,
+                    'sales-detail': 3
+                };
+                if (buttons[buttonMap[tabName]]) {
+                    buttons[buttonMap[tabName]].classList.add('active');
+                }
+            }
+        }
+
+        function renderReports() {
+            // Calculate statistics
+            const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
+            const totalTransactions = sales.length;
+            const avgTransaction = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+            const totalProductsSold = sales.reduce((sum, s) => sum + s.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+            
+            // Category revenue
+            const categoryRevenue = {};
+            products.forEach(p => { categoryRevenue[p.category] = 0; });
+            sales.forEach(sale => {
+                sale.items.forEach(item => {
+                    const product = products.find(p => p.name === item.name);
+                    if (product) {
+                        categoryRevenue[product.category] += item.price * item.quantity;
+                    }
+                });
+            });
+            
+            // Top products
+            const topProducts = [...products].sort((a, b) => b.salesCount - a.salesCount).slice(0, 5);
+            
+            // Payment methods breakdown
+            const paymentMethods = {};
+            sales.forEach(sale => {
+                paymentMethods[sale.paymentMethod] = (paymentMethods[sale.paymentMethod] || 0) + 1;
+            });
+            
+            // Generate pie chart colors
+            const categories = ['mechanical', 'electrical', 'body', 'maintenance'];
+            const categoryLabels = categories.map(c => getCategoryLabel(c));
+            const categoryValues = categories.map(c => categoryRevenue[c] || 0);
+            const totalCatRevenue = categoryValues.reduce((a, b) => a + b, 0);
+            const percentages = categoryValues.map(v => totalCatRevenue > 0 ? (v / totalCatRevenue * 100).toFixed(1) : 0);
+            
+            // Build pie chart conic gradient
+            let cumulative = 0;
+            const gradientStops = [];
+            categories.forEach((cat, i) => {
+                const percentage = parseFloat(percentages[i]);
+                if (percentage > 0) {
+                    gradientStops.push(`${getCategoryColor(cat)} ${cumulative}% ${cumulative + percentage}%`);
+                    cumulative += percentage;
+                }
+            });
+            const pieGradient = gradientStops.length ? `conic-gradient(${gradientStops.join(', ')})` : '#e5e7eb';
+            
+            const html = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-3xl font-bold flex items-center gap-2">
+                                <i class="fas fa-chart-bar" style="color: var(--color-primary-red);"></i>
+                                Reports & Analytics
+                            </h2>
+                            <p class="text-muted mt-1">Comprehensive insights into your business performance</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary" onclick="exportSalesReport()"><i class="fas fa-download"></i> Export Sales</button>
+                            <button class="btn btn-secondary" onclick="exportInventoryReport()"><i class="fas fa-download"></i> Export Inventory</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-4">
+                        <div class="card border-l-4 border-l-blue">
+                            <div class="card-content p-4">
+                                <div class="stat-card">
+                                    <div><p class="text-sm text-muted">Total Revenue</p><p class="text-2xl font-bold">${formatCurrency(totalRevenue)}</p></div>
+                                    <i class="fas fa-dollar-sign" style="font-size: 2rem; opacity: 0.6;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card border-l-4 border-l-green">
+                            <div class="card-content p-4">
+                                <div class="stat-card">
+                                    <div><p class="text-sm text-muted">Transactions</p><p class="text-2xl font-bold">${totalTransactions}</p></div>
+                                    <i class="fas fa-receipt" style="font-size: 2rem; opacity: 0.6;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card border-l-4 border-l-purple">
+                            <div class="card-content p-4">
+                                <div class="stat-card">
+                                    <div><p class="text-sm text-muted">Avg. Transaction</p><p class="text-2xl font-bold">${formatCurrency(avgTransaction)}</p></div>
+                                    <i class="fas fa-chart-line" style="font-size: 2rem; opacity: 0.6;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card border-l-4 border-l-yellow">
+                            <div class="card-content p-4">
+                                <div class="stat-card">
+                                    <div><p class="text-sm text-muted">Units Sold</p><p class="text-2xl font-bold">${totalProductsSold}</p></div>
+                                    <i class="fas fa-boxes" style="font-size: 2rem; opacity: 0.6;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="showTab('overview', this)"><i class="fas fa-chart-pie"></i> Overview</button>
+                        <button class="tab-btn" onclick="showTab('inventory', this)"><i class="fas fa-boxes"></i> Inventory</button>
+                        <button class="tab-btn" onclick="showTab('products', this)"><i class="fas fa-trophy"></i> Products</button>
+                        <button class="tab-btn" onclick="showTab('sales-detail', this)"><i class="fas fa-list"></i> Sales Details</button>
+                    </div>
+                    
+                    <div id="overview-tab" class="tab-content active">
+                        <div class="grid grid-cols-2">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-chart-pie"></i> Sales by Category</h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="flex justify-center mb-4">
+                                        <div class="pie-chart" style="background: ${pieGradient};"></div>
+                                    </div>
+                                    <div class="legend">
+                                        ${categories.map((cat, i) => percentages[i] > 0 ? `
+                                            <div class="legend-item">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="legend-color" style="background: ${getCategoryColor(cat)};"></div>
+                                                    <span>${categoryLabels[i]}</span>
+                                                </div>
+                                                <span class="font-bold">${percentages[i]}% (${formatCurrency(categoryValues[i])})</span>
+                                            </div>
+                                        ` : '').join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-credit-card"></i> Payment Methods</h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="table-container">
+                                        <table>
+                                            <thead>
+                                                <tr><th>Payment Method</th><th>Transactions</th><th>Percentage</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                ${Object.entries(paymentMethods).map(([method, count]) => `
+                                                    <tr>
+                                                        <td><i class="fas fa-${method === 'Cash' ? 'money-bill' : method === 'Card' ? 'credit-card' : 'mobile-alt'}"></i> ${method}</td>
+                                                        <td class="font-bold">${count}</div></td>
+                                                        <td>${((count/totalTransactions)*100).toFixed(1)}%</div></td>
+                                                    </tr>
+                                                `).join('')}
+                                                ${Object.keys(paymentMethods).length === 0 ? '<tr><td colspan="3" class="text-center">No sales data available</div></td></tr>' : ''}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="inventory-tab" class="tab-content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-chart-line"></i> Inventory Turnover Analysis</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr><th>Product</th><th>Category</th><th>Units Sold</th><th>Current Stock</th><th>Turnover Rate</th><th>Performance</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${products.map(p => {
+                                                const turnoverRate = p.salesCount > 0 ? (p.salesCount / (p.stock + p.salesCount) * 100).toFixed(1) : 0;
+                                                let performance = '';
+                                                let perfClass = '';
+                                                if (turnoverRate >= 70) { performance = 'Excellent'; perfClass = 'badge-success'; }
+                                                else if (turnoverRate >= 40) { performance = 'Good'; perfClass = 'badge-info'; }
+                                                else { performance = 'Average'; perfClass = 'badge-warning'; }
+                                                return `<tr>
+                                                    <td><strong>${p.name}</strong><br><small>${p.uid}</small></div></td>
+                                                    <td>${getCategoryLabel(p.category)}</div></td>
+                                                    <td>${p.salesCount}</div></td>
+                                                    <td>${p.stock}</div></td>
+                                                    <td>${turnoverRate}%</div></td>
+                                                    <td><span class="badge ${perfClass}">${performance}</span></div></td>
+                                                </tr>`;
+                                            }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="products-tab" class="tab-content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-trophy"></i> Top Selling Products</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr><th>Rank</th><th>Product Name</th><th>Category</th><th>Units Sold</th><th>Revenue</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${topProducts.map((p, i) => `
+                                                <tr>
+                                                    <td class="font-bold text-center">#${i+1}</div></div>
+                                                    <td><strong>${p.name}</strong><br><small class="text-muted">${p.uid}</small></div></div>
+                                                    <td>${getCategoryLabel(p.category)}</div></div>
+                                                    <td>${p.salesCount} units</div></div>
+                                                    <td class="font-bold" style="color: var(--color-primary-red);">${formatCurrency(p.price * p.salesCount)}</div></div>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="sales-detail-tab" class="tab-content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-history"></i> Detailed Sales Report</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr><th>Receipt #</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Cashier</th><th>Date</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${sales.map(s => `
+                                                <tr>
+                                                    <td><i class="fas fa-receipt"></i> ${s.receiptNo}</div></div>
+                                                    <td>${s.customerName}</div></div>
+                                                    <td>${s.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div></div>
+                                                    <td class="font-bold">${formatCurrency(s.total)}</div></div>
+                                                    <td><span class="badge badge-info">${s.paymentMethod}</span></div></div>
+                                                    <td>${s.cashier}</div></div>
+                                                    <td><small>${s.date}</small></div></div>
+                                                </tr>
+                                            `).join('')}
+                                            ${sales.length === 0 ? '<tr><td colspan="7" class="text-center">No sales records found</div></tr>' : ''}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.querySelector('main');
+            if (sidebarOpen) {
+                sidebar.classList.remove('sidebar-closed');
+                main.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('sidebar-closed');
+                main.classList.add('sidebar-closed');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const icon = document.querySelector('#darkModeToggle i');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize
+        document.getElementById('userName').innerText = currentUser?.fullName || 'User';
+        document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+        }
+        
+        renderNavigation();
+        renderReports();
+        
+        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        window.navigateTo = navigateTo;
+        window.showTab = showTab;
+        window.exportSalesReport = exportSalesReport;
+        window.exportInventoryReport = exportInventoryReport;
+    </script>
+</body>
+</html>

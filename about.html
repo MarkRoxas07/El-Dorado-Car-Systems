@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;  /* This creates 24px gap between components */
+        }
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+            
+            /* Soft Color Palette */
+            --soft-sky: #5ccbf5;
+            --soft-blue: #7ab8ff;
+            --soft-indigo: #98a2ff;
+            --soft-violet: #b59cff;
+            --soft-purple: #cfa4ff;
+            --soft-pink: #f78fc4;
+            --soft-rose: #ff92a3;
+            --soft-red: #ff9b9b;
+            --soft-orange: #ffb070;
+            --soft-peach: #ffbf9f;
+            --soft-yellow: #ffc94d;
+            --soft-lime: #b7e95f;
+            --soft-green: #72e59a;
+            --soft-emerald: #5cddb2;
+            --soft-mint: #55dcc8;
+            --soft-cyan: #4fdcf3;
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+        .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
+
+        .hero-section {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--color-primary-red) 0%, var(--color-primary-red-hover) 100%);
+            border-radius: 1rem;
+            color: white;
+        }
+        .hero-logo {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 3rem;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--color-bg-light);
+            border-radius: 1rem;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary-red);
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-center { text-align: center; }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="system-status">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Status:</span>
+                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                    </div>
+                    <div class="system-status" style="margin-top: 0.5rem;">
+                        <i class="fas fa-code-branch"></i>
+                        <span>System Version:</span>
+                        <span>v3.0.0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <script>
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(session);
+        }
+
+        const currentUser = checkAuth();
+
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+
+        // Get system statistics
+        function getSystemStats() {
+            const products = JSON.parse(localStorage.getItem('eldorado_products') || '[]');
+            const users = JSON.parse(localStorage.getItem('eldorado_users') || '[]');
+            const sales = JSON.parse(localStorage.getItem('eldorado_sales') || '[]');
+            const audit = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+            
+            const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
+            const totalProductsSold = sales.reduce((sum, s) => sum + s.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+            
+            return {
+                totalProducts: products.length,
+                totalUsers: users.length,
+                totalSales: sales.length,
+                totalRevenue: totalRevenue,
+                totalProductsSold: totalProductsSold,
+                totalAuditLogs: audit.length
+            };
+        }
+
+                function renderNavigation() {
+            const navSections = [
+                {
+                    title: "MAIN",
+                    items: [
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                    ]
+                },
+                {
+                    title: "MANAGEMENT",
+                    items: [
+                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                    ]
+                },
+                {
+                    title: "SYSTEM",
+                    items: [
+                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                    ]
+                }
+            ];
+            
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `
+                        <button class="nav-item ${item.id === 'about' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                            <i class="${item.icon}" style="width: 1.25rem;"></i>
+                            <span>${item.label}</span>
+                        </button>
+                    `;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
+                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
+            };
+            if (pages[module]) window.location.href = pages[module];
+        }
+
+        function renderAbout() {
+            const stats = getSystemStats();
+            
+            const html = `
+                <div class="space-y-6">
+                    <!-- Hero Section -->
+                    <div class="hero-section">
+                        <div class="hero-logo">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h1 class="text-3xl font-bold">El Dorado Car Components</h1>
+                        <p class="mt-2" style="opacity: 0.9;">Enterprise Inventory & Sales Management System</p>
+                        <div class="flex justify-center gap-3 mt-4">
+                            <span class="badge" style="background: rgba(255,255,255,0.2); color: white;"><i class="fas fa-tag"></i> Version 3.0.0</span>
+                            <span class="badge" style="background: rgba(255,255,255,0.2); color: white;"><i class="fas fa-calendar"></i> 2024 Release</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Company Mission -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-bullseye"></i> Our Mission</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="text-muted">For 65 years, El Dorado Car Components has been committed to providing high-quality automotive parts with integrity, honesty, and reliability. Our mission is to deliver exceptional products and service to our customers while maintaining the highest standards of business ethics.</p>
+                            <div class="grid grid-cols-3 mt-4 text-center">
+                                <div><i class="fas fa-handshake" style="font-size: 2rem; color: var(--color-primary-red);"></i><div class="font-bold mt-1">Integrity</div></div>
+                                <div><i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--color-primary-blue);"></i><div class="font-bold mt-1">Honesty</div></div>
+                                <div><i class="fas fa-chart-line" style="font-size: 2rem; color: var(--color-green);"></i><div class="font-bold mt-1">Reliability</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Statistics with Soft Color Palette -->
+                    <div class="grid grid-cols-3">
+                        <div class="stat-box" style="background: var(--soft-sky);">
+                            <i class="fas fa-boxes" style="font-size: 2rem; color: white;"></i>
+                            <div class="stat-number" style="color: white;">${stats.totalProducts}</div>
+                            <div class="text-muted" style="color: rgba(255,255,255,0.9);">Products in Inventory</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--soft-green);">
+                            <i class="fas fa-users" style="font-size: 2rem; color: white;"></i>
+                            <div class="stat-number" style="color: white;">${stats.totalUsers}</div>
+                            <div class="text-muted" style="color: rgba(255,255,255,0.9);">System Users</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--soft-peach);">
+                            <i class="fas fa-shopping-cart" style="font-size: 2rem; color: white;"></i>
+                            <div class="stat-number" style="color: white;">${stats.totalSales}</div>
+                            <div class="text-muted" style="color: rgba(255,255,255,0.9);">Transactions Processed</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--soft-yellow);">
+                            <i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i>
+                            <div class="stat-number" style="color: white;">${stats.totalRevenue.toLocaleString()}</div>
+                            <div class="text-muted" style="color: rgba(255,255,255,0.9);">Total Revenue (₱)</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--soft-pink);">
+                            <i class="fas fa-chart-line" style="font-size: 2rem; color: white;"></i>
+                            <div class="stat-number" style="color: white;">${stats.totalProductsSold}</div>
+                            <div class="text-muted" style="color: rgba(255,255,255,0.9);">Units Sold</div>
+                        </div>
+                        <div class="stat-box" style="background: var(--soft-purple);">
+                            <i class="fas fa-history" style="font-size: 2rem; color: white;"></i>
+                            <div class="stat-number" style="color: white;">${stats.totalAuditLogs}</div>
+                            <div class="text-muted" style="color: rgba(255,255,255,0.9);">Audit Records</div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Information -->
+                    <div class="grid grid-cols-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-info-circle"></i> System Information</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="tech-item">
+                                    <span><i class="fas fa-code-branch"></i> System Version</span>
+                                    <span class="font-bold">El Dorado LAN v3.0.0</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-database"></i> Database</span>
+                                    <span class="font-bold">LocalStorage API</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-microchip"></i> Architecture</span>
+                                    <span class="font-bold">Client-side (PWA Ready)</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-shield-alt"></i> Security</span>
+                                    <span class="font-bold">Role-Based Access Control</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-sync-alt"></i> Last Update</span>
+                                    <span class="font-bold">December 2024</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-crown"></i> Credits & Developers</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="tech-item">
+                                    <span><i class="fas fa-code"></i> Development Team</span>
+                                    <span class="font-bold">El Dorado IT Department</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-paint-brush"></i> UI/UX Design</span>
+                                    <span class="font-bold">Internal Design Team</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-check-circle"></i> Quality Assurance</span>
+                                    <span class="font-bold">QA Division</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-headset"></i> Support</span>
+                                    <span class="font-bold">support@eldorado.com</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span><i class="fas fa-copyright"></i> License</span>
+                                    <span class="font-bold">Proprietary - El Dorado Inc.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+<!-- Technology Stack -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-layer-group"></i> Technology Stack</h3>
+    </div>
+    <div class="card-content">
+        <div class="grid grid-cols-4 text-center">
+            <div><i class="fab fa-html5" style="font-size: 2rem; color: #e34f26;"></i><div class="font-bold mt-1">HTML5</div><div class="text-sm text-muted">Structure</div></div>
+            <div><i class="fab fa-css3-alt" style="font-size: 2rem; color: #264de4;"></i><div class="font-bold mt-1">CSS3</div><div class="text-sm text-muted">Styling</div></div>
+            <div><i class="fab fa-js" style="font-size: 2rem; color: #f7df1e;"></i><div class="font-bold mt-1">JavaScript</div><div class="text-sm text-muted">Logic</div></div>
+            <div><i class="fas fa-server" style="font-size: 2rem; color: #4dabf7;"></i><div class="font-bold mt-1">MySQL</div><div class="text-sm text-muted">Database</div></div>        </div>
+    </div>
+</div>
+                    
+                    <!-- Features List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-star"></i> Key Features</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="grid grid-cols-2">
+                                <div>
+                                    <ul style="list-style: none;">
+                                        <li><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Real-time Inventory Management</li>
+                                        <li class="mt-2"><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Sales Transaction Processing</li>
+                                        <li class="mt-2"><i class="fas fa-check-circle" style="color: var(--color-green);"></i> User Role Management (Admin/Clerk/LOA)</li>
+                                        <li class="mt-2"><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Comprehensive Reporting & Analytics</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <ul style="list-style: none;">
+                                        <li><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Audit Trail & Activity Logging</li>
+                                        <li class="mt-2"><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Dark Mode Support</li>
+                                        <li class="mt-2"><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Data Backup & Restore</li>
+                                        <li class="mt-2"><i class="fas fa-check-circle" style="color: var(--color-green);"></i> Export Reports (CSV/JSON)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="text-center text-muted" style="padding: 1rem;">
+                        <p><i class="fas fa-copyright"></i> 2024 El Dorado Car Components. All rights reserved.</p>
+                        <p class="text-sm mt-1">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.querySelector('main');
+            if (sidebarOpen) {
+                sidebar.classList.remove('sidebar-closed');
+                main.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('sidebar-closed');
+                main.classList.add('sidebar-closed');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const icon = document.querySelector('#darkModeToggle i');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
+        }
+
+        let sidebarOpen = true;
+
+        // Initialize
+        if (currentUser) {
+            document.getElementById('userName').innerText = currentUser?.fullName || 'User';
+            document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
+        }
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+        }
+        
+        renderNavigation();
+        renderAbout();
+        
+        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        window.navigateTo = navigateTo;
+    </script>
+</body>
+</html>

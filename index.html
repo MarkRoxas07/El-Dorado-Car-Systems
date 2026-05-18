@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-red: #ff6b6b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, #ffffff 50%, #fff0f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* Login Container */
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .company-info h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+
+        .company-info .motto {
+            font-size: 0.875rem;
+            color: var(--color-primary-blue);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        /* Login Card */
+        .login-card {
+            background: var(--color-bg-white);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.75rem 1.75rem 0.5rem 1.75rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+
+        .card-header p {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .card-content {
+            padding: 1.75rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-text-primary);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+            font-size: 1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper i.fa-eye,
+        .password-wrapper i.fa-eye-slash {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--color-text-muted);
+            left: auto;
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-label input {
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checkbox-label span {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .forgot-link {
+            font-size: 0.875rem;
+            color: var(--color-primary-blue);
+            text-decoration: none;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            background: var(--color-primary-red-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Demo Credentials */
+        .demo-credentials {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--color-bg-light);
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+        }
+
+        .demo-credentials p {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .cred-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            padding: 0.25rem 0;
+        }
+
+        .cred-label {
+            color: var(--color-text-muted);
+        }
+
+        .cred-value {
+            color: var(--color-primary-blue);
+            font-family: monospace;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #fff5f5;
+            border: 1px solid var(--color-red);
+            color: #c92a2a;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        /* Dark Mode */
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body.dark .demo-credentials {
+            background: #1e1e2e;
+        }
+
+        body.dark .error-message {
+            background: #2a1a1a;
+            border-color: #ff6b6b;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--color-bg-white);
+            border: 1px solid var(--color-border);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            color: var(--color-text-primary);
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo">
+                <i class="fas fa-car" style="color: white;"></i>
+            </div>
+            <div class="company-info">
+                <h1>El Dorado Car Components</h1>
+                <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+            </div>
+        </div>
+
+        <div class="login-card">
+            <div class="card-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to access the management system</p>
+            </div>
+            <div class="card-content">
+                <div class="error-message" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText">Invalid credentials</span>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Username</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="text" id="username" placeholder="Enter your username" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-lock" style="margin-right: 0.5rem;"></i> Password</label>
+                        <div class="input-wrapper password-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" placeholder="Enter your password">
+                            <i class="fas fa-eye-slash" id="togglePassword" style="cursor: pointer;"></i>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="demo-credentials">
+                    <p><i class="fas fa-info-circle"></i> Demo Credentials</p>
+                    <div class="cred-row">
+                        <span class="cred-label">Admin:</span>
+                        <span class="cred-value">admin / admin123</span>
+                    </div>
+                    <div class="cred-row">
+                        <span class="cred-label">Inventory Clerk:</span>
+                        <span class="cred-value">clerk / clerk123</span>
+                    </div>
+                    <div class="cred-row">
+                        <span class="cred-label">LOA (Cashier):</span>
+                        <span class="cred-value">loa / loa123</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User database
+        const users = [
+            { id: 1, username: 'admin', password: 'admin123', fullName: 'Admin User', role: 'admin', email: 'admin@eldorado.com' },
+            { id: 2, username: 'clerk', password: 'clerk123', fullName: 'Inventory Clerk', role: 'inventory_clerk', email: 'clerk@eldorado.com' },
+            { id: 3, username: 'loa', password: 'loa123', fullName: 'LOA User', role: 'loa', email: 'loa@eldorado.com' }
+        ];
+
+        // Dark Mode
+        function initDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark');
+                document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const icon = document.querySelector('#darkModeToggle i');
+            if (isDark) {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // Login function
+        function login(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            if (!username || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                // Store user session
+                const sessionData = {
+                    id: user.id,
+                    username: user.username,
+                    fullName: user.fullName,
+                    role: user.role,
+                    email: user.email,
+                    loginTime: new Date().toISOString()
+                };
+
+                if (rememberMe) {
+                    localStorage.setItem('userSession', JSON.stringify(sessionData));
+                } else {
+                    sessionStorage.setItem('userSession', JSON.stringify(sessionData));
+                }
+
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                showError('Invalid username or password');
+            }
+        }
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePassword');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye-slash';
+            }
+        }
+
+        // Check if already logged in
+        function checkExistingSession() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (session) {
+                // User is already logged in, redirect to dashboard
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('loginForm').addEventListener('submit', login);
+        document.getElementById('togglePassword').addEventListener('click', togglePassword);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+        // Initialize
+        initDarkMode();
+        checkExistingSession();
+
+        // Optional: Add enter key support
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login(e);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Log - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --color-orange: #ffa94d;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+            
+            /* Soft Color Palette for Cards */
+            --soft-sky: #5ccbf5;
+            --soft-blue: #7ab8ff;
+            --soft-indigo: #98a2ff;
+            --soft-violet: #b59cff;
+            --soft-purple: #cfa4ff;
+            --soft-pink: #f78fc4;
+            --soft-rose: #ff92a3;
+            --soft-red: #ff9b9b;
+            --soft-orange: #ffb070;
+            --soft-peach: #ffbf9f;
+            --soft-yellow: #ffc94d;
+            --soft-lime: #b7e95f;
+            --soft-green: #72e59a;
+            --soft-emerald: #5cddb2;
+            --soft-mint: #55dcc8;
+            --soft-cyan: #4fdcf3;
+            
+            /* Stronger Colors for Actions */
+            --strong-blue: #1a73e8;
+            --strong-indigo: #4c51bf;
+            --strong-violet: #805ad5;
+            --strong-purple: #9f7aea;
+            --strong-pink: #ed64a6;
+            --strong-rose: #f56565;
+            --strong-red: #e53e3e;
+            --strong-orange: #ed8936;
+            --strong-yellow: #ecc94b;
+            --strong-green: #48bb78;
+            --strong-emerald: #38b2ac;
+            --strong-cyan: #00b5d8;
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-danger { background: var(--color-red); color: white; }
+        .btn-danger:hover { background: #e55a5a; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        /* Statistics Cards - Fully wrapped in soft colors with white text */
+        .stat-card-blue { background: var(--soft-blue); color: white; border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .stat-card-green { background: var(--soft-green); color: white; border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .stat-card-red { background: var(--soft-red); color: white; border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .stat-card-yellow { background: var(--soft-yellow); color: white; border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+
+        .stat-card-blue .stat-info p, .stat-card-green .stat-info p, 
+        .stat-card-red .stat-info p, .stat-card-yellow .stat-info p { color: rgba(255,255,255,0.9); }
+        .stat-card-blue .stat-number, .stat-card-green .stat-number,
+        .stat-card-red .stat-number, .stat-card-yellow .stat-number { color: white; }
+
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+        .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-warning { background: var(--color-yellow-light); color: #b45309; }
+        .badge-danger { background: var(--color-red-light); color: #c92a2a; }
+        .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
+        .badge-purple { background: #e9d5ff; color: #7e22ce; }
+
+        .role-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .role-display.admin {
+            color: #c084fc;
+        }
+
+        .role-display.inventory_clerk {
+            color: #60a5fa;
+        }
+
+        .role-display.loa {
+            color: #4ade80;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
+        th { background: var(--color-bg-light); font-weight: 600; font-size: 0.875rem; }
+        tr:hover { background: var(--color-bg-light); }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .filter-input {
+            flex: 1;
+            min-width: 150px;
+        }
+        .filter-input label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-text-secondary);
+        }
+        .filter-input input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            background: var(--color-bg-light);
+            color: var(--color-text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .filter-input select {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+
+            width: 100%;
+
+            padding: 0.5rem 2.75rem 0.5rem 0.75rem;
+
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+
+            color: var(--color-text-primary);
+            font-size: 0.875rem;
+
+            background:
+                var(--color-bg-white)
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")
+                no-repeat right 0.9rem center / 14px;
+
+            cursor: pointer;
+            
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+
+        .filter-input input[type="date"] {
+            appearance: none;
+            -webkit-appearance: none;
+
+            position: relative;
+
+            padding-right: 2.75rem;
+
+            background:
+                var(--color-bg-white)
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E")
+                no-repeat right 0.9rem center / 14px;
+        }
+
+        body.dark .filter-input input[type="date"] {
+            background:
+                var(--color-bg-light)
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E")
+                no-repeat right 0.9rem center / 14px;
+        }
+
+        .filter-input input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        body.dark .filter-input input,
+        body.dark .filter-input select {
+            background: var(--color-bg-light);
+        }
+
+        body:not(.dark) .filter-input input:not([type="date"]),
+        body:not(.dark) .filter-clear-btn {
+            background: var(--color-bg-white);
+        }
+
+        body.dark .filter-input select {
+            background:
+                var(--color-bg-light)
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")
+                no-repeat right 0.9rem center / 14px;
+        }
+
+        .filter-input input:focus,
+        .filter-input select:focus,
+        .filter-input select:focus-visible {
+            border-color: var(--color-primary-red);
+            box-shadow:
+                0 0 0 3px rgba(255, 107, 107, 0.15),
+                0 0 12px rgba(255, 107, 107, 0.18);
+        }
+
+        .filter-clear-btn {
+            height: 42px;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-clear-btn:hover {
+            border-color: var(--color-primary-red);
+        }
+
+        .filter-clear-btn:focus {
+            border-color: var(--color-primary-red);
+            box-shadow:
+                0 0 0 3px rgba(255, 107, 107, 0.15),
+                0 0 12px rgba(255, 107, 107, 0.18);
+        }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-center { text-align: center; }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="system-status">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Status:</span>
+                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                    </div>
+                    <div class="system-status" style="margin-top: 0.5rem;">
+                        <i class="fas fa-code-branch"></i>
+                        <span>System Version:</span>
+                        <span>v3.0.0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <script>
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            const user = JSON.parse(session);
+            if (user.role !== 'admin') {
+                alert('Access denied. Administrator only.');
+                window.location.href = 'dashboard.html';
+                return null;
+            }
+            return user;
+        }
+
+        const currentUser = checkAuth();
+
+        function getCurrentModule() {
+            const page = window.location.pathname.split('/').pop();
+
+            const modules = {
+                'dashboard.html': 'Dashboard',
+                'inventory.html': 'Inventory',
+                'sales.html': 'Sales',
+                'search.html': 'Search',
+                'users.html': 'Users',
+                'reports.html': 'Reports',
+                'audit.html': 'Audit Logs',
+                'maintenance.html': 'Maintenance',
+                'help.html': 'Support',
+                'about.html': 'About'
+            };
+
+            return modules[page] || 'System';
+        }
+        
+        function loadAuditLogs() {
+            const stored = localStorage.getItem('eldorado_audit');
+            if (stored) return JSON.parse(stored);
+            return [
+                { id: 1, action: 'Login', details: 'User logged into system', user: 'admin', role: 'Administrator', timestamp: new Date().toLocaleString(), module: 'System', severity: 'info' },
+                { id: 2, action: 'View Dashboard', details: 'Accessed main dashboard', user: 'admin', role: 'Administrator', timestamp: new Date().toLocaleString(), module: 'Dashboard', severity: 'info' },
+                { id: 3, action: 'Add Product', details: 'Added Brake Pads Set', user: 'admin', role: 'Administrator', timestamp: new Date(Date.now() - 3600000).toLocaleString(), module: 'Inventory', severity: 'success' },
+                { id: 4, action: 'Update Stock', details: 'Updated Engine Oil stock to 50', user: 'clerk', role: 'Inventory Clerk', timestamp: new Date(Date.now() - 7200000).toLocaleString(), module: 'Inventory', severity: 'success' },
+                { id: 5, action: 'Sale', details: 'Processed sale RCP-2024-0001 for ₱2,500', user: 'loa', role: 'LOA - Cashier', timestamp: new Date(Date.now() - 86400000).toLocaleString(), module: 'Sales', severity: 'success' },
+                { id: 6, action: 'Failed Login', details: 'Failed login attempt for user "test"', user: 'unknown', role: 'Unknown', timestamp: new Date(Date.now() - 172800000).toLocaleString(), module: 'Security', severity: 'warning' }
+            ];
+        }
+
+        function saveAuditLogs(logs) {
+            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+        }
+
+        let auditLogs = loadAuditLogs();
+        let filteredLogs = [...auditLogs];
+        let sidebarOpen = true;
+
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+
+        function getRoleIcon(role) {
+            const icons = {
+                'Administrator': 'fa-crown',
+                'Inventory Clerk': 'fa-clipboard-check',
+                'LOA - Cashier': 'fa-receipt'
+            };
+
+            return icons[role] || 'fa-user';
+        }
+
+        // Get action icon and color based on action (STRONGER colors for better visibility)
+        function getActionIconAndColor(action) {
+            const styles = {
+                'Login': { icon: 'fas fa-sign-in-alt', color: 'var(--strong-blue)' },
+                'Logout': { icon: 'fas fa-sign-out-alt', color: 'var(--strong-indigo)' },
+                'Add Product': { icon: 'fas fa-plus-circle', color: 'var(--strong-orange)' },
+                'Edit Product': { icon: 'fas fa-edit', color: 'var(--strong-yellow)' },
+                'Delete Product': { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' },
+                'Update Stock': { icon: 'fas fa-boxes', color: 'var(--strong-orange)' },
+                'Sale': { icon: 'fas fa-shopping-cart', color: 'var(--strong-green)' },
+                'Add User': { icon: 'fas fa-user-plus', color: 'var(--strong-cyan)' },
+                'Edit User': { icon: 'fas fa-user-edit', color: 'var(--strong-emerald)' },
+                'Delete User': { icon: 'fas fa-user-times', color: 'var(--strong-rose)' },
+                'View Dashboard': { icon: 'fas fa-chart-line', color: 'var(--strong-blue)' },
+                'Failed Login': { icon: 'fas fa-exclamation-triangle', color: 'var(--strong-rose)' },
+                'Backup': { icon: 'fas fa-database', color: 'var(--strong-purple)' },
+                'Restore': { icon: 'fas fa-undo-alt', color: 'var(--strong-violet)' },
+                'Create Backup': { icon: 'fas fa-download', color: 'var(--strong-purple)' },
+                'Data Export': { icon: 'fas fa-file-export', color: 'var(--strong-pink)' },
+                'Data Import': { icon: 'fas fa-file-import', color: 'var(--strong-orange)' },
+                'System Reset': { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' },
+                'Storage Optimized': { icon: 'fas fa-broom', color: 'var(--strong-green)' },
+                'Archive Product': { icon: 'fas fa-box-archive', color: 'var(--strong-violet)' },
+                'Restore Product': { icon: 'fas fa-rotate-left', color: 'var(--strong-indigo)' },
+                'Delete Sale': { icon: 'fas fa-trash', color: 'var(--strong-red)' },
+                'Refund': { icon: 'fas fa-money-bill-wave', color: 'var(--strong-orange)' },
+                'Print Receipt': { icon: 'fas fa-print', color: 'var(--strong-cyan)' },
+                'View Report': { icon: 'fas fa-chart-pie', color: 'var(--strong-blue)' },
+                'Generate Report': { icon: 'fas fa-file-lines', color: 'var(--strong-purple)' },
+                'Change Password': { icon: 'fas fa-key', color: 'var(--strong-yellow)' },
+                'Toggle Status': { icon: 'fas fa-toggle-on', color: 'var(--strong-emerald)' },
+                'Deactivate User': { icon: 'fas fa-user-slash', color: 'var(--strong-rose)' },
+                'Activate User': { icon: 'fas fa-user-check', color: 'var(--strong-green)' },
+                'Search': { icon: 'fas fa-search', color: 'var(--strong-blue)' },
+                'Logout Session': { icon: 'fas fa-right-from-bracket', color: 'var(--strong-indigo)' }
+            };
+            if (styles[action]) {
+                return styles[action];
+            }
+
+            const normalizedAction = action.toLowerCase();
+
+            if (
+                normalizedAction.includes('delete') ||
+                normalizedAction.includes('remove') ||
+                normalizedAction.includes('reset') ||
+                normalizedAction.includes('failed')
+            ) {
+                return { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' };
+            }
+
+            if (
+                normalizedAction.includes('add') ||
+                normalizedAction.includes('create') ||
+                normalizedAction.includes('import')
+            ) {
+                return { icon: 'fas fa-plus-circle', color: 'var(--strong-green)' };
+            }
+
+            if (
+                normalizedAction.includes('edit') ||
+                normalizedAction.includes('update') ||
+                normalizedAction.includes('modify')
+            ) {
+                return { icon: 'fas fa-pen', color: 'var(--strong-yellow)' };
+            }
+
+            if (
+                normalizedAction.includes('backup') ||
+                normalizedAction.includes('restore')
+            ) {
+                return { icon: 'fas fa-database', color: 'var(--strong-purple)' };
+            }
+
+            if (
+                normalizedAction.includes('login') ||
+                normalizedAction.includes('logout')
+            ) {
+                return { icon: 'fas fa-right-from-bracket', color: 'var(--strong-blue)' };
+            }
+
+            return {
+                icon: 'fas fa-circle',
+                color: 'var(--strong-cyan)'
+            };
+        }
+
+        
+        function getSeverityBadge(severity) {
+            if (severity === 'success') return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Success</span>';
+            if (severity === 'warning') return '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Warning</span>';
+            if (severity === 'danger') return '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Critical</span>';
+            return '<span class="badge badge-info"><i class="fas fa-info-circle"></i> Info</span>';
+        }
+
+        function getModuleBadge(module) {
+            const modules = {
+                'System': 'badge-info',
+                'Dashboard': 'badge-info',
+                'Inventory': 'badge-success',
+                'Sales': 'badge-purple',
+                'Users': 'badge-warning',
+                'Security': 'badge-danger',
+                'Maintenance': 'badge-info',
+                'Reports': 'badge-purple',
+                'Search': 'badge-info',
+                'Audit Logs': 'badge-danger',
+                'Support': 'badge-warning',
+                'About': 'badge-info'
+            };
+            return `<span class="badge ${modules[module] || 'badge-info'}">${module}</span>`;
+        }
+
+                function renderNavigation() {
+            const navSections = [
+                {
+                    title: "MAIN",
+                    items: [
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                    ]
+                },
+                {
+                    title: "MANAGEMENT",
+                    items: [
+                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                    ]
+                },
+                {
+                    title: "SYSTEM",
+                    items: [
+                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                    ]
+                }
+            ];
+            
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `
+                        <button class="nav-item ${item.id === 'audit' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                            <i class="${item.icon}" style="width: 1.25rem;"></i>
+                            <span>${item.label}</span>
+                        </button>
+                    `;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
+                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
+            };
+            if (pages[module]) window.location.href = pages[module];
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const actionFilter = document.getElementById('actionFilter')?.value || '';
+            const moduleFilter = document.getElementById('moduleFilter')?.value || '';
+            const userFilter = document.getElementById('userFilter')?.value || '';
+            const severityFilter = document.getElementById('severityFilter')?.value || '';
+            const dateFrom = document.getElementById('dateFrom')?.value;
+            const dateTo = document.getElementById('dateTo')?.value;
+
+            filteredLogs = auditLogs.filter(log => {
+                if (searchTerm && !log.action.toLowerCase().includes(searchTerm) && 
+                    !log.details.toLowerCase().includes(searchTerm) && 
+                    !(log.user || '').toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                if (actionFilter && log.action !== actionFilter) return false;
+                if (moduleFilter && log.module !== moduleFilter) return false;
+                if (userFilter && log.user !== userFilter) return false;
+                if (severityFilter && log.severity !== severityFilter) return false;
+                if (dateFrom) {
+                    const logDate = new Date(log.timestamp);
+                    const fromDate = new Date(dateFrom);
+                    if (logDate < fromDate) return false;
+                }
+                if (dateTo) {
+                    const logDate = new Date(log.timestamp);
+                    const toDate = new Date(dateTo);
+                    toDate.setHours(23, 59, 59);
+                    if (logDate > toDate) return false;
+                }
+                return true;
+            });
+            renderAuditTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('actionFilter').value = '';
+            document.getElementById('moduleFilter').value = '';
+            document.getElementById('userFilter').value = '';
+            document.getElementById('severityFilter').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            filteredLogs = [...auditLogs];
+            renderAuditTable();
+        }
+
+        function renderAuditTable() {
+            const tbody = document.getElementById('auditTableBody');
+            if (!tbody) return;
+            
+            const stats = {
+                total: auditLogs.length,
+                successful: auditLogs.filter(l => l.severity === 'success').length,
+                failed: auditLogs.filter(l => l.severity === 'warning' || l.severity === 'danger').length,
+                critical: auditLogs.filter(l => l.severity === 'danger').length
+            };
+            
+            document.getElementById('statTotal').innerText = stats.total;
+            document.getElementById('statSuccessful').innerText = stats.successful;
+            document.getElementById('statFailed').innerText = stats.failed;
+            document.getElementById('statCritical').innerText = stats.critical;
+            document.getElementById('resultCount').innerText = `Showing ${filteredLogs.length} of ${auditLogs.length} log entries`;
+            
+            if (filteredLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No audit logs found</div></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = filteredLogs.map(log => {
+                const actionStyle = getActionIconAndColor(log.action);
+                return `
+                    <tr>
+                        <td><small>${log.timestamp}</small></td>
+                        <td>
+                            <div class="role-display ${
+                                (log.role || log.user) === 'Administrator' || log.user === 'admin'
+                                    ? 'admin'
+                                    : (log.role || log.user) === 'Inventory Clerk' || log.user === 'clerk'
+                                    ? 'inventory_clerk'
+                                    : 'loa'
+                            }">
+
+                            <i class="fas ${
+                                getRoleIcon(
+                                    log.role ||
+                                    (log.user === 'admin'
+                                        ? 'Administrator'
+                                        : log.user === 'clerk'
+                                        ? 'Inventory Clerk'
+                                        : 'LOA - Cashier')
+                                )
+                            }"></i>
+
+                                <span>${
+                                    log.role ||
+                                    (log.user === 'admin'
+                                        ? 'Administrator'
+                                        : log.user === 'clerk'
+                                        ? 'Inventory Clerk'
+                                        : log.user === 'loa'
+                                        ? 'LOA - Cashier'
+                                        : log.user) ||
+                                    'Unknown User'
+                                }</span>
+                            </div>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <i class="${actionStyle.icon}" style="color: ${actionStyle.color}; width: 1.2rem; margin-right: 0.75rem;"></i>
+                            <span style="color: ${actionStyle.color}; font-weight: 500;">${log.action}</span>
+                        </div></td>
+                        <td>${getModuleBadge(log.module || 'System')}</td>
+                        <td style="vertical-align: top;">
+                            <div>${log.details}</div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderAudit() {
+            const uniqueActions = [...new Set(auditLogs.map(l => l.action))];
+            const uniqueModules = [
+                ...new Set(
+                    auditLogs
+                        .map(l => l.module)
+                        .filter(m => m && m !== 'undefined')
+                )
+            ];
+            const uniqueUsers = [...new Set(auditLogs.map(l => l.user))];
+            
+            const html = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-3xl font-bold flex items-center gap-2">
+                                <i class="fas fa-file-alt" style="color: var(--color-primary-red);"></i>
+                                Audit Log Module
+                            </h2>
+                            <p class="text-muted mt-1">Track user actions and view activity history</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="exportAuditLogs()">
+                            <i class="fas fa-download"></i> Export Logs
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-4">
+                        <div class="stat-card-blue">
+                            <div class="stat-info">
+                                <p class="text-sm">Total Actions</p>
+                                <h2 class="text-2xl font-bold" id="statTotal">0</h2>
+                            </div>
+                            <i class="fas fa-chart-line" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="stat-card-green">
+                            <div class="stat-info">
+                                <p class="text-sm">Successful</p>
+                                <h2 class="text-2xl font-bold" id="statSuccessful">0</h2>
+                            </div>
+                            <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="stat-card-red">
+                            <div class="stat-info">
+                                <p class="text-sm">Failed/Warning</p>
+                                <h2 class="text-2xl font-bold" id="statFailed">0</h2>
+                            </div>
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="stat-card-yellow">
+                            <div class="stat-info">
+                                <p class="text-sm">Critical</p>
+                                <h2 class="text-2xl font-bold" id="statCritical">0</h2>
+                            </div>
+                            <i class="fas fa-skull-crossbones" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-filter"></i> Activity History</h3>
+                            <p class="card-description">Filter and search audit log entries</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="filter-group">
+                                <div class="filter-input">
+                                    <label><i class="fas fa-search"></i> Search</label>
+                                    <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="applyFilters()">
+                                </div>
+                                <div class="filter-input">
+                                    <label><i class="fas fa-tag"></i> Action</label>
+                                    <select id="actionFilter" onchange="applyFilters()">
+                                        <option value="">All Actions</option>
+                                        ${uniqueActions.map(a => `<option value="${a}">${a}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="filter-input">
+                                    <label><i class="fas fa-cube"></i> Module</label>
+                                    <select id="moduleFilter" onchange="applyFilters()">
+                                        <option value="">All Modules</option>
+                                        ${uniqueModules.map(m => `<option value="${m}">${m}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="filter-input">
+                                    <label><i class="fas fa-user"></i> User</label>
+                                    <select id="userFilter" onchange="applyFilters()">
+                                        <option value="">All Users</option>
+                                        ${uniqueUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <div class="filter-input">
+                                    <label><i class="fas fa-exclamation"></i> Severity</label>
+                                    <select id="severityFilter" onchange="applyFilters()">
+                                        <option value="">All Severities</option>
+                                        <option value="info">Info</option>
+                                        <option value="success">Success</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="danger">Danger</option>
+                                    </select>
+                                </div>
+                                <div class="filter-input">
+                                    <label><i class="fas fa-calendar"></i> Date From</label>
+                                    <input type="date" id="dateFrom" onchange="applyFilters()">
+                                </div>
+                                <div class="filter-input">
+                                    <label><i class="fas fa-calendar"></i> Date To</label>
+                                    <input type="date" id="dateTo" onchange="applyFilters()">
+                                </div>
+                                <div class="filter-input">
+                                    <label style="opacity: 0;">Clear</label>
+                                    <button class="btn btn-secondary filter-clear-btn" onclick="clearFilters()" style="width: 100%;">
+                                        <i class="fas fa-eraser"></i> Clear Filters
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="text-sm text-muted mb-3" id="resultCount">Loading...</div>
+                            
+                            <div class="table-container">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>User</th>
+                                            <th>Action</th>
+                                            <th>Module</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="auditTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            renderAuditTable();
+        }
+
+        function exportAuditLogs() {
+            const exportData = filteredLogs.map(log => ({
+                'Timestamp': log.timestamp,
+                'User': log.user,
+                'Role': log.role,
+                'Action': log.action,
+                'Module': log.module,
+                'Severity': log.severity,
+                'Details': log.details
+            }));
+            
+            const headers = Object.keys(exportData[0] || {});
+            const csvRows = [headers.join(',')];
+            for (const row of exportData) {
+                const values = headers.map(header => {
+                    const val = row[header]?.toString().replace(/,/g, ' ') || '';
+                    return `"${val}"`;
+                });
+                csvRows.push(values.join(','));
+            }
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audit_log_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.querySelector('main');
+            if (sidebarOpen) {
+                sidebar.classList.remove('sidebar-closed');
+                main.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('sidebar-closed');
+                main.classList.add('sidebar-closed');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const icon = document.querySelector('#darkModeToggle i');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
+        }
+
+        if (currentUser) {
+            document.getElementById('userName').innerText = currentUser?.fullName || 'User';
+            document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
+        }
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+        }
+        
+        renderNavigation();
+        renderAudit();
+        
+        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        window.navigateTo = navigateTo;
+        window.applyFilters = applyFilters;
+        window.clearFilters = clearFilters;
+        window.exportAuditLogs = exportAuditLogs;
+    </script>
+</body>
+</html>

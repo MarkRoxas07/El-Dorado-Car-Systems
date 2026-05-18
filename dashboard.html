@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+            
+            --soft-sky: #5ccbf5;
+            --soft-blue: #7ab8ff;
+            --soft-indigo: #98a2ff;
+            --soft-violet: #b59cff;
+            --soft-purple: #cfa4ff;
+            --soft-pink: #f78fc4;
+            --soft-rose: #ff92a3;
+            --soft-red: #ff9b9b;
+            --soft-orange: #ffb070;
+            --soft-peach: #ffbf9f;
+            --soft-yellow: #ffc94d;
+            --soft-lime: #b7e95f;
+            --soft-green: #72e59a;
+            --soft-emerald: #5cddb2;
+            --soft-mint: #55dcc8;
+            --soft-cyan: #4fdcf3;
+
+            --strong-blue: #1a73e8;
+            --strong-indigo: #4c51bf;
+            --strong-violet: #805ad5;
+            --strong-purple: #9f7aea;
+            --strong-pink: #ed64a6;
+            --strong-rose: #f56565;
+            --strong-red: #e53e3e;
+            --strong-orange: #ed8936;
+            --strong-yellow: #ecc94b;
+            --strong-green: #48bb78;
+            --strong-emerald: #38b2ac;
+            --strong-cyan: #00b5d8;
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
+        th { background: var(--color-bg-light); font-weight: 600; font-size: 0.875rem; }
+        tr:hover { background: var(--color-bg-light); }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+        .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        body.dark .welcome-banner { background: linear-gradient(135deg, #2d4a6e, #1e3a5f); }
+        .welcome-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+
+        .category-container {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+        .category-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .category-header i { color: var(--color-text-primary); font-size: 1.25rem; }
+        .category-header h3 { font-size: 1.125rem; font-weight: 600; }
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            padding: 1.5rem;
+        }
+        .category-card {
+            height: 120px;
+            border-radius: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08), inset 0 1px 1px rgba(255,255,255,0.15);
+        }
+        .category-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0.18), rgba(255,255,255,0));
+        }
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 30px rgba(0,0,0,0.12), inset 0 1px 1px rgba(255,255,255,0.18);
+        }
+        .category-card i {
+            font-size: 1.875rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.18);
+        }
+        .category-card span {
+            font-size: 1.25rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        }
+        .category-card.mechanical { background: linear-gradient(135deg, #42A5F5 0%, #64B5F6 50%, #8ED1FC 100%); }
+        .category-card.electrical { background: linear-gradient(135deg, #B14EFF 0%, #C678F2 45%, #D7A8F3 100%); }
+        .category-card.body-parts { background: linear-gradient(135deg, #FF4B6E 0%, #FF5C7D 45%, #F58EA8 100%); }
+        .category-card.maintenance { background: linear-gradient(135deg, #24D661 0%, #43DF7A 45%, #6EE7A0 100%); }
+
+        .stat-card-soft {
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card-soft p { color: rgba(255,255,255,0.9); }
+        .stat-card-soft .stat-value { font-size: 1.5rem; font-weight: 700; color: white; }
+
+        .category-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .category-pill.mechanical { background: rgba(56, 182, 255, 0.18); color: #38b6ff; }
+        .category-pill.electrical { background: rgba(200, 92, 255, 0.18); color: #c85cff; }
+        .category-pill.body { background: rgba(255, 61, 104, 0.18); color: #ff3d68; }
+        .category-pill.maintenance { background: rgba(31, 228, 109, 0.18); color: #1fe46d; }
+        body.dark .category-pill { border: 1px solid rgba(255, 255, 255, 0.15); }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-warning { background: var(--color-yellow-light); color: #b45309; }
+        .badge-danger { background: var(--color-red-light); color: #c92a2a; }
+        .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
+
+        .role-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .role-display.admin {
+            color: #c084fc;
+        }
+
+        .role-display.inventory_clerk {
+            color: #60a5fa;
+        }
+
+        .role-display.loa {
+            color: #4ade80;
+        }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-red { color: var(--color-red); }
+        .text-green { color: var(--color-green); }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        @media (max-width: 1100px) {
+            .categories-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 700px) {
+            .categories-grid { grid-template-columns: 1fr; }
+            .grid-cols-2 { grid-template-columns: 1fr; }
+            .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="system-status">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Status:</span>
+                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                    </div>
+                    <div class="system-status" style="margin-top: 0.5rem;">
+                        <i class="fas fa-code-branch"></i>
+                        <span>System Version:</span>
+                        <span>v3.0.0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(session);
+        }
+
+        const currentUser = checkAuth();
+        
+        // Sample data
+        const products = [
+            { id: '1', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, salesCount: 145 },
+            { id: '2', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, salesCount: 85 },
+            { id: '3', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, salesCount: 200 },
+            { id: '4', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, salesCount: 65 },
+            { id: '5', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, salesCount: 120 }
+        ];
+
+        const auditLogs = [
+            { action: 'Login', details: 'User logged into system', user: currentUser?.username || 'admin', timestamp: new Date().toLocaleString() },
+            { action: 'View Dashboard', details: 'Accessed main dashboard', user: currentUser?.username || 'admin', timestamp: new Date().toLocaleString() },
+            { action: 'Add Product', details: 'Added Brake Pads Set', user: 'admin', timestamp: new Date(Date.now() - 3600000).toLocaleString() },
+            { action: 'Sale', details: 'Processed sale RCP-2024-0001', user: 'clerk', timestamp: new Date(Date.now() - 7200000).toLocaleString() },
+            { action: 'Update Stock', details: 'Updated Engine Oil stock to 50', user: 'admin', timestamp: new Date(Date.now() - 86400000).toLocaleString() }
+        ];
+
+        let sidebarOpen = true;
+
+        function getCategoryLabel(category) {
+            const labels = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
+            return labels[category] || category;
+        }
+
+        function getCategoryIcon(category) {
+            const icons = { mechanical: 'fa-tools', electrical: 'fa-bolt', body: 'fa-car', maintenance: 'fa-oil-can' };
+            return icons[category] || 'fa-tag';
+        }
+
+        function getCategoryPillClass(category) {
+            const classes = { mechanical: 'mechanical', electrical: 'electrical', body: 'body', maintenance: 'maintenance' };
+            return classes[category] || 'mechanical';
+        }
+
+        function formatCurrency(amount) {
+            return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+
+        function getRoleIcon(role) {
+            const icons = {
+                admin: 'fa-crown',
+                inventory_clerk: 'fa-clipboard-check',
+                loa: 'fa-receipt'
+            };
+
+            return icons[role] || 'fa-user';
+        }
+
+        function getActionIconAndColor(action) {
+            const styles = {
+                'Login': { icon: 'fas fa-sign-in-alt', color: 'var(--strong-blue)' },
+                'Logout': { icon: 'fas fa-sign-out-alt', color: 'var(--strong-indigo)' },
+                'Add Product': { icon: 'fas fa-plus-circle', color: 'var(--strong-orange)' },
+                'Edit Product': { icon: 'fas fa-pen', color: 'var(--strong-yellow)' },
+                'Delete Product': { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' },
+                'Update Stock': { icon: 'fas fa-boxes', color: 'var(--strong-orange)' },
+                'Sale': { icon: 'fas fa-shopping-cart', color: 'var(--strong-green)' },
+                'View Dashboard': { icon: 'fas fa-chart-line', color: 'var(--strong-blue)' }
+            };
+
+            return styles[action] || {
+                icon: 'fas fa-circle',
+                color: 'var(--strong-cyan)'
+            };
+        }
+
+        function getSeverityBadge(action) {
+            if (action === 'Login') return '<span class="badge badge-success"><i class="fas fa-sign-in-alt"></i> Login</span>';
+            if (action === 'View Dashboard') return '<span class="badge badge-info"><i class="fas fa-chart-line"></i> View</span>';
+            if (action === 'Add Product') return '<span class="badge badge-success"><i class="fas fa-plus-circle"></i> Add</span>';
+            if (action === 'Sale') return '<span class="badge badge-info"><i class="fas fa-shopping-cart"></i> Sale</span>';
+            if (action === 'Update Stock') return '<span class="badge badge-warning"><i class="fas fa-boxes"></i> Update</span>';
+            return '<span class="badge badge-info">Info</span>';
+        }
+
+        function renderNavigation() {
+            // Categorized navigation with unique icons
+            const navSections = [
+                {
+                    title: "MAIN",
+                    items: [
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                    ]
+                },
+                {
+                    title: "MANAGEMENT",
+                    items: [
+                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                    ]
+                },
+                {
+                    title: "SYSTEM",
+                    items: [
+                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                    ]
+                }
+            ];
+            
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `
+                        <button class="nav-item ${item.id === 'dashboard' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                            <i class="${item.icon}" style="width: 1.25rem;"></i>
+                            <span>${item.label}</span>
+                        </button>
+                    `;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html',
+                inventory: 'inventory.html',
+                sales: 'sales.html',
+                users: 'users.html',
+                reports: 'reports.html',
+                audit: 'audit.html',
+                search: 'search.html',
+                maintenance: 'maintenance.html',
+                help: 'help.html',
+                about: 'about.html'
+            };
+            if (pages[module]) {
+                window.location.href = pages[module];
+            }
+        }
+
+        function renderDashboard() {
+            const todaySales = 5;
+            const lowStock = products.filter(p => p.stock <= 10 && p.stock > 0).length;
+            const outOfStock = products.filter(p => p.stock === 0).length;
+            const totalProducts = products.length;
+            const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+            
+            const topProducts = [...products].sort((a, b) => b.salesCount - a.salesCount).slice(0, 5);
+            
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+            
+            const html = `
+                <div class="space-y-6">
+                    <div class="welcome-banner flex justify-between items-center">
+                        <div>
+                            <h2 class="welcome-title">Good ${greeting}, ${currentUser?.fullName?.split(' ')[0] || 'User'}!</h2>
+                            <p>Welcome to the El Dorado Car Components management system</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm" style="color: rgba(255, 255, 255, 0.9);">
+                                <i class="fas fa-calendar-alt"></i> Today's Date
+                            </div>
+                            <div class="text-lg font-semibold">${new Date().toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-4">
+                        <div class="stat-card-soft" style="background: var(--soft-blue);">
+                            <div><p class="text-sm">Total Products</p><p class="stat-value">${totalProducts}</p></div>
+                            <i class="fas fa-box" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                        <div class="stat-card-soft" style="background: var(--soft-green);">
+                            <div><p class="text-sm">Total Value</p><p class="stat-value">${formatCurrency(totalValue)}</p></div>
+                            <i class="fas fa-peso-sign" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                        <div class="stat-card-soft" style="background: var(--soft-yellow);">
+                            <div><p class="text-sm">Low Stock</p><p class="stat-value">${lowStock}</p></div>
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                        <div class="stat-card-soft" style="background: var(--soft-red);">
+                            <div><p class="text-sm">Out of Stock</p><p class="stat-value">${outOfStock}</p></div>
+                            <i class="fas fa-times-circle" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="category-container">
+                        <div class="category-header">
+                            <i class="fas fa-tags"></i>
+                            <h3>Product Categories</h3>
+                        </div>
+                        <div class="categories-grid">
+                            <div class="category-card mechanical" onclick="navigateTo('inventory')">
+                                <i class="fas fa-screwdriver-wrench"></i>
+                                <span>Mechanical</span>
+                            </div>
+                            <div class="category-card electrical" onclick="navigateTo('inventory')">
+                                <i class="fas fa-bolt"></i>
+                                <span>Electrical</span>
+                            </div>
+                            <div class="category-card body-parts" onclick="navigateTo('inventory')">
+                                <i class="fas fa-car"></i>
+                                <span>Body Parts</span>
+                            </div>
+                            <div class="category-card maintenance" onclick="navigateTo('inventory')">
+                                <i class="fas fa-oil-can"></i>
+                                <span>Maintenance</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-chart-line"></i> Top Selling Products</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead><tr><th>Rank</th><th>Product Name</th><th>Category</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+                                        <tbody>
+                                            ${topProducts.map((p, i) => `
+                                                <tr>
+                                                    <td class="font-bold text-center">#${i+1}</td>
+                                                    <td><strong>${p.name}</strong></td>
+                                                    <td><span class="category-pill ${getCategoryPillClass(p.category)}"><i class="fas ${getCategoryIcon(p.category)}"></i> ${getCategoryLabel(p.category)}</span></td>
+                                                    <td>${p.salesCount} units</td>
+                                                    <td class="font-bold" style="color: var(--color-primary-red);">${formatCurrency(p.price * p.salesCount)}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-history"></i> Recent Activity</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="table-container">
+                                    <table>
+                                        <thead><tr><th>Action</th><th>Details</th><th>User</th><th>Time</th></tr></thead>
+                                        <tbody>
+                                            ${auditLogs.slice(0, 5).map(log => `
+                                                <tr>
+                                                    <td style="vertical-align: top;">
+                                                        <i class="${
+                                                            getActionIconAndColor(log.action).icon
+                                                        }" style="
+                                                            color: ${
+                                                                getActionIconAndColor(log.action).color
+                                                            };
+                                                            width: 1.2rem;
+                                                            margin-right: 0.75rem;
+                                                        "></i>
+
+                                                        <span style="
+                                                            color: ${
+                                                                getActionIconAndColor(log.action).color
+                                                            };
+                                                            font-weight: 600;
+                                                        ">
+                                                            ${log.action}
+                                                        </span>
+                                                    </td>
+                                                    <td>${log.details}</td>
+                                                    <td>
+                                                        <div class="role-display ${
+                                                            log.user === 'admin'
+                                                                ? 'admin'
+                                                                : log.user === 'clerk'
+                                                                ? 'inventory_clerk'
+                                                                : 'loa'
+                                                        }">
+                                                            <i class="fas ${
+                                                                log.user === 'admin'
+                                                                    ? 'fa-crown'
+                                                                    : log.user === 'clerk'
+                                                                    ? 'fa-clipboard-check'
+                                                                    : 'fa-receipt'
+                                                            }"></i>
+
+                                                            <span>
+                                                                ${
+                                                                    log.user === 'admin'
+                                                                        ? 'Administrator'
+                                                                        : log.user === 'clerk'
+                                                                        ? 'Inventory Clerk'
+                                                                        : 'LOA - Cashier'
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td><small>${log.timestamp}</small></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.querySelector('main');
+            if (sidebarOpen) {
+                sidebar.classList.remove('sidebar-closed');
+                main.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('sidebar-closed');
+                main.classList.add('sidebar-closed');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const toggleBtn = document.getElementById('darkModeToggle');
+            const icon = toggleBtn.querySelector('i');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize
+        document.getElementById('userName').innerText = currentUser?.fullName || 'User';
+        document.getElementById('userRole').innerHTML = `
+            <div class="role-display ${currentUser?.role || 'loa'}">
+                <i class="fas ${getRoleIcon(currentUser?.role || 'loa')}"></i>
+                <span>${getRoleDisplayName(currentUser?.role || 'loa')}</span>
+            </div>
+        `;
+        
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+        }
+        
+        renderNavigation();
+        renderDashboard();
+        
+        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        window.navigateTo = navigateTo;
+    </script>
+</body>
+</html>

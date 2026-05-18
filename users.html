@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - El Dorado Car Components</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary-red: #ff6b6b;
+            --color-primary-red-hover: #ff5252;
+            --color-primary-blue: #4dabf7;
+            --color-primary-blue-light: #e7f5ff;
+            --color-bg-light: #f8f9fa;
+            --color-bg-white: #ffffff;
+            --color-border: #e9ecef;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-text-muted: #adb5bd;
+            --color-green: #51cf66;
+            --color-green-light: #ebfbee;
+            --color-yellow: #ffd43b;
+            --color-yellow-light: #fff9db;
+            --color-red: #ff6b6b;
+            --color-red-light: #fff5f5;
+            --color-purple: #9775fa;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+
+            /* Soft Color Palette */
+            --soft-sky: #5ccbf5;
+            --soft-blue: #7ab8ff;
+            --soft-indigo: #98a2ff;
+            --soft-violet: #b59cff;
+            --soft-purple: #cfa4ff;
+            --soft-pink: #f78fc4;
+            --soft-rose: #ff92a3;
+            --soft-red: #ff9b9b;
+            --soft-orange: #ffb070;
+            --soft-peach: #ffbf9f;
+            --soft-yellow: #ffc94d;
+            --soft-lime: #b7e95f;
+            --soft-green: #72e59a;
+            --soft-emerald: #5cddb2;
+            --soft-mint: #55dcc8;
+            --soft-cyan: #4fdcf3;
+        }
+
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-bg-white) 50%, #fff0f0 100%);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+
+        /* ===== BUTTON STYLES (Matching Inventory) ===== */
+        .btn {
+            padding: 0.5rem 0.875rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--color-primary-red); color: white; }
+        .btn-primary:hover { background: var(--color-primary-red-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-bg-light); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-success { background: var(--color-green); color: white; }
+        .btn-success:hover { background: #3b9e4e; transform: translateY(-1px); }
+        .btn-danger { background: var(--color-red); color: white; }
+        .btn-danger:hover { background: #e55a5a; transform: translateY(-1px); }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn-ghost { background: transparent; color: var(--color-text-primary); }
+        .btn-ghost:hover { background: var(--color-bg-light); }
+        .btn-icon { width: 2.5rem; height: 2.5rem; padding: 0; }
+
+        .btn-purple {
+            background: var(--soft-purple);
+            color: white;
+        }
+
+        .btn-purple:hover {
+            background: #b58cff;
+            transform: translateY(-1px);
+        }
+
+        /* ===== CARD STYLES (Matching Inventory) ===== */
+        .card {
+            background: var(--color-bg-white);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ===== HEADER STYLES ===== */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark header { background: rgba(42, 42, 53, 0.95); }
+        .header-content {
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 4rem;
+            gap: 1rem;
+        }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
+        .logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
+        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
+        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.875rem; font-weight: 500; }
+        .user-role-display { font-size: 0.75rem; color: var(--color-text-secondary); }
+
+        /* ===== SIDEBAR STYLES (Matching Inventory) ===== */
+        .layout { display: flex; }
+        aside {
+            position: fixed;
+            left: 0;
+            top: 4rem;
+            bottom: 0;
+            width: 18rem;
+            background: var(--color-bg-white);
+            border-right: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 40;
+        }
+        aside.sidebar-closed { transform: translateX(-100%); }
+        .sidebar-nav { padding: 1rem; }
+        .nav-section-title { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--color-text-secondary); 
+            text-transform: uppercase; 
+            margin: 1rem 0 0.5rem 0.5rem; 
+            letter-spacing: 0.08em;
+        }
+        .nav-section-title:first-of-type { margin-top: 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--color-text-primary);
+        }
+        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
+        .nav-item.active { background: var(--color-primary-red); color: white; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--color-border);
+            background: var(--color-bg-light);
+            margin-top: auto;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+        }
+        main.sidebar-closed { margin-left: 0; }
+
+        /* ===== GRID & STAT CARDS ===== */
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+        .stat-card-soft {
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card-soft p { color: rgba(255,255,255,0.9); font-size: 0.875rem; }
+        .stat-card-soft .stat-value { font-size: 1.5rem; font-weight: 700; color: white; }
+
+        /* ===== SEARCH & FILTER STYLES (Matching Inventory) ===== */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+            width: 100%;
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 46px;
+            padding: 0 16px 0 42px;
+            border: 1px solid #dbe2ea;
+            border-radius: 14px;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+            font-size: 15px;
+            transition: all 0.22s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.18);
+        }
+
+        .filter-select {
+            width: 200px;
+            flex-shrink: 0;
+            height: 46px;
+            padding: 0 2.5rem 0 1rem;
+            border: 1px solid #dbe2ea;
+            border-radius: 14px;
+            background-color: var(--color-bg-white);
+            color: var(--color-text-primary);
+            font-size: 15px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px;
+            transition: all .2s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+        }
+
+        .clear-filter-btn {
+            height: 46px;
+            padding: 0 18px;
+            border: 1px solid #dbe2ea;
+            border-radius: 14px;
+            background: var(--color-bg-white);
+            color: #475569;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.22s ease;
+        }
+
+        .clear-filter-btn:hover {
+            background: #f8fafc;
+            border-color: var(--color-primary-red);
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.20);
+        }
+
+        /* Dark mode overrides for search */
+        body.dark .search-input,
+        body.dark .filter-select,
+        body.dark .clear-filter-btn {
+            background-color: #1a1a2a !important;
+            color: #ffffff !important;
+            border-color: #3a3a45 !important;
+        }
+
+        body.dark .search-input::placeholder {
+            color: #9ca3af !important;
+        }
+
+        body.dark .filter-select option {
+            background: #1a1a2a !important;
+            color: #ffffff !important;
+        }
+
+        body.dark .clear-filter-btn:hover {
+            background: #2a2a3a !important;
+            border-color: var(--color-primary-red) !important;
+        }
+
+        body.dark .filter-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aaaaaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        @media (max-width: 900px) {
+            .search-box {
+                flex-wrap: wrap;
+            }
+            .search-input-wrapper {
+                width: 100%;
+                flex: unset;
+            }
+            .filter-select {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        /* ===== TABLE STYLES (Matching Inventory) ===== */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+            background: var(--color-bg-white);
+            margin-top: 0;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+            vertical-align: middle;
+        }
+        th {
+            background: var(--color-bg-light);
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+        tbody tr:hover { background: var(--color-bg-light); }
+        body.dark tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ===== BADGE STYLES ===== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--color-green-light); color: #15803d; }
+        .badge-danger { background: var(--color-red-light); color: #c92a2a; }
+
+        .role-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .role-display.admin {
+            color: #c084fc;
+        }
+
+        .role-display.inventory_clerk {
+            color: #60a5fa;
+        }
+
+        .role-display.loa {
+            color: #4ade80;
+        }
+
+        /* ===== RESULT COUNT ===== */
+        .result-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+
+        /* ===== MODAL FORM STYLES (Matching Inventory layout, your colors) ===== */
+        .modal-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--color-text-primary);
+            letter-spacing: -.01em;
+        }
+        .modal-label i { margin-right: 4px; }
+
+        .modal-input {
+            width: 100%;
+            height: 54px;
+            padding: 0 18px;
+            border: 1px solid #dbe2ea;
+            border-radius: 16px;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            transition: all .22s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,.03);
+        }
+        .modal-input:focus {
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .modal-select {
+            width: 100%;
+            height: 54px;
+            padding: 0 2rem 0 1rem;
+            border: 1px solid #dbe2ea;
+            border-radius: 16px;
+            background: var(--color-bg-white);
+            color: var(--color-text-primary);
+            font-size: 15px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px;
+            transition: all .22s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,.03);
+        }
+        .modal-select:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .name-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 0.5fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-form-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 22px;
+            padding: 18px;
+            background: var(--color-bg-white);
+            margin-bottom: 26px;
+            
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .password-input-wrapper { position: relative; }
+        .password-input-wrapper .modal-input { padding-right: 48px; }
+        .password-toggle-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--color-text-muted);
+        }
+
+        /* Dark mode overrides for modal inputs */
+        body.dark .modal-input,
+        body.dark .modal-select {
+            background: #111224 !important;
+            color: #ffffff !important;
+
+            border: 1px solid rgba(255,255,255,.10) !important;
+
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+        }
+        body.dark .modal-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aaaaaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+        body.dark .modal-input:focus,
+        body.dark .modal-select:focus {
+            border-color: var(--color-primary-red) !important;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.25) !important;
+        }
+        
+        /* Red border on focus for search and filter - matching Inventory */
+        .search-input:focus,
+        .filter-select:focus {
+            border-color: var(--color-primary-red) !important;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.18) !important;
+            outline: none;
+        }
+        
+        body.dark .search-input:focus,
+        body.dark .filter-select:focus {
+            border-color: var(--color-primary-red) !important;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.25) !important;
+        }
+
+        /* Also ensure light mode has red border on focus */
+        .modal-input:focus,
+        .modal-select:focus {
+            border-color: var(--color-primary-red) !important;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.18) !important;
+        }
+
+        /* ===== STOCK MODAL STYLES (Matching Inventory exactly) ===== */
+        .stock-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .stock-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .stock-modal-container {
+            width: 720px;
+            background: var(--color-bg-white);
+            border-radius: 28px;
+            padding: 32px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            transform: translateY(20px) scale(0.96);
+            transition: all .22s ease;
+        }
+        .stock-modal-overlay.active .stock-modal-container {
+            transform: translateY(0) scale(1);
+        }
+        .stock-modal-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 38px;
+            height: 38px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 20px;
+            transition: .2s;
+        }
+        .stock-modal-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        body.dark .stock-modal-close:hover {
+            background: #2a2a3a;
+            color: #e5e7eb;
+        }
+
+        .stock-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        .stock-header-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+        }
+        .stock-header-text h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .stock-header-text p {
+            color: #6b7280;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .modal-title-text {
+            color: var(--soft-purple);
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .stock-alert {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            background: rgba(207, 164, 255, 0.15);
+            color: var(--soft-purple);
+            border-left: 4px solid var(--soft-purple);
+        }
+        body.dark .stock-alert {
+            background: #2d1b4e !important;
+            color: #c4b5fd !important;
+            border-left: 4px solid #a855f7 !important;
+        }
+
+        .stock-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .stock-btn {
+            border: none;
+            height: 52px;
+            padding: 0 26px;
+            border-radius: 18px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+        .stock-btn-secondary {
+            background: var(--color-bg-white);
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+        .stock-btn-secondary:hover {
+            background: var(--color-bg-light);
+        }
+        .stock-btn-primary {
+            color: white;
+            min-width: 160px;
+        }
+        .stock-btn-primary:hover {
+            transform: translateY(-2px);
+            opacity: .95;
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--color-text-secondary); }
+        .text-sm { font-size: 0.875rem; }
+        .font-medium { font-weight: 500; }
+
+        .dark-mode-toggle {
+            background: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--color-bg-white);
+            border-left: 4px solid var(--color-green);
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1100;
+            font-size: 0.875rem;
+            font-weight: 500;
+            animation: slideIn 0.25s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 900px) {
+            .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+            .stock-modal-container { width: 95%; padding: 24px; }
+            .stock-modal-actions { flex-direction: column; }
+            .stock-btn-primary { width: 100%; }
+        }
+        @media (max-width: 700px) {
+            .grid-cols-4 { grid-template-columns: 1fr; }
+            .name-fields-grid { grid-template-columns: 1fr; gap: 12px; }
+            .modal-form-container { padding: 16px; }
+            .stock-modal-header { flex-direction: column; text-align: center; gap: 12px; }
+            .stock-modal-actions { flex-direction: column; }
+            .stock-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-section">
+                    <div class="logo"><i class="fas fa-car"></i></div>
+                    <div class="company-info">
+                        <h1>El Dorado Car Components</h1>
+                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="dark-mode-toggle" id="darkModeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role-display" id="headerUserRole"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="layout">
+            <aside id="sidebar">
+                <nav class="sidebar-nav">
+                    <div id="navLinks"></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="system-status">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Network Status:</span>
+                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
+                    </div>
+                    <div class="system-status" style="margin-top: 0.5rem;">
+                        <i class="fas fa-code-branch"></i>
+                        <span>System Version:</span>
+                        <span>v3.0.0</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <main id="mainContent"></main>
+        </div>
+    </div>
+
+    <!-- User Modal - Modern Design (Inventory layout with soft purple colors) -->
+    <div id="userModal" class="stock-modal-overlay">
+        <div class="stock-modal-container">
+            
+            <div class="stock-modal-header">
+                <div class="stock-header-icon" style="background: var(--soft-purple);">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stock-header-text">
+                    <h1 id="modalTitle" class="modal-title-text">Add New User</h1>
+                </div>
+            </div>
+
+            <input type="hidden" id="modalUserId">
+
+            <div class="modal-form-container">
+                <div>
+                    <label class="modal-label"><i class="fas fa-tag"></i> Access Level *</label>
+                    <select id="modalUserRole" class="modal-select">
+                        <option value="loa">LOA - Cashier</option>
+                        <option value="inventory_clerk">Inventory Clerk</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+
+                <div class="name-fields-grid">                    
+                    <div>
+                        <label class="modal-label">First Name *</label>
+                        <input type="text" id="modalFirstName" placeholder="First name" class="modal-input">
+                    </div>
+                    <div>
+                        <label class="modal-label">M.I.</label>
+                        <input type="text" id="modalMiddleInitial" placeholder="M" maxlength="1" class="modal-input" style="text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label class="modal-label">Last Name *</label>
+                        <input type="text" id="modalLastName" placeholder="Last name" class="modal-input">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="modal-label"><i class="fas fa-envelope"></i> Email Address *</label>
+                    <input type="email" id="modalEmail" placeholder="user@eldorado.com" class="modal-input">
+                </div>
+
+                <div>
+                    <label class="modal-label"><i class="fas fa-user-circle"></i> Username *</label>
+                    <input type="text" id="modalUsername" placeholder="Enter username" class="modal-input">
+                </div>
+
+                <div>
+                    <label class="modal-label"><i class="fas fa-lock"></i> Password <span id="passwordReqNote">*</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="modalPassword" placeholder="Enter password" class="modal-input">
+                        <i class="fas fa-eye-slash password-toggle-icon toggle-password" data-target="modalPassword"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stock-alert">
+                <i class="fas fa-info-circle"></i>
+                <span>Fill in all required fields (*) to create or edit a user account.</span>
+            </div>
+
+            <div class="stock-modal-actions">
+                <button class="stock-btn stock-btn-secondary" id="cancelModalBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="stock-btn stock-btn-primary" id="saveUserBtn" style="background: var(--soft-purple);">
+                    <i class="fas fa-save"></i> Save User
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Keep all your existing JavaScript exactly as it was
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.borderLeftColor = isError ? 'var(--color-red)' : 'var(--color-green)';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right: 8px;"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2800);
+        }
+        
+        function checkAuth() {
+            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!session) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            try {
+                const user = JSON.parse(session);
+                if (user.role !== 'admin') {
+                    alert('Access denied. Administrator only.');
+                    window.location.href = 'dashboard.html';
+                    return null;
+                }
+                return user;
+            } catch(e) {
+                window.location.href = 'index.html';
+                return null;
+            }
+        }
+        
+        const currentUser = checkAuth();
+        if (!currentUser) throw new Error('Redirect required');
+        
+        function loadUsers() {
+            const stored = localStorage.getItem('eldorado_users');
+            if (stored) return JSON.parse(stored);
+            const defaultUsers = [
+                { id: 'u1', username: 'admin', password: 'admin123', firstName: 'Admin', middleInitial: '', lastName: 'User', fullName: 'Admin User', role: 'admin', email: 'admin@eldorado.com', active: true, createdAt: new Date().toISOString() },
+                { id: 'u2', username: 'clerk', password: 'clerk123', firstName: 'Jane', middleInitial: 'C', lastName: 'Cruz', fullName: 'Jane C. Cruz', role: 'inventory_clerk', email: 'clerk@eldorado.com', active: true, createdAt: new Date().toISOString() },
+                { id: 'u3', username: 'loa', password: 'loa123', firstName: 'Mike', middleInitial: 'S', lastName: 'Santos', fullName: 'Mike S. Santos', role: 'loa', email: 'loa@eldorado.com', active: true, createdAt: new Date().toISOString() }
+            ];
+            localStorage.setItem('eldorado_users', JSON.stringify(defaultUsers));
+            return defaultUsers;
+        }
+        
+        function saveUsers(users) { localStorage.setItem('eldorado_users', JSON.stringify(users)); }
+        
+        function addAuditLog(action, details) {
+            const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+            logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString() });
+            if (logs.length > 100) logs.pop();
+            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+        }
+        
+        let users = loadUsers();
+        let sidebarOpen = true;
+        
+        function getRoleDisplayName(role) {
+            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+            return roles[role] || role;
+        }
+        
+        function getRoleIcon(role) {
+            const icons = { admin: 'fa-crown', inventory_clerk: 'fa-clipboard-check', loa: 'fa-receipt' };
+            return icons[role] || 'fa-user';
+        }
+        
+        function getRolePillClass(role) {
+            const classes = { admin: 'admin', inventory_clerk: 'clerk', loa: 'loa' };
+            return classes[role] || 'admin';
+        }
+        
+        function renderNavigation() {
+            const navSections = [
+                { title: "MAIN", items: [
+                    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                    { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                    { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                    { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                ] },
+                { title: "MANAGEMENT", items: [
+                    { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                    { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                    { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                ] },
+                { title: "SYSTEM", items: [
+                    { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                    { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                    { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                ] }
+            ];
+            let navHtml = '';
+            for (const section of navSections) {
+                navHtml += `<div class="nav-section-title">${section.title}</div>`;
+                for (const item of section.items) {
+                    navHtml += `<button class="nav-item ${item.id === 'users' ? 'active' : ''}" onclick="navigateTo('${item.id}')"><i class="${item.icon}" style="width: 1.25rem;"></i><span>${item.label}</span></button>`;
+                }
+            }
+            document.getElementById('navLinks').innerHTML = navHtml;
+        }
+
+        function navigateTo(module) {
+            const pages = {
+                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
+                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
+            };
+            if (pages[module]) window.location.href = pages[module];
+        }
+        
+        function renderUsers() {
+            const stats = {
+                total: users.length,
+                active: users.filter(u => u.active !== false).length,
+                inactive: users.filter(u => u.active === false).length,
+                admins: users.filter(u => u.role === 'admin').length
+            };
+            
+            const searchInputElement =
+                document.getElementById('searchInput');
+
+            const searchTypeElement =
+                document.getElementById('userSearchType');
+
+            const roleFilterElement =
+                document.getElementById('roleFilter');
+
+            const statusFilterElement =
+                document.getElementById('statusFilter');
+
+            const searchTerm =
+                searchInputElement?.value.toLowerCase() || '';
+
+            const searchType =
+                searchTypeElement?.value || 'name';
+
+            const roleFilter =
+                roleFilterElement?.value || '';
+
+            const statusFilter =
+                statusFilterElement?.value || '';
+
+            let filteredUsers = [...users];
+            if (searchTerm) {
+                filteredUsers = filteredUsers.filter(u => {
+
+                    if (searchType === 'name') {
+                        return u.fullName.toLowerCase().includes(searchTerm);
+                    }
+
+                    if (searchType === 'username') {
+                        return u.username.toLowerCase().includes(searchTerm);
+                    }
+
+                    if (searchType === 'email') {
+                        return u.email.toLowerCase().includes(searchTerm);
+                    }
+
+                    return true;
+                });
+            }
+            if (roleFilter) filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
+            if (statusFilter) {
+                if (statusFilter === 'active') filteredUsers = filteredUsers.filter(u => u.active !== false);
+                if (statusFilter === 'inactive') filteredUsers = filteredUsers.filter(u => u.active === false);
+            }
+            
+            const html = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div><h2 class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-users" style="color: var(--color-primary-red);"></i>User Management</h2><p class="text-muted mt-1">Manage system users and access levels</p></div>
+                        <button class="btn btn-primary" id="addUserBtn"><i class="fas fa-plus"></i> Add User</button>
+                    </div>
+                    <div class="grid grid-cols-4">
+                        <div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Total Users</p><p class="stat-value">${stats.total}</p></div><i class="fas fa-users" style="font-size: 2rem; color: white;"></i></div>
+                        <div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">Active Users</p><p class="stat-value">${stats.active}</p></div><i class="fas fa-check-circle" style="font-size: 2rem; color: white;"></i></div>
+                        <div class="stat-card-soft" style="background: var(--soft-red);"><div><p class="text-sm">Inactive Users</p><p class="stat-value">${stats.inactive}</p></div><i class="fas fa-user-slash" style="font-size: 2rem; color: white;"></i></div>
+                        <div class="stat-card-soft" style="background: var(--soft-purple);"><div><p class="text-sm">Administrators</p><p class="stat-value">${stats.admins}</p></div><i class="fas fa-crown" style="font-size: 2rem; color: white;"></i></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title"><i class="fas fa-list"></i> System Users</h3></div>
+                        <div class="card-content">
+                            <div class="search-box">
+                                <div class="search-input-wrapper">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name, username, or email..." onkeyup="renderUsers()">
+                                </div>
+                                <select id="userSearchType" class="filter-select" onchange="updateUserSearchPlaceholder(); renderUsers()">
+                                    <option value="name">Search by Name</option>
+                                    <option value="username">Search by Username</option>
+                                    <option value="email">Search by Email</option>
+                                </select>
+                                <select id="roleFilter" class="filter-select" onchange="renderUsers()">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Administrator</option>
+                                    <option value="inventory_clerk">Inventory Clerk</option>
+                                    <option value="loa">LOA (Cashier)</option>
+                                </select>
+                                <select id="statusFilter" class="filter-select" onchange="renderUsers()">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                                <button class="clear-filter-btn" onclick="clearFilters()">
+                                    <i class="fas fa-eraser"></i> Clear
+                                </button>
+                            </div>
+                            <div class="result-count">
+                                <i class="fas fa-search"></i> Found ${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''}
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr><th>User</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filteredUsers.map(u => `<tr>
+                                            <td><div class="font-medium">${u.fullName}</div></td>
+                                            <td><i class="fas fa-at"></i> ${u.username}</td>
+                                            <td>
+                                                <div class="role-display ${u.role}">
+                                                    <i class="fas ${getRoleIcon(u.role)}"></i>
+                                                    <span>${getRoleDisplayName(u.role)}</span>
+                                                </div>
+                                            </td>
+                                            <td>${u.email}</td>
+                                            <td><span class="badge ${u.active !== false ? 'badge-success' : 'badge-danger'}"><i class="fas fa-circle"></i> ${u.active !== false ? 'Active' : 'Inactive'}</span></td>
+                                            <td><small>${new Date(u.createdAt).toLocaleDateString()}</small></td>
+                                            <td><div class="flex gap-2">
+                                                <button class="btn btn-purple btn-sm edit-user" data-id="${u.id}"><i class="fas fa-edit"></i></button>
+                                                ${u.username !== 'admin' ? `
+                                                <button class="btn btn-danger btn-sm toggle-status" data-id="${u.id}">
+                                                    <i class="fas ${u.active !== false ? 'fa-ban' : 'fa-check-circle'}"></i>
+                                                </button>
+                                                ` : ''}
+                                            </div></td>
+                                        </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+
+            document.getElementById('searchInput').value =
+                searchInputElement?.value || '';
+
+            document.getElementById('userSearchType').value =
+                searchType;
+
+            document.getElementById('roleFilter').value =
+                roleFilter;
+
+            document.getElementById('statusFilter').value =
+                statusFilter;
+
+            updateUserSearchPlaceholder();
+            
+            document.getElementById('addUserBtn')?.addEventListener('click', () => openUserModal());
+            document.querySelectorAll('.edit-user').forEach(btn => btn.addEventListener('click', () => { const id = btn.getAttribute('data-id'); const user = users.find(u => u.id === id); if(user) openUserModal(user); }));
+            document.querySelectorAll('.toggle-status').forEach(btn => btn.addEventListener('click', () => { const id = btn.getAttribute('data-id'); toggleUserStatus(id); }));
+        }
+        
+        function clearFilters() {
+
+            document.getElementById('searchInput').value = '';
+
+            document.getElementById('userSearchType').value =
+                'name';
+
+            document.getElementById('roleFilter').value = '';
+
+            document.getElementById('statusFilter').value = '';
+
+            updateUserSearchPlaceholder();
+
+            renderUsers();
+        }
+        
+        function updateUserSearchPlaceholder() {
+
+            const searchType =
+                document.getElementById('userSearchType')?.value;
+
+            const input =
+                document.getElementById('searchInput');
+
+            if (!input) return;
+
+            if (searchType === 'name') {
+                input.placeholder =
+                    'Search users by full name...';
+            }
+
+            else if (searchType === 'username') {
+                input.placeholder =
+                    'Search users by username...';
+            }
+
+            else if (searchType === 'email') {
+                input.placeholder =
+                    'Search users by email address...';
+            }
+        }
+
+        function openUserModal(user = null) {
+            const modal = document.getElementById('userModal');
+            const modalTitle = document.getElementById('modalTitle');
+            if (user) {
+                modalTitle.innerHTML = 'Edit User Account';
+                document.getElementById('modalUserId').value = user.id;
+                document.getElementById('modalUserRole').value = user.role;
+                document.getElementById('modalFirstName').value = user.firstName || '';
+                document.getElementById('modalMiddleInitial').value = user.middleInitial || '';
+                document.getElementById('modalLastName').value = user.lastName || '';
+                document.getElementById('modalEmail').value = user.email || '';
+                document.getElementById('modalUsername').value = user.username;
+                document.getElementById('modalPassword').value = '';
+                document.getElementById('modalPassword').placeholder = 'Leave blank to keep current';
+                document.getElementById('passwordReqNote').innerHTML = ' (optional)';
+            } else {
+                modalTitle.innerHTML = 'Create New User Account';
+                document.getElementById('modalUserId').value = '';
+                document.getElementById('modalUserRole').value = 'loa';
+                document.getElementById('modalFirstName').value = '';
+                document.getElementById('modalMiddleInitial').value = '';
+                document.getElementById('modalLastName').value = '';
+                document.getElementById('modalEmail').value = '';
+                document.getElementById('modalUsername').value = '';
+                document.getElementById('modalPassword').value = '';
+                document.getElementById('modalPassword').placeholder = 'Enter password';
+                document.getElementById('passwordReqNote').innerHTML = ' *';
+            }
+            modal.classList.add('active');
+        }
+        
+function closeUserModal() {
+
+    document.getElementById('userModal')
+        .classList.remove('active');
+
+    document.getElementById('modalUserId').value = '';
+
+    document.getElementById('modalUserRole').value =
+        'loa';
+
+    document.getElementById('modalFirstName').value = '';
+
+    document.getElementById('modalMiddleInitial').value = '';
+
+    document.getElementById('modalLastName').value = '';
+
+    document.getElementById('modalEmail').value = '';
+
+    document.getElementById('modalUsername').value = '';
+
+    document.getElementById('modalPassword').value = '';
+
+    document.getElementById('modalPassword').placeholder =
+        'Enter password';
+
+    document.getElementById('passwordReqNote').innerHTML =
+        '*';
+
+    document.getElementById('modalTitle').innerHTML =
+        'Add New User';
+
+}
+        
+        function saveUserHandler() {
+            const id = document.getElementById('modalUserId').value;
+            const role = document.getElementById('modalUserRole').value;
+            const firstName = document.getElementById('modalFirstName').value.trim();
+            const middleInitial = document.getElementById('modalMiddleInitial').value.trim();
+            const lastName = document.getElementById('modalLastName').value.trim();
+            const email = document.getElementById('modalEmail').value.trim();
+            const username = document.getElementById('modalUsername').value.trim();
+            const password = document.getElementById('modalPassword').value;
+            
+            if (!firstName || !lastName || !username) { alert('First Name, Last Name and Username required.'); return; }
+            if (!id && !password) { alert('Password required for new user.'); return; }
+            if (users.find(u => u.username === username && u.id !== id)) { alert('Username already exists.'); return; }
+            
+            const fullName = middleInitial ? `${firstName} ${middleInitial}. ${lastName}` : `${firstName} ${lastName}`;
+            if (id) {
+                const idx = users.findIndex(u => u.id === id);
+                if(idx !== -1) {
+                    users[idx] = { ...users[idx], role, firstName, middleInitial, lastName, fullName, email, username };
+                    if (password) users[idx].password = password;
+                    addAuditLog('Edit User', `Updated ${username}`);
+                    showToast(`User ${username} updated`);
+                }
+            } else {
+                const newUser = { id: 'u' + Date.now(), username, password, firstName, middleInitial, lastName, fullName, role, email, active: true, createdAt: new Date().toISOString() };
+                users.push(newUser);
+                addAuditLog('Add User', `Created ${username}`);
+                showToast(`User ${username} created`);
+            }
+            saveUsers(users);
+            closeUserModal();
+            renderUsers();
+        }
+        
+        function toggleUserStatus(id) {
+            const user = users.find(u => u.id === id);
+            if(user && user.username !== 'admin') {
+                user.active = user.active === false ? true : false;
+                saveUsers(users);
+                addAuditLog('Toggle Status', `${user.username} is now ${user.active ? 'Active' : 'Inactive'}`);
+                showToast(`${user.username} ${user.active ? 'activated' : 'deactivated'}`);
+                renderUsers();
+            } else if(user?.username === 'admin') alert('Cannot change admin status');
+        }
+        
+        document.addEventListener('click', (e) => {
+            if(e.target.classList.contains('toggle-password')) {
+                const targetId = e.target.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                if(input) {
+                    input.type = input.type === 'password' ? 'text' : 'password';
+                    e.target.classList.toggle('fa-eye');
+                    e.target.classList.toggle('fa-eye-slash');
+                }
+            }
+        });
+        
+        function initUI() {
+            const darkStored = localStorage.getItem('darkMode') === 'true';
+            if(darkStored) document.body.classList.add('dark');
+            const darkIcon = document.querySelector('#darkModeToggle i');
+            if(darkIcon) darkIcon.className = darkStored ? 'fas fa-sun' : 'fas fa-moon';
+            document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark);
+                const icon = document.querySelector('#darkModeToggle i');
+                icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            });
+            document.getElementById('sidebarToggleBtn')?.addEventListener('click', () => {
+                sidebarOpen = !sidebarOpen;
+                document.getElementById('sidebar').classList.toggle('sidebar-closed', !sidebarOpen);
+                document.querySelector('main').classList.toggle('sidebar-closed', !sidebarOpen);
+            });
+            document.getElementById('logoutBtn')?.addEventListener('click', () => {
+                if(confirm('Logout?')){ localStorage.removeItem('userSession'); sessionStorage.removeItem('userSession'); window.location.href = 'index.html'; }
+            });
+            document.getElementById('cancelModalBtn')?.addEventListener('click', closeUserModal);
+            document.getElementById('saveUserBtn')?.addEventListener('click', saveUserHandler);
+            document.getElementById('userModal')?.addEventListener('click', (e) => {
+                if(e.target.classList.contains('stock-modal-overlay')) closeUserModal();
+            });
+        }
+        
+        if(currentUser){
+            document.getElementById('userName').innerText = currentUser.fullName || currentUser.username;
+            const headerRole = document.getElementById('headerUserRole');
+            if(headerRole) headerRole.innerText = getRoleDisplayName(currentUser.role);
+        }
+        
+        renderNavigation();
+        renderUsers();
+        updateUserSearchPlaceholder();
+        initUI();
+    </script>
+</body>
+</html>
