@@ -1393,6 +1393,18 @@
             return JSON.parse(session);
         }
 
+        const ROLE_PERMISSIONS = {
+            admin: {
+                modules: ['dashboard', 'inventory', 'sales', 'search', 'user_management', 'reports', 'audit_logs', 'maintenance', 'help', 'about']
+            },
+            inventory_clerk: {
+                modules: ['inventory', 'search', 'help', 'about']
+            },
+            loa: {
+                modules: ['sales', 'search', 'help', 'about']
+            }
+        };
+
         const currentUser = checkAuth();
         const activeModule = 'inventory';
         if (!hasModuleAccess(activeModule)) {
@@ -1464,18 +1476,6 @@
             }
             return product;
         }
-
-        const ROLE_PERMISSIONS = {
-            admin: {
-                modules: ['dashboard', 'inventory', 'sales', 'search', 'user_management', 'reports', 'audit_logs', 'maintenance', 'help', 'about']
-            },
-            inventory_clerk: {
-                modules: ['inventory', 'search', 'help', 'about']
-            },
-            loa: {
-                modules: ['sales', 'search', 'help', 'about']
-            }
-        };
 
         function hasModuleAccess(moduleName) {
             const permissions = ROLE_PERMISSIONS[currentUser.role];
