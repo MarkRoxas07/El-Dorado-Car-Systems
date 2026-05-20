@@ -401,6 +401,22 @@
         }
 
         const currentUser = checkAuth();
+        const activeModule = 'reports';
+
+        const ROLE_PERMISSIONS = {
+            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'], salesAccess: 'full' },
+            inventory_clerk: { modules: ['inventory','search','help','about'], salesAccess: 'none' },
+            loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
+        };
+
+        function hasModuleAccess(moduleName) {
+            const permissions = ROLE_PERMISSIONS[currentUser.role];
+            return permissions ? permissions.modules.includes(moduleName) : false;
+        }
+
+        if (!hasModuleAccess(activeModule)) {
+            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
+        }
 
         function loadProducts() {
             const stored = localStorage.getItem('eldorado_products');
@@ -462,9 +478,9 @@
                 {
                     title: "MANAGEMENT",
                     items: [
-                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
                         { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
                     ]
                 },
                 {
@@ -481,8 +497,9 @@
             for (const section of navSections) {
                 navHtml += `<div class="nav-section-title">${section.title}</div>`;
                 for (const item of section.items) {
+                    if (!hasModuleAccess(item.id)) continue;
                     navHtml += `
-                        <button class="nav-item ${item.id === 'reports' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                        <button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')">
                             <i class="${item.icon}" style="width: 1.25rem;"></i>
                             <span>${item.label}</span>
                         </button>
@@ -495,7 +512,7 @@
         function navigateTo(module) {
             const pages = {
                 dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                users: 'users.html', reports: 'reports.html', audit: 'audit.html',
+                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
                 search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
             };
             if (pages[module]) window.location.href = pages[module];

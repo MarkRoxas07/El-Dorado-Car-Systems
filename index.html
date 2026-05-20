@@ -399,12 +399,136 @@
     </div>
 
     <script>
-        // User database
-        const users = [
-            { id: 1, username: 'admin', password: 'admin123', fullName: 'Admin User', role: 'admin', email: 'admin@eldorado.com' },
-            { id: 2, username: 'clerk', password: 'clerk123', fullName: 'Inventory Clerk', role: 'inventory_clerk', email: 'clerk@eldorado.com' },
-            { id: 3, username: 'loa', password: 'loa123', fullName: 'LOA User', role: 'loa', email: 'loa@eldorado.com' }
-        ];
+
+        function initializeUsers() {
+            if (!localStorage.getItem('systemUsers')) {
+                const defaultUsers = [
+                    {
+                        id: 1,
+                        username: 'admin',
+                        password: 'admin123',
+                        fullName: 'Admin User',
+                        role: 'admin',
+                        email: 'admin@eldorado.com',
+                        status: 'active'
+                    },
+                    {
+                        id: 2,
+                        username: 'clerk',
+                        password: 'clerk123',
+                        fullName: 'Inventory Clerk',
+                        role: 'inventory_clerk',
+                        email: 'clerk@eldorado.com',
+                        status: 'active'
+                    },
+                    {
+                        id: 3,
+                        username: 'loa',
+                        password: 'loa123',
+                        fullName: 'LOA User',
+                        role: 'loa',
+                        email: 'loa@eldorado.com',
+                        status: 'active'
+                    }
+                ];
+
+                localStorage.setItem('systemUsers', JSON.stringify(defaultUsers));
+            }
+        }
+
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('systemUsers')) || [];
+        }
+
+        // ========================================
+        // ROLE-BASED ACCESS CONTROL (RBAC)
+        // ========================================
+
+        const ROLE_PERMISSIONS = {
+
+            admin: {
+                modules: [
+                    'dashboard',
+                    'registration',
+                    'user_management',
+                    'inventory',
+                    'sales',
+                    'search',
+                    'customers',
+                    'audit_logs',
+                    'reports',
+                    'maintenance',
+                    'help',
+                    'about'
+                ],
+                salesAccess: 'full'
+            },
+
+            inventory_clerk: {
+                modules: [
+                    'inventory',
+                    'search',
+                    'help',
+                    'about'
+                ],
+                salesAccess: 'inventory_summary_only'
+            },
+
+            loa: {
+                modules: [
+                    'sales',
+                    'search',
+                    'help',
+                    'about'
+                ],
+                salesAccess: 'today_only'
+            }
+        };
+
+        function getCurrentUser() {
+
+            const sessionData = JSON.parse(
+                localStorage.getItem('userSession') ||
+                sessionStorage.getItem('userSession')
+            );
+
+            if (!sessionData) return null;
+
+            // Session expired
+            if (Date.now() > sessionData.expiresAt) {
+
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+
+                return null;
+            }
+
+            return sessionData;
+        }
+
+        function hasModuleAccess(moduleName) {
+
+            const currentUser = getCurrentUser();
+
+            if (!currentUser) return false;
+
+            const permissions = ROLE_PERMISSIONS[currentUser.role];
+
+            if (!permissions) return false;
+
+            return permissions.modules.includes(moduleName);
+        }
+
+        function getSalesAccessLevel() {
+
+            const currentUser = getCurrentUser();
+
+            if (!currentUser) return null;
+
+            const permissions = ROLE_PERMISSIONS[currentUser.role];
+
+            return permissions.salesAccess;
+        }
 
         // Dark Mode
         function initDarkMode() {
@@ -442,7 +566,10 @@
         function login(event) {
             event.preventDefault();
             
-            const username = document.getElementById('username').value.trim();
+            const username = document.getElementById('username')
+                .value
+                .trim()
+                .toLowerCase();
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
 
@@ -451,9 +578,58 @@
                 return;
             }
 
-            const user = users.find(u => u.username === username && u.password === password);
+            const users = getUsers();
 
-            if (user) {
+            const systemSettings = JSON.parse(
+                localStorage.getItem('systemSettings')
+            );
+
+            // Prevent login during maintenance
+            if (
+                systemSettings?.maintenanceMode &&
+                username !== 'admin'
+            ) {
+
+                showError(
+                    'System is currently under maintenance'
+                );
+
+                return;
+            }
+
+            const user = users.find(u =>
+                u.username === username &&
+                u.password === password
+            );
+
+            if (user && user.status === 'active') {
+
+                // ========================================
+                // ACTIVITY LOGGING
+                // ========================================
+
+                const activityLogs = JSON.parse(
+                    localStorage.getItem('activityLogs')
+                ) || [];
+
+                activityLogs.unshift({
+                    
+                    id: Date.now(),
+                    username: user.username,
+                    fullName: user.fullName,
+                    role: user.role,
+                    action: 'User Logged In',
+                    timestamp: new Date().toISOString()
+                });
+
+                // Keep only latest 100 logs
+                activityLogs.splice(100);
+
+                localStorage.setItem(
+                    'activityLogs',
+                    JSON.stringify(activityLogs)
+                );
+
                 // Store user session
                 const sessionData = {
                     id: user.id,
@@ -461,20 +637,64 @@
                     fullName: user.fullName,
                     role: user.role,
                     email: user.email,
-                    loginTime: new Date().toISOString()
+                    loginTime: new Date().toISOString(),
+                    expiresAt: Date.now() + (8 * 60 * 60 * 1000)
                 };
 
+                // Clear old sessions first
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+
                 if (rememberMe) {
-                    localStorage.setItem('userSession', JSON.stringify(sessionData));
+
+                    localStorage.setItem(
+                        'userSession',
+                        JSON.stringify(sessionData)
+                    );
+
                 } else {
-                    sessionStorage.setItem('userSession', JSON.stringify(sessionData));
+
+                    sessionStorage.setItem(
+                        'userSession',
+                        JSON.stringify(sessionData)
+                    );
                 }
 
-                // Redirect to dashboard
+                // Redirect to unified dashboard
                 window.location.href = 'dashboard.html';
-            } else {
-                showError('Invalid username or password');
-            }
+                } else {
+
+                    // User exists but inactive
+                    if (user && user.status !== 'active') {
+
+                        showError(
+                            'Your account has been deactivated'
+                        );
+
+                        return;
+                    }
+
+                    // Log failed login attempt
+                    const failedAttempts = JSON.parse(
+                        localStorage.getItem('failedLoginAttempts')
+                    ) || [];
+
+                    failedAttempts.unshift({
+                        username: username,
+                        action: 'Failed Login Attempt',
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // Keep only latest 100 failed attempts
+                    failedAttempts.splice(100);
+
+                    localStorage.setItem(
+                        'failedLoginAttempts',
+                        JSON.stringify(failedAttempts)
+                    );
+
+                    showError('Invalid username or password');
+                }
         }
 
         // Toggle password visibility
@@ -491,13 +711,36 @@
             }
         }
 
+        // ========================================
+        // AUTHENTICATION PROTECTION
+        // ========================================
+
+        function requireAuth() {
+
+            const currentUser = getCurrentUser();
+
+            if (!currentUser) {
+
+                window.location.href = 'index.html';
+            }
+        }
+
+        function logout() {
+
+            localStorage.removeItem('userSession');
+            sessionStorage.removeItem('userSession');
+
+            window.location.href = 'index.html';
+        }
+
         // Check if already logged in
         function checkExistingSession() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (session) {
-                // User is already logged in, redirect to dashboard
-                window.location.href = 'dashboard.html';
-            }
+
+            const currentUser = getCurrentUser();
+
+            if (!currentUser) return;
+
+            window.location.href = 'dashboard.html';
         }
 
         // Event listeners
@@ -505,9 +748,49 @@
         document.getElementById('togglePassword').addEventListener('click', togglePassword);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 
-        // Initialize
+        // ========================================
+        // SYSTEM SETTINGS INITIALIZATION
+        // ========================================
+
+        function initializeSystemSettings() {
+
+            if (!localStorage.getItem('systemSettings')) {
+
+                const defaultSettings = {
+
+                    companyName: 'El Dorado Car Components',
+
+                    allowRegistration: false,
+
+                    maintenanceMode: false,
+
+                    darkModeEnabled: true,
+
+                    auditLogsEnabled: true,
+
+                    salesDateRestriction: {
+                        admin: 'full',
+                        loa: 'today_only',
+                        inventory_clerk: 'inventory_summary_only'
+                    }
+                };
+
+                localStorage.setItem(
+                    'systemSettings',
+                    JSON.stringify(defaultSettings)
+                );
+            }
+        }
+
+        // ========================================
+        // INITIALIZE SYSTEM
+        // ========================================
+
+        initializeUsers();
+        initializeSystemSettings();
         initDarkMode();
         checkExistingSession();
+        document.getElementById('username').focus();
 
         // Optional: Add enter key support
         document.getElementById('password').addEventListener('keypress', function(e) {

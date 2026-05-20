@@ -128,7 +128,7 @@
             border: 1px solid var(--color-border);
         }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
+        th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); vertical-align: middle;}
         th { background: var(--color-bg-light); font-weight: 600; font-size: 0.875rem; }
         tr:hover { background: var(--color-bg-light); }
 
@@ -467,18 +467,98 @@
     </div>
 
     <script>
-        // Check authentication
-        function checkAuth() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!session) {
-                window.location.href = 'index.html';
+
+        // ========================================
+        // CENTRALIZED AUTHENTICATION SYSTEM
+        // ========================================
+
+        function getCurrentUser() {
+
+            const sessionData = JSON.parse(
+                localStorage.getItem('userSession') ||
+                sessionStorage.getItem('userSession')
+            );
+
+            if (!sessionData) return null;
+
+            // Session expired
+            if (Date.now() > sessionData.expiresAt) {
+
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+
                 return null;
             }
-            return JSON.parse(session);
+
+            return sessionData;
         }
 
-        const currentUser = checkAuth();
+        function requireAuth() {
+
+            const currentUser = getCurrentUser();
+
+            if (!currentUser) {
+
+                window.location.href = 'index.html';
+
+                return null;
+            }
+
+            return currentUser;
+        }
+
+        function logout() {
+
+            if (!confirm('Are you sure you want to logout?')) {
+                return;
+            }
+
+            createActivityLog('User Logged Out');
+
+            localStorage.removeItem('userSession');
+            sessionStorage.removeItem('userSession');
+
+            window.location.href = 'index.html';
+        }
+
+        const currentUser = requireAuth();
         
+        // ========================================
+        // REUSABLE ACTIVITY LOGGER
+        // ========================================
+
+        function createActivityLog(action) {
+
+            const activityLogs = JSON.parse(
+                localStorage.getItem('activityLogs')
+            ) || [];
+
+            activityLogs.unshift({
+
+                id: Date.now(),
+
+                username: currentUser.username,
+
+                fullName: currentUser.fullName,
+
+                role: currentUser.role,
+
+                action,
+
+                timestamp: new Date().toISOString()
+            });
+
+            // Keep latest 100 logs only
+            activityLogs.splice(100);
+
+            localStorage.setItem(
+                'activityLogs',
+                JSON.stringify(activityLogs)
+            );
+        }
+
+        createActivityLog('Dashboard Accessed');
+
         // Sample data
         const products = [
             { id: '1', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, salesCount: 145 },
@@ -486,14 +566,6 @@
             { id: '3', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, salesCount: 200 },
             { id: '4', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, salesCount: 65 },
             { id: '5', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, salesCount: 120 }
-        ];
-
-        const auditLogs = [
-            { action: 'Login', details: 'User logged into system', user: currentUser?.username || 'admin', timestamp: new Date().toLocaleString() },
-            { action: 'View Dashboard', details: 'Accessed main dashboard', user: currentUser?.username || 'admin', timestamp: new Date().toLocaleString() },
-            { action: 'Add Product', details: 'Added Brake Pads Set', user: 'admin', timestamp: new Date(Date.now() - 3600000).toLocaleString() },
-            { action: 'Sale', details: 'Processed sale RCP-2024-0001', user: 'clerk', timestamp: new Date(Date.now() - 7200000).toLocaleString() },
-            { action: 'Update Stock', details: 'Updated Engine Oil stock to 50', user: 'admin', timestamp: new Date(Date.now() - 86400000).toLocaleString() }
         ];
 
         let sidebarOpen = true;
@@ -534,14 +606,14 @@
 
         function getActionIconAndColor(action) {
             const styles = {
-                'Login': { icon: 'fas fa-sign-in-alt', color: 'var(--strong-blue)' },
-                'Logout': { icon: 'fas fa-sign-out-alt', color: 'var(--strong-indigo)' },
+                'User Logged In': { icon: 'fas fa-sign-in-alt', color: 'var(--strong-blue)' },
+                'User Logged Out': { icon: 'fas fa-sign-out-alt', color: 'var(--strong-indigo)' },
                 'Add Product': { icon: 'fas fa-plus-circle', color: 'var(--strong-orange)' },
                 'Edit Product': { icon: 'fas fa-pen', color: 'var(--strong-yellow)' },
                 'Delete Product': { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' },
                 'Update Stock': { icon: 'fas fa-boxes', color: 'var(--strong-orange)' },
                 'Sale': { icon: 'fas fa-shopping-cart', color: 'var(--strong-green)' },
-                'View Dashboard': { icon: 'fas fa-chart-line', color: 'var(--strong-blue)' }
+                'Dashboard Accessed': { icon: 'fas fa-chart-line', color: 'var(--strong-blue)' }
             };
 
             return styles[action] || {
@@ -551,12 +623,62 @@
         }
 
         function getSeverityBadge(action) {
-            if (action === 'Login') return '<span class="badge badge-success"><i class="fas fa-sign-in-alt"></i> Login</span>';
-            if (action === 'View Dashboard') return '<span class="badge badge-info"><i class="fas fa-chart-line"></i> View</span>';
+            if (action === 'User Logged In') return '<span class="badge badge-success"><i class="fas fa-sign-in-alt"></i> Login</span>';
+            if (action === 'User Logged Out') return '<span class="badge badge-danger"><i class="fas fa-sign-out-alt"></i> Logout</span>';
+            if (action === 'Dashboard Accessed') return '<span class="badge badge-info"><i class="fas fa-chart-line"></i> View</span>';
             if (action === 'Add Product') return '<span class="badge badge-success"><i class="fas fa-plus-circle"></i> Add</span>';
             if (action === 'Sale') return '<span class="badge badge-info"><i class="fas fa-shopping-cart"></i> Sale</span>';
             if (action === 'Update Stock') return '<span class="badge badge-warning"><i class="fas fa-boxes"></i> Update</span>';
             return '<span class="badge badge-info">Info</span>';
+        }
+
+        // ========================================
+        // ROLE-BASED ACCESS CONTROL (RBAC)
+        // ========================================
+
+        const ROLE_PERMISSIONS = {
+
+            admin: {
+                modules: [
+                    'dashboard',
+                    'inventory',
+                    'sales',
+                    'search',
+                    'user_management',
+                    'reports',
+                    'audit_logs',
+                    'maintenance',
+                    'help',
+                    'about'
+                ]
+            },
+
+            inventory_clerk: {
+                modules: [
+                    'inventory',
+                    'search',
+                    'help',
+                    'about'
+                ]
+            },
+
+            loa: {
+                modules: [
+                    'sales',
+                    'search',
+                    'help',
+                    'about'
+                ]
+            }
+        };
+
+        function hasModuleAccess(moduleName) {
+
+            const permissions = ROLE_PERMISSIONS[currentUser.role];
+
+            if (!permissions) return false;
+
+            return permissions.modules.includes(moduleName);
         }
 
         function renderNavigation() {
@@ -574,9 +696,9 @@
                 {
                     title: "MANAGEMENT",
                     items: [
-                        { id: 'users', label: 'Users', icon: 'fas fa-users' },
+                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
                         { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
                     ]
                 },
                 {
@@ -593,6 +715,11 @@
             for (const section of navSections) {
                 navHtml += `<div class="nav-section-title">${section.title}</div>`;
                 for (const item of section.items) {
+
+                    // Hide inaccessible modules
+                    if (!hasModuleAccess(item.id)) {
+                        continue;
+                    }
                     navHtml += `
                         <button class="nav-item ${item.id === 'dashboard' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
                             <i class="${item.icon}" style="width: 1.25rem;"></i>
@@ -609,9 +736,9 @@
                 dashboard: 'dashboard.html',
                 inventory: 'inventory.html',
                 sales: 'sales.html',
-                users: 'users.html',
+                user_management: 'users.html',
                 reports: 'reports.html',
-                audit: 'audit.html',
+                audit_logs: 'audit.html',
                 search: 'search.html',
                 maintenance: 'maintenance.html',
                 help: 'help.html',
@@ -623,7 +750,15 @@
         }
 
         function renderDashboard() {
-            const todaySales = 5;
+
+            const auditLogs = JSON.parse(
+                localStorage.getItem('activityLogs')
+            ) || [];
+
+            auditLogs.sort(
+                (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+            );
+
             const lowStock = products.filter(p => p.stock <= 10 && p.stock > 0).length;
             const outOfStock = products.filter(p => p.stock === 0).length;
             const totalProducts = products.length;
@@ -749,35 +884,43 @@
                                                             ${log.action}
                                                         </span>
                                                     </td>
-                                                    <td>${log.details}</td>
                                                     <td>
-                                                        <div class="role-display ${
-                                                            log.user === 'admin'
-                                                                ? 'admin'
-                                                                : log.user === 'clerk'
-                                                                ? 'inventory_clerk'
-                                                                : 'loa'
-                                                        }">
-                                                            <i class="fas ${
-                                                                log.user === 'admin'
-                                                                    ? 'fa-crown'
-                                                                    : log.user === 'clerk'
-                                                                    ? 'fa-clipboard-check'
-                                                                    : 'fa-receipt'
-                                                            }"></i>
+                                                        <div style="font-weight: 600;">
+                                                            ${log.fullName || log.username}
+                                                        </div>
+
+                                                        <small style="color: var(--color-text-secondary);">
+                                                            @${log.username}
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <div class="role-display ${log.role}">
+                                                            <i class="fas ${getRoleIcon(log.role)}"></i>
 
                                                             <span>
-                                                                ${
-                                                                    log.user === 'admin'
-                                                                        ? 'Administrator'
-                                                                        : log.user === 'clerk'
-                                                                        ? 'Inventory Clerk'
-                                                                        : 'LOA - Cashier'
-                                                                }
+                                                                ${getRoleDisplayName(log.role)}
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td><small>${log.timestamp}</small></td>
+                                                    <td style="white-space: nowrap;">
+                                                        <small>
+                                                            ${
+                                                                new Date(log.timestamp).toLocaleDateString('en-PH', {
+                                                                    month: 'long',
+                                                                    day: 'numeric',
+                                                                    year: 'numeric'
+                                                                })
+                                                            }
+                                                            •
+                                                            ${
+                                                                new Date(log.timestamp).toLocaleTimeString('en-PH', {
+                                                                    hour: 'numeric',
+                                                                    minute: '2-digit',
+                                                                    hour12: true
+                                                                })
+                                                            }
+                                                        </small>
+                                                    </td>
                                                 </tr>
                                             `).join('')}
                                         </tbody>
@@ -812,14 +955,6 @@
             const toggleBtn = document.getElementById('darkModeToggle');
             const icon = toggleBtn.querySelector('i');
             icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
-            }
         }
 
         // Initialize
