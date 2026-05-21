@@ -400,6 +400,9 @@
 
     <script>
 
+        const DEFAULT_REDIRECT_PAGE = 'dashboard.html';
+        const LOGIN_PAGE = 'index.html';    
+        
         function initializeUsers() {
             if (!localStorage.getItem('systemUsers')) {
                 const defaultUsers = [
@@ -530,12 +533,26 @@
             try {
                 sessionData = JSON.parse(sessionJSON);
             } catch (e) {
+
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+
                 return null;
             }
             ensureUserRoleData(sessionData);
             if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
+
                 localStorage.removeItem('userSession');
                 sessionStorage.removeItem('userSession');
+
+                if (
+                    window.location.pathname &&
+                    !window.location.pathname.includes(LOGIN_PAGE)
+                ) {
+
+                    window.location.href = LOGIN_PAGE;
+                }
+
                 return null;
             }
             return sessionData;
@@ -667,15 +684,22 @@
                     JSON.stringify(activityLogs)
                 );
 
+                // Normalize user role structure
+                ensureUserRoleData(user);
+
                 // Store user session
                 const sessionData = {
                     id: user.id,
+                    sessionVersion: 1,
                     username: user.username,
                     fullName: user.fullName,
                     role: user.role,
+                    roles: user.roles || [user.role],
                     email: user.email,
+                    status: user.status,
                     loginTime: new Date().toISOString(),
                     expiresAt: Date.now() + (8 * 60 * 60 * 1000)
+                    
                 };
 
                 // Clear old sessions first
@@ -698,7 +722,7 @@
                 }
 
                 // Redirect to unified dashboard
-                window.location.href = 'dashboard.html';
+                window.location.href = DEFAULT_REDIRECT_PAGE;
                 } else {
 
                     // User exists but inactive
@@ -717,7 +741,7 @@
                     ) || [];
 
                     failedAttempts.unshift({
-                        username: username,
+                        attemptedUsername: username,
                         action: 'Failed Login Attempt',
                         timestamp: new Date().toISOString()
                     });
@@ -758,8 +782,17 @@
 
             if (!currentUser) {
 
-                window.location.href = 'index.html';
+                window.location.href = LOGIN_PAGE;
+                return null;
             }
+
+            if (currentUser.status !== 'active') {
+
+                logout();
+                return null;
+            }
+
+            return currentUser;
         }
 
         function logout() {
@@ -767,7 +800,7 @@
             localStorage.removeItem('userSession');
             sessionStorage.removeItem('userSession');
 
-            window.location.href = 'index.html';
+            window.location.href = LOGIN_PAGE;
         }
 
         // Check if already logged in
@@ -777,7 +810,13 @@
 
             if (!currentUser) return;
 
-            window.location.href = 'dashboard.html';
+            if (currentUser.status !== 'active') {
+
+                logout();
+                return;
+            }
+
+            window.location.href = DEFAULT_REDIRECT_PAGE;
         }
 
         // Event listeners
@@ -835,6 +874,20 @@
                 login(e);
             }
         });
+
+        window.addEventListener('storage', function(event) {
+
+            if (event.key === 'userSession') {
+
+                const currentUser = getCurrentUser();
+
+                if (!currentUser) {
+
+                    window.location.href = LOGIN_PAGE;
+                }
+            }
+        });
+
     </script>
 </body>
 </html>

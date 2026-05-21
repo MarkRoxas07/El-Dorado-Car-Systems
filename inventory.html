@@ -969,6 +969,14 @@
             justify-content: flex-end;
             gap: 16px;
         }
+        .stock-btn-info {
+            background: var(--soft-blue);
+        }
+
+        .stock-btn-info:hover {
+            background: #5fa6ff;
+        }
+
         .stock-btn {
             border: none;
             height: 52px;
@@ -1245,9 +1253,6 @@
 
                 <div class="stock-header-text">
                     <h1 id="modalTitle">Add New Product</h1>
-
-
-                    </p>
                 </div>
 
             </div>
@@ -1270,7 +1275,8 @@
                 </div>
                 <div class="form-group"><label>Price (PHP) *</label><input type="number" id="prodPrice" value="0" min="0" step="0.01"></div>
                 <div class="form-group"><label>Initial Stock *</label><input type="number" id="prodStock" value="0" min="0" step="1"></div>
-                <div class="form-group full-width"><label>Minimum Stock Threshold *</label><input type="number" id="prodMinStock" value="5" min="0" step="1"></div>
+                <div class="form-group full-width"><label>Safety Stock *</label><input type="number" id="prodSafetyStock" value="5" min="0" step="1"></div>
+                <div class="form-group full-width"><label>Lead Time (Days) *</label><input type="number" id="prodLeadTime"value="3" min="1" step="1"></div>
                 <div class="form-group full-width"><label>Supplier *</label><input type="text" id="prodSupplier" placeholder="Enter supplier name"></div>
                 <div class="form-group full-width"><label>Description</label><textarea id="prodDescription" placeholder="Enter product description"></textarea></div>
             </div>
@@ -1293,8 +1299,7 @@
             </button>
 
             <button
-                class="stock-btn stock-btn-primary"
-                style="background: var(--soft-blue);"
+                class="stock-btn stock-btn-primary stock-btn-info"
                 onclick="saveProduct()"
             >
                     <i class="fas fa-save"></i>
@@ -1462,26 +1467,89 @@
             }
         };
 
-        const currentUser = checkAuth();
-        const activeModule = 'inventory';
-        if (!hasModuleAccess(activeModule)) {
-            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
+        const LOGIN_PAGE = 'index.html';
+
+        const CURRENT_PAGE = 'inventory';
+
+        const SYSTEM_PAGES = {
+            dashboard: 'dashboard.html',
+            inventory: 'inventory.html',
+            sales: 'sales.html',
+            user_management: 'users.html',
+            reports: 'reports.html',
+            audit_logs: 'audit.html',
+            search: 'search.html',
+            maintenance: 'maintenance.html',
+            help: 'help.html',
+            about: 'about.html'
+        };
+
+        const currentUser = requireAuth();
+
+        if (!hasModuleAccess(CURRENT_PAGE)) {
+
+            window.location.href =
+                hasModuleAccess('dashboard')
+                    ? SYSTEM_PAGES.dashboard
+                    : LOGIN_PAGE;
         }
 
         function loadProducts() {
-            const stored = localStorage.getItem('eldorado_products');
-            if (stored) return JSON.parse(stored);
-            return [
-                { id: 'p1', uid: 'BRK001', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, minStock: 10, supplier: 'AutoSupply Co.', salesCount: 145, description: 'High-performance ceramic brake pads', status: 'in_stock', archived: false, stockHistory: [] },
-                { id: 'p2', uid: 'LED002', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, minStock: 5, supplier: 'Lighting Pro', salesCount: 85, description: 'Ultra-bright LED headlight kit', status: 'low_stock', archived: false, stockHistory: [] },
-                { id: 'p3', uid: 'OIL003', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, minStock: 20, supplier: 'Lube Depot', salesCount: 200, description: 'Full synthetic motor oil', status: 'out_of_stock', archived: false, stockHistory: [] },
-                { id: 'p4', uid: 'MRR004', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, minStock: 5, supplier: 'Parts Hub', salesCount: 65, description: 'Power adjustable side mirror', status: 'in_stock', archived: false, stockHistory: [] },
-                { id: 'p5', uid: 'FIL005', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, minStock: 10, supplier: 'Filter World', salesCount: 120, description: 'High-flow air filter', status: 'low_stock', archived: false, stockHistory: [] }
-            ];
+
+            const stored =
+                localStorage.getItem('eldorado_products');
+
+            if (!stored) {
+
+                localStorage.setItem(
+                    'eldorado_products',
+                    JSON.stringify([])
+                );
+
+                return [];
+            }
+
+            try {
+
+                const normalizedProducts =
+                    JSON.parse(stored).map(product => ({
+                        salesCount: 0,
+                        safetyStock: 5,
+                        leadTimeDays: 3,
+                        archived: false,
+                        status: 'in_stock',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        ...product
+                    }));
+
+                localStorage.setItem(
+                    'eldorado_products',
+                    JSON.stringify(normalizedProducts)
+                );
+
+                return normalizedProducts;
+
+            } catch {
+
+                localStorage.removeItem(
+                    'eldorado_products'
+                );
+
+                return [];
+            }
         }
 
         function saveProducts(products) {
-            localStorage.setItem('eldorado_products', JSON.stringify(products));
+
+            localStorage.setItem(
+                'eldorado_products',
+                JSON.stringify(products)
+            );
+
+            window.dispatchEvent(
+                new Event('productsUpdated')
+            );
         }
 
         function addAuditLog(action, details) {
@@ -1497,8 +1565,15 @@
         let currentStockAction = null;
         let currentStockQuantity = 1;
 
-        function formatCurrency(amount) {
-            return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        function formatCurrency(amount = 0) {
+
+            return '₱' + Number(amount).toLocaleString(
+                'en-PH',
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            );
         }
 
         function getCategoryLabel(category) {
@@ -1521,21 +1596,72 @@
             return roles[role] || role;
         }
 
+        function calculateAverageDailySales(product) {
+
+            return (
+                Number(product.salesCount || 0) / 30
+            );
+        }
+
+        function calculateReorderPoint(product) {
+
+            const averageDailySales =
+                calculateAverageDailySales(product);
+
+            const leadTime =
+                Number(product.leadTimeDays || 0);
+
+            const safetyStock =
+                Number(product.safetyStock || 0);
+
+            return Math.ceil(
+                (averageDailySales * leadTime)
+                + safetyStock
+            );
+        }
+
         function updateProductStatus(product) {
+
             if (product.archived) {
+
                 product.status = 'archived';
-            } else if (product.stock === 0) {
+
+            }
+
+            else if (
+                Number(product.stock || 0) === 0
+            ) {
+
                 product.status = 'out_of_stock';
-            } else if (product.stock <= product.minStock) {
+
+            }
+
+            else if (
+                Number(product.stock || 0) <=
+                calculateReorderPoint(product)
+            ) {
+
                 product.status = 'low_stock';
-            } else {
+
+            }
+
+            else {
+
                 product.status = 'in_stock';
             }
+
             return product;
         }
 
         function hasModuleAccess(moduleName) {
-            return currentUser ? checkPermissions(currentUser.roles, moduleName) : false;
+            if (!currentUser) return false;
+            const role =
+                currentUser?.role || '';
+
+            const permissions =
+                ROLE_PERMISSIONS[role];;
+            if (!permissions) return false;
+            return permissions.modules.includes(moduleName);
         }
 
         function renderNavigation() {
@@ -1571,19 +1697,20 @@
                 navHtml += `<div class="nav-section-title">${section.title}</div>`;
                 for (const item of section.items) {
                     if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `<button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')"><i class="${item.icon}" style="width: 1.25rem;"></i><span>${item.label}</span></button>`;
+                    navHtml += `<button class="nav-item ${item.id === CURRENT_PAGE ? 'active' : ''}" onclick="navigateTo('${item.id}')"><i class="${item.icon}" style="width: 1.25rem;"></i><span>${item.label}</span></button>`;
                 }
             }
             document.getElementById('navLinks').innerHTML = navHtml;
         }
 
         function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
-                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
-            };
-            if (pages[module]) window.location.href = pages[module];
+
+            if (!SYSTEM_PAGES[module]) {
+                return;
+            }
+
+            window.location.href =
+                SYSTEM_PAGES[module];
         }
 
         let showArchivedState = false;
@@ -1599,7 +1726,7 @@
                 filtered = filtered.filter(p => p.archived !== true);
             }
             if (searchTerm) {
-                filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm) || p.uid.toLowerCase().includes(searchTerm) || (p.description && p.description.toLowerCase().includes(searchTerm)));
+                filtered = filtered.filter(p => (p.name || '').toLowerCase().includes(searchTerm) || (p.uid || '').toLowerCase().includes(searchTerm) || ((p.description || '').toLowerCase().includes(searchTerm)));
             }
             if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
             if (statusFilter) filtered = filtered.filter(p => p.status === statusFilter);
@@ -1637,7 +1764,14 @@
                     <td><div class="font-medium">${escapeHtml(p.name)}</div><div class="text-sm text-muted"><i class="fas fa-barcode"></i> ${p.uid}</div></td>
                     <td><span class="category-pill ${getCategoryPillClass(p.category)}"><i class="fas ${getCategoryIcon(p.category)}"></i> ${getCategoryLabel(p.category)}</span></td>
                     <td>${formatCurrency(p.price)}</td>
-                    <td class="${!isArchived && p.stock <= p.minStock ? 'text-red' : ''}">${p.stock}</td>
+                    <td class="${
+                        !isArchived &&
+                        Number(p.stock || 0) <= calculateReorderPoint(p)
+                            ? 'text-red'
+                            : ''
+                    }">
+                        ${p.stock}
+                    </td>
                     <td>${statusBadge}</td>
                     <td>${escapeHtml(p.supplier || '—')}</td>
                     ${canEdit ? `<td><div class="action-buttons">${!isArchived ? `
@@ -1649,14 +1783,14 @@
             }).join('');
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+        function escapeHtml(str = '') {
+
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function toggleArchivedFilter() {
@@ -1678,15 +1812,49 @@
         }
 
         function renderInventory() {
-            const activeProducts = products.filter(p => !p.archived);
+
+            products = loadProducts().map(product =>
+                updateProductStatus(product)
+            );
+
+            const activeProducts =
+                products.filter(
+                    p => !p.archived
+                );
+
             const stats = {
-                total: activeProducts.length,
-                inStock: activeProducts.filter(p => p.status === 'in_stock').length,
-                lowStock: activeProducts.filter(p => p.status === 'low_stock').length,
-                outOfStock: activeProducts.filter(p => p.status === 'out_of_stock').length,
-                archived: products.filter(p => p.archived).length,
-                totalValue: activeProducts.reduce((sum, p) => sum + (p.price * p.stock), 0)
+
+                total:
+                    activeProducts.length,
+
+                inStock:
+                    activeProducts.filter(
+                        p => p.status === 'in_stock'
+                    ).length,
+
+                lowStock:
+                    activeProducts.filter(
+                        p => p.status === 'low_stock'
+                    ).length,
+
+                outOfStock:
+                    activeProducts.filter(
+                        p => p.status === 'out_of_stock'
+                    ).length,
+
+                archived:
+                    products.filter(
+                        p => p.archived
+                    ).length,
+
+                totalValue:
+                    activeProducts.reduce(
+                        (sum, p) =>
+                            sum + (p.price * p.stock),
+                        0
+                    )
             };
+
             const canEdit = currentUser?.role !== 'loa';
             const html = `
                 <div class="space-y-6">
@@ -1870,7 +2038,10 @@
                 document.getElementById('stockNewValue');
 
             currentStockQuantity =
-                parseInt(quantityInput.value) || 1;
+                Math.max(
+                    1,
+                    parseInt(quantityInput.value) || 1
+                );
 
             if (currentStockQuantity < 1) {
                 currentStockQuantity = 1;
@@ -1967,7 +2138,7 @@
                 document.getElementById('prodCategory').value = product.category;
                 document.getElementById('prodPrice').value = product.price;
                 document.getElementById('prodStock').value = product.stock;
-                document.getElementById('prodMinStock').value = product.minStock || 5;
+                document.getElementById('prodMinStock').value = product.safetyStock || 5;
                 document.getElementById('prodSupplier').value = product.supplier || '';
                 document.getElementById('prodDescription').value = product.description || '';
             } else {
@@ -2004,41 +2175,60 @@
             const id = document.getElementById('productId').value;
             let price = parseFloat(document.getElementById('prodPrice').value) || 0;
             let stock = parseInt(document.getElementById('prodStock').value) || 0;
-            let minStock = parseInt(document.getElementById('prodMinStock').value) || 0;
+            let safetyStock = parseInt(document.getElementById('prodMinStock').value) || 0;
             if (price < 0) price = 0;
             if (stock < 0) stock = 0;
-            if (minStock < 0) minStock = 0;
+            if (safetyStock < 0) safetyStock = 0;
             let status = 'in_stock';
             if (stock === 0) status = 'out_of_stock';
-            else if (stock <= minStock) status = 'low_stock';
+            else if (stock <= safetyStock) status = 'low_stock';
             const uid = id ? (products.find(p => p.id === id)?.uid || 'P' + String(Date.now()).slice(-6)) : 'P' + String(Date.now()).slice(-6);
-            const product = {
-                id: id || String(Date.now()),
-                uid: uid,
-                name: document.getElementById('prodName').value,
-                category: document.getElementById('prodCategory').value,
-                price: price,
-                stock: stock,
-                minStock: minStock,
-                supplier: document.getElementById('prodSupplier').value,
-                description: document.getElementById('prodDescription').value,
-                status: status,
+            const newProduct = {
+                id: 'p' + Date.now(),
+
+                uid: 'PRD-' + Date.now(),
+
+                name,
+
+                category,
+
+                price: Number(price || 0),
+
+                stock: Number(stock || 0),
+
+                safetyStock: Number(safetyStock || 0),
+
+                leadTimeDays: Number(leadTimeDays || 3),
+
+                supplier,
+
+                description,
+
+                salesCount: 0,
+
                 archived: false,
-                salesCount: id ? (products.find(p => p.id === id)?.salesCount || 0) : 0,
-                stockHistory: id ? (products.find(p => p.id === id)?.stockHistory || []) : []
+
+                status: 'in_stock',
+
+                createdAt: new Date().toISOString(),
+
+                updatedAt: new Date().toISOString()
             };
-            if (!product.name) {
+
+            updateProductStatus(newProduct);
+
+            if (!newProduct.name) {
                 alert('Please enter a product name');
                 return;
             }
             if (id) {
                 const index = products.findIndex(p => p.id === id);
-                if (index !== -1) products[index] = product;
-                addAuditLog('Edit Product', `Edited ${product.name}`);
+                if (index !== -1) products[index] = newProduct;
+                addAuditLog('Edit Product', `Edited ${newProduct.name}`);
                 alert('Product updated!');
             } else {
-                products.push(product);
-                addAuditLog('Add Product', `Added ${product.name}`);
+                products.push(newProduct);
+                addAuditLog('Add Product', `Added ${newProduct.name}`);
                 alert('Product added!');
             }
             saveProducts(products);

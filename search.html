@@ -599,20 +599,48 @@
         if (!hasModuleAccess(activeModule)) {
             window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
         }
+    function loadProducts() {
 
-        function loadProducts() {
-            const stored = localStorage.getItem('eldorado_products');
-            if (stored) return JSON.parse(stored);
-            return [
-                { id: 'p1', uid: 'BRK001', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, minStock: 10, salesCount: 145, brand: 'Bosch', supplier: 'AutoSupply Co.', description: 'High-performance ceramic brake pads with excellent stopping power' },
-                { id: 'p2', uid: 'LED002', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, minStock: 5, salesCount: 85, brand: 'Philips', supplier: 'Lighting Pro', description: 'Ultra-bright LED headlight conversion kit, 6000K white light' },
-                { id: 'p3', uid: 'OIL003', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, minStock: 20, salesCount: 200, brand: 'Castrol', supplier: 'Lube Depot', description: 'Full synthetic 5W-30 motor oil, excellent engine protection' },
-                { id: 'p4', uid: 'MRR004', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, minStock: 5, salesCount: 65, brand: 'Magna', supplier: 'Parts Hub', description: 'Power adjustable side mirror with turn signal indicator' },
-                { id: 'p5', uid: 'FIL005', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, minStock: 10, salesCount: 120, brand: 'Mann', supplier: 'Filter World', description: 'High-flow air filter for improved engine performance' },
-                { id: 'p6', uid: 'ALT006', name: 'Alternator', category: 'electrical', price: 5200, stock: 7, minStock: 3, salesCount: 32, brand: 'Denso', supplier: 'ElectroParts', description: '100 amp alternator, compatible with most vehicles' },
-                { id: 'p7', uid: 'BMP007', name: 'Front Bumper', category: 'body', price: 3450, stock: 5, minStock: 3, salesCount: 28, brand: 'OEM', supplier: 'BodyWorks', description: 'OE quality front bumper cover, primed and ready for paint' }
-            ];
+        const stored =
+            localStorage.getItem('eldorado_products');
+
+        if (!stored) {
+
+            localStorage.setItem(
+                'eldorado_products',
+                JSON.stringify([])
+            );
+
+            return [];
         }
+
+        try {
+
+            return JSON.parse(stored);
+
+        } catch {
+
+            localStorage.removeItem(
+                'eldorado_products'
+            );
+
+            return [];
+        }
+    }
+
+    function saveProducts(products) {
+
+        localStorage.setItem(
+            'eldorado_products',
+            JSON.stringify(products)
+        );
+
+        window.dispatchEvent(
+            new StorageEvent('storage', {
+                key: 'eldorado_products'
+            })
+        );
+    }
 
         function loadUsers() {
             const stored = localStorage.getItem('eldorado_users');

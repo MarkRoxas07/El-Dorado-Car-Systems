@@ -468,6 +468,22 @@
 
     <script>
 
+        const LOGIN_PAGE = 'index.html';
+        const CURRENT_PAGE = 'dashboard';
+
+        const SYSTEM_PAGES = {
+            dashboard: 'dashboard.html',
+            inventory: 'inventory.html',
+            sales: 'sales.html',
+            user_management: 'users.html',
+            reports: 'reports.html',
+            audit_logs: 'audit.html',
+            search: 'search.html',
+            maintenance: 'maintenance.html',
+            help: 'help.html',
+            about: 'about.html'
+        };
+
         // ========================================
         // CENTRALIZED AUTHENTICATION SYSTEM
         // ========================================
@@ -508,44 +524,83 @@
         }
 
         function getCurrentUser() {
-            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+
+            const sessionJSON =
+                localStorage.getItem('userSession') ||
+                sessionStorage.getItem('userSession');
+
             if (!sessionJSON) return null;
+
             let sessionData;
+
             try {
+
                 sessionData = JSON.parse(sessionJSON);
+
             } catch (e) {
-                return null;
-            }
-            ensureUserRoleData(sessionData);
-            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
+
                 localStorage.removeItem('userSession');
                 sessionStorage.removeItem('userSession');
+
                 return null;
             }
+
+            ensureUserRoleData(sessionData);
+
+            if (
+                !sessionData.expiresAt ||
+                Date.now() > sessionData.expiresAt
+            ) {
+
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+
+                if (
+                    window.location.pathname &&
+                    !window.location.pathname.includes(LOGIN_PAGE)
+                ) {
+
+                    window.location.href = LOGIN_PAGE;
+                }
+
+                return null;
+            }
+
             return sessionData;
         }
 
         function requireAuth() {
+
             const currentUser = getCurrentUser();
+
             if (!currentUser) {
-                window.location.href = 'index.html';
+
+                window.location.href = LOGIN_PAGE;
                 return null;
             }
+
+            if (currentUser.status !== 'active') {
+
+                logout(false);
+                return null;
+            }
+
             return currentUser;
         }
 
-        function checkAuth() {
-            return requireAuth();
-        }
+        function logout(showConfirmation = true) {
 
-        function logout() {
-            if (!confirm('Are you sure you want to logout?')) {
+            if (
+                showConfirmation &&
+                !confirm('Are you sure you want to logout?')
+            ) {
+
                 return;
             }
             createActivityLog('User Logged Out');
             localStorage.removeItem('userSession');
             sessionStorage.removeItem('userSession');
-            window.location.href = 'index.html';
+            window.location.href = LOGIN_PAGE;
         }
 
         const currentUser = requireAuth();
@@ -586,14 +641,35 @@
 
         createActivityLog('Dashboard Accessed');
 
-        // Sample data
-        const products = [
-            { id: '1', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, salesCount: 145 },
-            { id: '2', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, salesCount: 85 },
-            { id: '3', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, salesCount: 200 },
-            { id: '4', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, salesCount: 65 },
-            { id: '5', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, salesCount: 120 }
-        ];
+        // ========================================
+        // CENTRALIZED PRODUCT STORAGE
+        // ========================================
+
+        function getProducts() {
+
+            const products = JSON.parse(
+                localStorage.getItem('products')
+            ) || [];
+
+            return Array.isArray(products)
+                ? products
+                : [];
+        }
+
+        // ========================================
+        // CENTRALIZED ACTIVITY LOG STORAGE
+        // ========================================
+
+        function getActivityLogs() {
+
+            const logs = JSON.parse(
+                localStorage.getItem('activityLogs')
+            ) || [];
+
+            return Array.isArray(logs)
+                ? logs
+                : [];
+        }
 
         let sidebarOpen = true;
 
@@ -629,6 +705,16 @@
             };
 
             return icons[role] || 'fa-user';
+        }
+
+        function renderRoleDisplay(role) {
+
+            return `
+                <div class="role-display ${role}">
+                    <i class="fas ${getRoleIcon(role)}"></i>
+                    <span>${getRoleDisplayName(role)}</span>
+                </div>
+            `;
         }
 
         function getActionIconAndColor(action) {
@@ -699,6 +785,21 @@
             }
         };
 
+        function checkPermissions(userRoles, moduleName) {
+
+            const normalizedRoles = mergeRoles(userRoles);
+
+            return normalizedRoles.some(role => {
+
+                const permissions = ROLE_PERMISSIONS[role];
+
+                return (
+                    permissions &&
+                    permissions.modules.includes(moduleName)
+                );
+            });
+        }
+
         function hasModuleAccess(moduleName) {
             return checkPermissions(currentUser.roles, moduleName);
         }
@@ -743,7 +844,7 @@
                         continue;
                     }
                     navHtml += `
-                        <button class="nav-item ${item.id === 'dashboard' ? 'active' : ''}" onclick="navigateTo('${item.id}')">
+                        <button class="nav-item ${item.id === CURRENT_PAGE ? 'active' : ''}" onclick="navigateTo('${item.id}')">
                             <i class="${item.icon}" style="width: 1.25rem;"></i>
                             <span>${item.label}</span>
                         </button>
@@ -754,39 +855,43 @@
         }
 
         function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html',
-                inventory: 'inventory.html',
-                sales: 'sales.html',
-                user_management: 'users.html',
-                reports: 'reports.html',
-                audit_logs: 'audit.html',
-                search: 'search.html',
-                maintenance: 'maintenance.html',
-                help: 'help.html',
-                about: 'about.html'
-            };
+
+            const pages = SYSTEM_PAGES;
+
             if (pages[module]) {
+
                 window.location.href = pages[module];
             }
         }
 
         function renderDashboard() {
 
-            const auditLogs = JSON.parse(
-                localStorage.getItem('activityLogs')
-            ) || [];
+            const auditLogs = getActivityLogs();
+
+            const products = getProducts();
+
+            const totalProducts = products.length;
 
             auditLogs.sort(
                 (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
             );
 
-            const lowStock = products.filter(p => p.stock <= 10 && p.stock > 0).length;
-            const outOfStock = products.filter(p => p.stock === 0).length;
-            const totalProducts = products.length;
-            const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
-            
-            const topProducts = [...products].sort((a, b) => b.salesCount - a.salesCount).slice(0, 5);
+            const lowStock = products.filter(
+                p => (p.stock || 0) <= 10 && (p.stock || 0) > 0
+            ).length;
+
+            const outOfStock = products.filter(
+                p => (p.stock || 0) === 0
+            ).length;
+
+            const totalValue = products.reduce(
+                (sum, p) => sum + ((p.price || 0) * (p.stock || 0)),
+                0
+            );
+
+            const topProducts = [...products]
+                .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0))
+                .slice(0, 5);
             
             const hour = new Date().getHours();
             const greeting = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
@@ -859,17 +964,37 @@
                                 <div class="table-container">
                                     <table>
                                         <thead><tr><th>Rank</th><th>Product Name</th><th>Category</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+                                        
                                         <tbody>
-                                            ${topProducts.map((p, i) => `
-                                                <tr>
-                                                    <td class="font-bold text-center">#${i+1}</td>
-                                                    <td><strong>${p.name}</strong></td>
-                                                    <td><span class="category-pill ${getCategoryPillClass(p.category)}"><i class="fas ${getCategoryIcon(p.category)}"></i> ${getCategoryLabel(p.category)}</span></td>
-                                                    <td>${p.salesCount} units</td>
-                                                    <td class="font-bold" style="color: var(--color-primary-red);">${formatCurrency(p.price * p.salesCount)}</td>
-                                                </tr>
-                                            `).join('')}
+                                            ${
+                                                topProducts.length
+                                                    ? topProducts.map((p, i) => `
+                                                        <tr>
+                                                            <td class="font-bold text-center">#${i+1}</td>
+                                                            <td><strong>${p.name}</strong></td>
+                                                            <td>
+                                                                <span class="category-pill ${getCategoryPillClass(p.category)}">
+                                                                    <i class="fas ${getCategoryIcon(p.category)}"></i>
+                                                                    ${getCategoryLabel(p.category)}
+                                                                </span>
+                                                            </td>
+                                                            <td>${p.salesCount || 0} units</td>
+                                                            <td class="font-bold" style="color: var(--color-primary-red);">
+                                                                ${formatCurrency((p.price || 0) * (p.salesCount || 0))}
+                                                            </td>
+                                                        </tr>
+                                                    `).join('')
+                                                    : `
+                                                        <tr>
+                                                            <td colspan="5" class="text-center text-muted" style="padding: 2rem;">
+                                                                <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                                                                <div>No product sales data available yet.</div>
+                                                            </td>
+                                                        </tr>
+                                                    `
+                                            }
                                         </tbody>
+
                                     </table>
                                 </div>
                             </div>
@@ -915,15 +1040,11 @@
                                                             @${log.username}
                                                         </small>
                                                     </td>
-                                                    <td>
-                                                        <div class="role-display ${log.role}">
-                                                            <i class="fas ${getRoleIcon(log.role)}"></i>
 
-                                                            <span>
-                                                                ${getRoleDisplayName(log.role)}
-                                                            </span>
-                                                        </div>
+                                                    <td>
+                                                        ${renderRoleDisplay(log.role)}
                                                     </td>
+
                                                     <td style="white-space: nowrap;">
                                                         <small>
                                                             ${
@@ -981,12 +1102,8 @@
 
         // Initialize
         document.getElementById('userName').innerText = currentUser?.fullName || 'User';
-        document.getElementById('userRole').innerHTML = `
-            <div class="role-display ${currentUser?.role || 'loa'}">
-                <i class="fas ${getRoleIcon(currentUser?.role || 'loa')}"></i>
-                <span>${getRoleDisplayName(currentUser?.role || 'loa')}</span>
-            </div>
-        `;
+        document.getElementById('userRole').innerHTML =
+            renderRoleDisplay(currentUser?.role || 'loa');
         
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
@@ -999,8 +1116,22 @@
         document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
         document.getElementById('logoutBtn').addEventListener('click', logout);
-        
+
+        window.addEventListener('storage', function(event) {
+
+            if (event.key === 'userSession') {
+
+                const currentUser = getCurrentUser();
+
+                if (!currentUser) {
+
+                    window.location.href = LOGIN_PAGE;
+                }
+            }
+        });
+
         window.navigateTo = navigateTo;
+
     </script>
 </body>
 </html>
