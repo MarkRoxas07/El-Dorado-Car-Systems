@@ -409,6 +409,7 @@
                         password: 'admin123',
                         fullName: 'Admin User',
                         role: 'admin',
+                        roles: ['admin'],
                         email: 'admin@eldorado.com',
                         status: 'active'
                     },
@@ -418,6 +419,7 @@
                         password: 'clerk123',
                         fullName: 'Inventory Clerk',
                         role: 'inventory_clerk',
+                        roles: ['inventory_clerk'],
                         email: 'clerk@eldorado.com',
                         status: 'active'
                     },
@@ -427,6 +429,7 @@
                         password: 'loa123',
                         fullName: 'LOA User',
                         role: 'loa',
+                        roles: ['loa'],
                         email: 'loa@eldorado.com',
                         status: 'active'
                     }
@@ -485,49 +488,83 @@
             }
         };
 
+        function normalizeRoles(user) {
+            if (!user) return [];
+            if (Array.isArray(user.roles)) return user.roles;
+            if (typeof user.role === 'string') {
+                user.roles = [user.role];
+                return user.roles;
+            }
+            user.roles = [];
+            return user.roles;
+        }
+
+        function ensureUserRoleData(user) {
+            if (!user) return user;
+            if (!Array.isArray(user.roles)) {
+                user.roles = typeof user.role === 'string' ? [user.role] : [];
+            }
+            if (!user.role && user.roles.length) {
+                user.role = user.roles[0];
+            }
+            return user;
+        }
+
+        function mergeRoles(roles) {
+            const list = [];
+            if (Array.isArray(roles)) {
+                roles.forEach(role => {
+                    if (Array.isArray(role)) return role.forEach(r => list.push(r));
+                    if (role) list.push(role);
+                });
+            } else if (roles) {
+                list.push(roles);
+            }
+            return Array.from(new Set(list));
+        }
+
         function getCurrentUser() {
-
-            const sessionData = JSON.parse(
-                localStorage.getItem('userSession') ||
-                sessionStorage.getItem('userSession')
-            );
-
-            if (!sessionData) return null;
-
-            // Session expired
-            if (Date.now() > sessionData.expiresAt) {
-
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-
+            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!sessionJSON) return null;
+            let sessionData;
+            try {
+                sessionData = JSON.parse(sessionJSON);
+            } catch (e) {
                 return null;
             }
-
+            ensureUserRoleData(sessionData);
+            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                return null;
+            }
             return sessionData;
         }
 
+        function checkPermissions(userRoles, moduleName) {
+            const roles = mergeRoles(userRoles);
+            if (!roles.length) return false;
+            if (roles.includes('admin')) return true;
+            return roles.some(role => ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].modules.includes(moduleName));
+        }
+
         function hasModuleAccess(moduleName) {
-
             const currentUser = getCurrentUser();
+            return currentUser ? checkPermissions(currentUser.roles, moduleName) : false;
+        }
 
-            if (!currentUser) return false;
-
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-
-            if (!permissions) return false;
-
-            return permissions.modules.includes(moduleName);
+        function getSalesAccess(userRoles) {
+            const roles = mergeRoles(userRoles);
+            if (roles.includes('admin')) return 'full';
+            if (roles.includes('loa')) return 'today_only';
+            if (roles.includes('inventory_clerk')) return 'inventory_summary_only';
+            return 'none';
         }
 
         function getSalesAccessLevel() {
-
             const currentUser = getCurrentUser();
-
             if (!currentUser) return null;
-
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-
-            return permissions.salesAccess;
+            return getSalesAccess(currentUser.roles);
         }
 
         // Dark Mode

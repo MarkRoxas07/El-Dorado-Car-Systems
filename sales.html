@@ -1406,13 +1406,70 @@
     <script>
         // ============ SALES MODULE - MODERN POS DESIGN ============
         
-        function checkAuth() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!session) {
+        function normalizeRoles(user) {
+            if (!user) return [];
+            if (Array.isArray(user.roles)) return user.roles;
+            if (typeof user.role === 'string') {
+                user.roles = [user.role];
+                return user.roles;
+            }
+            user.roles = [];
+            return user.roles;
+        }
+
+        function ensureUserRoleData(user) {
+            if (!user) return user;
+            if (!Array.isArray(user.roles)) {
+                user.roles = typeof user.role === 'string' ? [user.role] : [];
+            }
+            if (!user.role && user.roles.length) {
+                user.role = user.roles[0];
+            }
+            return user;
+        }
+
+        function mergeRoles(roles) {
+            const list = [];
+            if (Array.isArray(roles)) {
+                roles.forEach(role => {
+                    if (Array.isArray(role)) return role.forEach(r => list.push(r));
+                    if (role) list.push(role);
+                });
+            } else if (roles) {
+                list.push(roles);
+            }
+            return Array.from(new Set(list));
+        }
+
+        function getCurrentUser() {
+            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!sessionJSON) return null;
+            let sessionData;
+            try {
+                sessionData = JSON.parse(sessionJSON);
+            } catch (e) {
+                return null;
+            }
+            ensureUserRoleData(sessionData);
+            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                return null;
+            }
+            return sessionData;
+        }
+
+        function requireAuth() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
                 window.location.href = 'index.html';
                 return null;
             }
-            return JSON.parse(session);
+            return currentUser;
+        }
+
+        function checkAuth() {
+            return requireAuth();
         }
 
         const currentUser = checkAuth();
@@ -1424,9 +1481,15 @@
             loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
         };
 
+        function checkPermissions(userRoles, moduleName) {
+            const roles = mergeRoles(userRoles);
+            if (!roles.length) return false;
+            if (roles.includes('admin')) return true;
+            return roles.some(role => ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].modules.includes(moduleName));
+        }
+
         function hasModuleAccess(moduleName) {
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-            return permissions ? permissions.modules.includes(moduleName) : false;
+            return checkPermissions(currentUser.roles, moduleName);
         }
 
         if (!hasModuleAccess(activeModule)) {
