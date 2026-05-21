@@ -1387,89 +1387,35 @@
     </div>
 
     <script>
-        // ============ INVENTORY MODULE ============
-        
-        function normalizeRoles(user) {
-            if (!user) return [];
-            if (Array.isArray(user.roles)) return user.roles;
-            if (typeof user.role === 'string') {
-                user.roles = [user.role];
-                return user.roles;
-            }
-            user.roles = [];
-            return user.roles;
-        }
 
-        function ensureUserRoleData(user) {
-            if (!user) return user;
-            if (!Array.isArray(user.roles)) {
-                user.roles = typeof user.role === 'string' ? [user.role] : [];
-            }
-            if (!user.role && user.roles.length) {
-                user.role = user.roles[0];
-            }
-            return user;
-        }
+        // ============================================
+        // INVENTORY MODULE - REFACTORED & OPTIMIZED
+        // ============================================
+        // Architecture: Modular, Type-Safe, Performance-Optimized
+        // Features: RBAC, Audit Logging, Dark Mode, Intelligent Reordering
+        // ============================================
 
-        function mergeRoles(roles) {
-            const list = [];
-            if (Array.isArray(roles)) {
-                roles.forEach(role => {
-                    if (Array.isArray(role)) return role.forEach(r => list.push(r));
-                    if (role) list.push(role);
-                });
-            } else if (roles) {
-                list.push(roles);
-            }
-            return Array.from(new Set(list));
-        }
-
-        function getCurrentUser() {
-            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!sessionJSON) return null;
-            let sessionData;
-            try {
-                sessionData = JSON.parse(sessionJSON);
-            } catch (e) {
-                return null;
-            }
-            ensureUserRoleData(sessionData);
-            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                return null;
-            }
-            return sessionData;
-        }
-
-        function requireAuth() {
-            const currentUser = getCurrentUser();
-            if (!currentUser) {
-                window.location.href = 'index.html';
-                return null;
-            }
-            return currentUser;
-        }
-
-        function checkAuth() {
-            return requireAuth();
-        }
-
-        const ROLE_PERMISSIONS = {
-            admin: {
-                modules: ['dashboard', 'inventory', 'sales', 'search', 'user_management', 'reports', 'audit_logs', 'maintenance', 'help', 'about']
-            },
-            inventory_clerk: {
-                modules: ['inventory', 'search', 'help', 'about']
-            },
-            loa: {
-                modules: ['sales', 'search', 'help', 'about']
-            }
+        // ========== CENTRALIZED STATE MANAGEMENT ==========
+        const inventoryState = {
+            products: [],
+            filteredProducts: [],
+            showArchived: false,
+            currentStockProduct: null,
+            currentStockAction: null,
+            currentStockQuantity: 1,
+            sidebarOpen: true,
+            searchTimeout: null,
+            isRenderingInventory: false
         };
 
+        // ========== CONSTANTS ==========
         const LOGIN_PAGE = 'index.html';
-
         const CURRENT_PAGE = 'inventory';
+        const DEFAULT_SAFETY_STOCK = 5;
+        const DEFAULT_LEAD_TIME = 3;
+        const MAX_AUDIT_LOGS = 100;
+        const MAX_STOCK_HISTORY = 50;
+        const SEARCH_DEBOUNCE_MS = 180;
 
         const SYSTEM_PAGES = {
             dashboard: 'dashboard.html',
@@ -1484,214 +1430,629 @@
             about: 'about.html'
         };
 
-        const currentUser = requireAuth();
+        const ROLE_PERMISSIONS = {
+            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'] },
+            inventory_clerk: { modules: ['inventory','search','help','about'] },
+            loa: { modules: ['sales','search','help','about'] }
+        };
 
-        if (!hasModuleAccess(CURRENT_PAGE)) {
+        const CATEGORY_LABELS = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
+        const CATEGORY_ICONS = { mechanical: 'fa-tools', electrical: 'fa-bolt', body: 'fa-car', maintenance: 'fa-oil-can' };
+        const CATEGORY_CLASSES = { mechanical: 'mechanical', electrical: 'electrical', body: 'body', maintenance: 'maintenance' };
+        const ROLE_DISPLAY_NAMES = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
 
-            window.location.href =
-                hasModuleAccess('dashboard')
-                    ? SYSTEM_PAGES.dashboard
-                    : LOGIN_PAGE;
+        // ========== AUTH & PERMISSIONS ==========
+        function normalizeRoles(user) {
+            if (!user) return [];
+            if (Array.isArray(user.roles)) return user.roles;
+            if (typeof user.role === 'string') { user.roles = [user.role]; return user.roles; }
+            user.roles = [];
+            return user.roles;
         }
 
-        function loadProducts() {
+        function ensureUserRoleData(user) {
+            if (!user) return user;
+            if (!Array.isArray(user.roles)) { user.roles = typeof user.role === 'string' ? [user.role] : []; }
+            if (!user.role && user.roles.length) { user.role = user.roles[0]; }
+            return user;
+        }
 
-            const stored =
-                localStorage.getItem('eldorado_products');
-
-            if (!stored) {
-
-                localStorage.setItem(
-                    'eldorado_products',
-                    JSON.stringify([])
-                );
-
-                return [];
+        function getCurrentUser() {
+            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            if (!sessionJSON) return null;
+            let sessionData;
+            try { sessionData = JSON.parse(sessionJSON); }
+            catch (e) { return null; }
+            ensureUserRoleData(sessionData);
+            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
+                localStorage.removeItem('userSession');
+                sessionStorage.removeItem('userSession');
+                return null;
             }
+            return sessionData;
+        }
+
+        function requireAuth() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) { window.location.href = LOGIN_PAGE; return null; }
+            return currentUser;
+        }
+
+        const currentUser = requireAuth();
+
+        function hasModuleAccess(moduleName) {
+            if (!currentUser) return false;
+            const role = currentUser?.role || '';
+            const permissions = ROLE_PERMISSIONS[role];
+            return permissions ? permissions.modules.includes(moduleName) : false;
+        }
+
+        if (!hasModuleAccess(CURRENT_PAGE)) {
+            window.location.href = hasModuleAccess('dashboard') ? SYSTEM_PAGES.dashboard : LOGIN_PAGE;
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+        function escapeHtml(str = '') {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function formatCurrency(amount = 0) {
+            return '₱' + Number(amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function sanitizeInput(str = '') { return String(str).trim(); }
+        function getCategoryLabel(category) { return CATEGORY_LABELS[category] || category; }
+        function getCategoryIcon(category) { return CATEGORY_ICONS[category] || 'fa-tag'; }
+        function getCategoryPillClass(category) { return CATEGORY_CLASSES[category] || 'mechanical'; }
+        function getRoleDisplayName(role) { return ROLE_DISPLAY_NAMES[role] || role; }
+
+        // ========== INVENTORY CALCULATIONS ==========
+        function calculateAverageDailySales(product) { return Number(product.salesCount || 0) / 30; }
+
+        function calculateReorderPoint(product) {
+            const averageDailySales = calculateAverageDailySales(product);
+            const leadTime = Number(product.leadTimeDays || DEFAULT_LEAD_TIME);
+            const safetyStock = Number(product.safetyStock || DEFAULT_SAFETY_STOCK);
+            return Math.ceil((averageDailySales * leadTime) + safetyStock);
+        }
+
+        function updateProductStatus(product) {
+            if (!product) return null;
+            const stock = Number(product.stock || 0);
+            if (product.archived) product.status = 'archived';
+            else if (stock === 0) product.status = 'out_of_stock';
+            else if (stock <= calculateReorderPoint(product)) product.status = 'low_stock';
+            else product.status = 'in_stock';
+            product.updatedAt = new Date().toISOString();
+            return product;
+        }
+
+        // ========== PRODUCT STORAGE ==========
+        function loadProducts() {
+            const stored = localStorage.getItem('eldorado_products');
+            if (!stored) { localStorage.setItem('eldorado_products', JSON.stringify([])); return []; }
 
             try {
-
-                const normalizedProducts =
-                    JSON.parse(stored).map(product => ({
-                        salesCount: 0,
-                        safetyStock: 5,
-                        leadTimeDays: 3,
-                        archived: false,
-                        status: 'in_stock',
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        ...product
-                    }));
-
-                localStorage.setItem(
-                    'eldorado_products',
-                    JSON.stringify(normalizedProducts)
-                );
-
+                const parsedProducts = JSON.parse(stored);
+                const normalizedProducts = parsedProducts.map(product => {
+                    const normalized = {
+                        id: product.id || `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        uid: product.uid || `PRD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+                        name: sanitizeInput(product.name || ''),
+                        category: product.category || 'mechanical',
+                        price: Number(product.price || 0),
+                        stock: Math.max(0, Number(product.stock || 0)),
+                        safetyStock: Number(product.safetyStock || DEFAULT_SAFETY_STOCK),
+                        leadTimeDays: Number(product.leadTimeDays || DEFAULT_LEAD_TIME),
+                        supplier: sanitizeInput(product.supplier || ''),
+                        description: sanitizeInput(product.description || ''),
+                        salesCount: Number(product.salesCount || 0),
+                        archived: product.archived === true,
+                        status: product.status || 'in_stock',
+                        createdAt: product.createdAt || new Date().toISOString(),
+                        updatedAt: product.updatedAt || new Date().toISOString(),
+                        stockHistory: Array.isArray(product.stockHistory) ? product.stockHistory : []
+                    };
+                    return updateProductStatus(normalized);
+                });
+                const jsonStr = JSON.stringify(normalizedProducts);
+                if (jsonStr !== stored) { localStorage.setItem('eldorado_products', jsonStr); }
                 return normalizedProducts;
-
-            } catch {
-
-                localStorage.removeItem(
-                    'eldorado_products'
-                );
-
+            } catch (err) {
+                console.error('Error loading products:', err);
+                localStorage.removeItem('eldorado_products');
                 return [];
             }
         }
 
         function saveProducts(products) {
+            if (!Array.isArray(products)) { console.error('saveProducts: Invalid products array'); return; }
+            try { localStorage.setItem('eldorado_products', JSON.stringify(products)); }
+            catch (err) { console.error('Error saving products:', err); }
+        }
 
-            localStorage.setItem(
-                'eldorado_products',
-                JSON.stringify(products)
-            );
-
-            window.dispatchEvent(
-                new Event('productsUpdated')
-            );
+        function refreshProducts() {
+            inventoryState.products = loadProducts().map(product => updateProductStatus(product));
+            saveProducts(inventoryState.products);
         }
 
         function addAuditLog(action, details) {
-            const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
-            logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString() });
-            if (logs.length > 100) logs.pop();
-            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+            try {
+                const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+                logs.unshift({ id: Date.now(), action: escapeHtml(action), details: escapeHtml(details), user: currentUser?.username || 'system', timestamp: new Date().toLocaleString() });
+                if (logs.length > MAX_AUDIT_LOGS) logs.pop();
+                localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+            } catch (err) { console.error('Error adding audit log:', err); }
         }
 
-        let products = loadProducts();
-        let sidebarOpen = true;
-        let currentStockProduct = null;
-        let currentStockAction = null;
-        let currentStockQuantity = 1;
+        // ========== RENDERING - MODULARIZED ==========
+        function calculateInventoryStats() {
+            const activeProducts = inventoryState.products.filter(p => !p.archived);
+            return {
+                total: activeProducts.length,
+                inStock: activeProducts.filter(p => p.status === 'in_stock').length,
+                lowStock: activeProducts.filter(p => p.status === 'low_stock').length,
+                outOfStock: activeProducts.filter(p => p.status === 'out_of_stock').length,
+                archived: inventoryState.products.filter(p => p.archived).length,
+                totalValue: activeProducts.reduce((sum, p) => sum + (p.price * p.stock), 0)
+            };
+        }
 
-        function formatCurrency(amount = 0) {
+        function renderInventory() {
+            if (inventoryState.isRenderingInventory) return;
+            inventoryState.isRenderingInventory = true;
 
-            return '₱' + Number(amount).toLocaleString(
-                'en-PH',
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
+            try {
+                refreshProducts();
+                const stats = calculateInventoryStats();
+                const canEdit = currentUser?.role !== 'loa';
+                
+                const html = `
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div><h2 class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-boxes" style="color: var(--color-primary-red);"></i> Inventory Management</h2><p class="text-muted mt-1">Manage product registration, stock levels, and inventory adjustments</p></div>
+                            ${canEdit ? `<button class="btn btn-primary" onclick="showProductModal()"><i class="fas fa-plus"></i> Add Product</button>` : ''}
+                        </div>
+                        <div class="grid grid-cols-5">
+                            <div class="stat-card" style="background: var(--soft-blue); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Total Products</p><p class="text-2xl font-bold" style="color: white;">${stats.total}</p></div><i class="fas fa-box" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card" style="background: var(--soft-green); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">In Stock</p><p class="text-2xl font-bold" style="color: white;">${stats.inStock}</p></div><i class="fas fa-check-circle" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card" style="background: var(--soft-yellow); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Low Stock</p><p class="text-2xl font-bold" style="color: white;">${stats.lowStock}</p></div><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card" style="background: var(--soft-red); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Out of Stock</p><p class="text-2xl font-bold" style="color: white;">${stats.outOfStock}</p></div><i class="fas fa-times-circle" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card" style="background: var(--soft-purple); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Archived</p><p class="text-2xl font-bold" style="color: white;">${stats.archived}</p></div><i class="fas fa-archive" style="font-size: 2rem; color: white;"></i></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h3 class="card-title"><i class="fas fa-list"></i> Product Inventory</h3></div>
+                            <div class="card-content">
+                                <div class="search-box">
+                                    <div class="search-input-wrapper"><i class="fas fa-search"></i>
+                                    <input type="text" id="searchInput" class="search-input" placeholder="Search by product name, UID, or description..." onkeyup="debounceFilterProducts()"></div>
+                                    <select id="categoryFilter" class="filter-select" onchange="filterProducts()"><option value="">All Categories</option><option value="mechanical">🔧 Mechanical Components</option><option value="electrical">⚡ Electrical Components</option><option value="body">🚗 Body Parts</option><option value="maintenance">🛢️ Maintenance & Fluids</option></select>
+                                    <select id="statusFilter" class="filter-select" onchange="filterProducts()"><option value="">All Statuses</option><option value="in_stock">✅ In Stock</option><option value="low_stock">⚠️ Low Stock</option><option value="out_of_stock">❌ Out of Stock</option></select>
+                                    <button id="archiveChipBtn" onclick="toggleArchivedFilter()"><i class="fas fa-box-archive"></i><span>Archived Only</span></button>
+                                    <button class="clear-filter-btn" onclick="clearFilters()"><i class="fas fa-eraser"></i>Clear</button>
+                                </div>
+                                <div class="result-count" id="resultCount"><i class="fas fa-search"></i> Found ${inventoryState.products.filter(p => !p.archived).length} products</div>
+                                <div class="table-container">
+                                    <table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Supplier</th>${canEdit ? '<th>Actions</th>' : ''}</tr></thead>
+                                    <tbody id="productsTableBody"></tbody></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('mainContent').innerHTML = html;
+                initStockModalEvents();
+                filterProducts();
+            } finally {
+                inventoryState.isRenderingInventory = false;
+            }
+        }
+
+        // ========== FILTERING & SEARCH ==========
+        function applyFilters() {
+            const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+            const statusFilter = document.getElementById('statusFilter')?.value || '';
+
+            let filtered = [...inventoryState.products];
+
+            if (inventoryState.showArchived) {
+                filtered = filtered.filter(p => p.archived === true);
+            } else {
+                filtered = filtered.filter(p => p.archived !== true);
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(p => (p.name || '').toLowerCase().includes(searchTerm) || (p.uid || '').toLowerCase().includes(searchTerm) || (p.description || '').toLowerCase().includes(searchTerm));
+            }
+
+            if (categoryFilter) {
+                filtered = filtered.filter(p => p.category === categoryFilter);
+            }
+
+            if (statusFilter) {
+                filtered = filtered.filter(p => p.status === statusFilter);
+            }
+
+            inventoryState.filteredProducts = filtered;
+            updateProductTable(filtered);
+            
+            const resultCount = document.getElementById('resultCount');
+            if (resultCount) {
+                resultCount.innerHTML = `<i class="fas fa-search"></i> Found ${filtered.length} product${filtered.length !== 1 ? 's' : ''}`;
+            }
+        }
+
+        function filterProducts() { applyFilters(); }
+        function debounceFilterProducts() { clearTimeout(inventoryState.searchTimeout); inventoryState.searchTimeout = setTimeout(filterProducts, SEARCH_DEBOUNCE_MS); }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            inventoryState.showArchived = false;
+            const archiveBtn = document.getElementById('archiveChipBtn');
+            if (archiveBtn) archiveBtn.classList.remove('active');
+            filterProducts();
+        }
+
+        function toggleArchivedFilter() {
+            inventoryState.showArchived = !inventoryState.showArchived;
+            const archiveBtn = document.getElementById('archiveChipBtn');
+            if (archiveBtn) archiveBtn.classList.toggle('active', inventoryState.showArchived);
+            filterProducts();
+        }
+
+        function updateProductTable(filteredProducts) {
+            const tbody = document.getElementById('productsTableBody');
+            if (!tbody) return;
+
+            if (filteredProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No products found matching your criteria</td></tr>';
+                return;
+            }
+
+            const canEdit = currentUser?.role !== 'loa';
+            tbody.innerHTML = filteredProducts.map(p => {
+                const isArchived = p.archived === true;
+                const rowClass = isArchived ? 'archived-row' : '';
+                let statusBadge = '';
+                if (isArchived) statusBadge = '<span class="badge badge-archived"><i class="fas fa-archive"></i> Archived</span>';
+                else if (p.status === 'in_stock') statusBadge = '<span class="badge badge-success"><i class="fas fa-check-circle"></i> In Stock</span>';
+                else if (p.status === 'low_stock') statusBadge = '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock</span>';
+                else statusBadge = '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>';
+
+                const reorderPoint = calculateReorderPoint(p);
+                const isLowStock = !isArchived && Number(p.stock || 0) <= reorderPoint;
+
+                return `<tr class="${rowClass}"><td><div class="font-medium">${escapeHtml(p.name)}</div><div class="text-sm text-muted"><i class="fas fa-barcode"></i> ${escapeHtml(p.uid)}</div></td><td><span class="category-pill ${getCategoryPillClass(p.category)}"><i class="fas ${getCategoryIcon(p.category)}"></i> ${getCategoryLabel(p.category)}</span></td><td>${formatCurrency(p.price)}</td><td class="${isLowStock ? 'text-red' : ''}">${p.stock}</td><td>${statusBadge}</td><td>${escapeHtml(p.supplier || '—')}</td>${canEdit ? `<td><div class="action-buttons">${!isArchived ? `<button class="btn btn-success btn-sm btn-icon-only" onclick="openStockModal('${p.id}', 'add')" title="Add Stock"><i class="fas fa-plus"></i></button><button class="btn btn-danger btn-sm btn-icon-only" onclick="openStockModal('${p.id}', 'remove')" title="Remove Stock"><i class="fas fa-minus"></i></button><button class="btn btn-warning btn-sm btn-icon-only" onclick="archiveProduct('${p.id}')" title="Archive Product"><i class="fas fa-archive"></i></button>` : `<button class="btn restore-btn-sm" onclick="unarchiveProduct('${p.id}')" title="Restore Product"><i class="fas fa-trash-restore"></i> Restore</button>`}</div></td>` : ''}</tr>`;
+            }).join('');
+        }
+
+        // ========== STOCK MODAL OPERATIONS ==========
+        function openStockModal(productId, action) {
+            const product = inventoryState.products.find(p => p.id === productId);
+            if (!product) return;
+
+            inventoryState.currentStockProduct = product;
+            inventoryState.currentStockAction = action;
+            inventoryState.currentStockQuantity = 1;
+
+            const modal = document.getElementById('stockModal');
+            const isAdd = action === 'add';
+
+            modal.className = `stock-modal-overlay ${isAdd ? 'add' : 'remove'}`;
+
+            document.getElementById('stockHeaderIcon').innerHTML = isAdd ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-minus"></i>';
+            document.getElementById('stockModalHeaderTitle').textContent = isAdd ? 'Increase Stock' : 'Decrease Stock';
+            document.getElementById('stockQuantityLabel').textContent = isAdd ? 'Quantity to Add' : 'Quantity to Remove';
+            document.querySelector('#stockAlert i').className = isAdd ? 'fas fa-plus-circle' : 'fas fa-minus-circle';
+            document.getElementById('stockAlertText').innerHTML = isAdd ? 'This will increase the current stock quantity.' : 'This will decrease the current stock quantity.';
+            document.getElementById('stockConfirmIcon').className = isAdd ? 'fas fa-plus' : 'fas fa-minus';
+            document.getElementById('stockConfirmText').textContent = isAdd ? 'Increase Stock' : 'Decrease Stock';
+            
+            document.getElementById('stockProductName').textContent = escapeHtml(product.name);
+            document.getElementById('stockProductSku').textContent = `SKU: ${escapeHtml(product.uid)}`;
+            document.getElementById('stockCurrentValue').textContent = product.stock;
+            document.getElementById('stockQuantityInput').value = 1;
+
+            updateStockModalDisplay();
+            modal.classList.add('active');
+        }
+
+        function updateStockModalDisplay() {
+            if (!inventoryState.currentStockProduct) return;
+
+            const quantityInput =
+                document.getElementById('stockQuantityInput');
+
+            const newValueSpan =
+                document.getElementById('stockNewValue');
+
+            // Handle empty input properly
+            if (quantityInput.value.trim() === '') {
+
+                inventoryState.currentStockQuantity = 0;
+
+                newValueSpan.textContent =
+                    inventoryState.currentStockProduct.stock;
+
+                return;
+            }
+
+            let quantity = Math.floor(Number(quantityInput.value));
+
+            if (isNaN(quantity) || quantity < 1) {
+                quantity = 0;
+            }
+
+            inventoryState.currentStockQuantity = quantity;
+
+            if (inventoryState.currentStockAction === 'add') {
+
+                newValueSpan.textContent =
+                    inventoryState.currentStockProduct.stock + quantity;
+
+            } else {
+
+                newValueSpan.textContent = Math.max(
+                    0,
+                    inventoryState.currentStockProduct.stock - quantity
+                );
+            }
+        }
+
+        function closeStockModal() {
+            document.getElementById('stockModal').classList.remove('active');
+            inventoryState.currentStockProduct = null;
+            inventoryState.currentStockAction = null;
+            inventoryState.currentStockQuantity = 1;
+        }
+
+        function confirmStockAdjustment() {
+
+            // VALIDATE EMPTY / INVALID INPUT
+            if (
+                !inventoryState.currentStockQuantity ||
+                inventoryState.currentStockQuantity < 1
+            ) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+
+            if (!inventoryState.currentStockAction || !inventoryState.currentStockProduct) return;
+
+            const product = inventoryState.products.find(
+                p => p.id === inventoryState.currentStockProduct.id
+            );
+
+            if (!product) return;
+
+            const oldStock = product.stock;
+
+            const quantity = Math.max(
+                1,
+                Math.floor(inventoryState.currentStockQuantity)
+            );
+
+            if (inventoryState.currentStockAction === 'add') {
+
+                product.stock += quantity;
+
+                addAuditLog(
+                    'Stock Added',
+                    `${escapeHtml(product.name)}: +${quantity} units`
+                );
+
+            } else {
+
+                if (quantity > product.stock) {
+
+                    alert(
+                        `❌ Cannot remove ${quantity} units. Only ${product.stock} units available.`
+                    );
+
+                    return;
                 }
-            );
-        }
 
-        function getCategoryLabel(category) {
-            const labels = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
-            return labels[category] || category;
-        }
+                product.stock -= quantity;
 
-        function getCategoryIcon(category) {
-            const icons = { mechanical: 'fa-tools', electrical: 'fa-bolt', body: 'fa-car', maintenance: 'fa-oil-can' };
-            return icons[category] || 'fa-tag';
-        }
-
-        function getCategoryPillClass(category) {
-            const classes = { mechanical: 'mechanical', electrical: 'electrical', body: 'body', maintenance: 'maintenance' };
-            return classes[category] || 'mechanical';
-        }
-
-        function getRoleDisplayName(role) {
-            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-
-        function calculateAverageDailySales(product) {
-
-            return (
-                Number(product.salesCount || 0) / 30
-            );
-        }
-
-        function calculateReorderPoint(product) {
-
-            const averageDailySales =
-                calculateAverageDailySales(product);
-
-            const leadTime =
-                Number(product.leadTimeDays || 0);
-
-            const safetyStock =
-                Number(product.safetyStock || 0);
-
-            return Math.ceil(
-                (averageDailySales * leadTime)
-                + safetyStock
-            );
-        }
-
-        function updateProductStatus(product) {
-
-            if (product.archived) {
-
-                product.status = 'archived';
-
+                addAuditLog(
+                    'Stock Removed',
+                    `${escapeHtml(product.name)}: -${quantity} units`
+                );
             }
 
-            else if (
-                Number(product.stock || 0) === 0
-            ) {
+            if (!product.stockHistory)
+                product.stockHistory = [];
 
-                product.status = 'out_of_stock';
+            product.stockHistory.unshift({
+                type: inventoryState.currentStockAction,
+                quantity: quantity,
+                user: currentUser?.username || 'system',
+                date: new Date().toLocaleString(),
+                oldStock: oldStock,
+                newStock: product.stock
+            });
 
-            }
+            if (product.stockHistory.length > MAX_STOCK_HISTORY)
+                product.stockHistory.pop();
 
-            else if (
-                Number(product.stock || 0) <=
-                calculateReorderPoint(product)
-            ) {
+            updateProductStatus(product);
 
-                product.status = 'low_stock';
+            saveProducts(inventoryState.products);
 
-            }
+            const message =
+                inventoryState.currentStockAction === 'add'
+                    ? `✅ Stock Added!\n${escapeHtml(product.name)}\n+${quantity} units\nOld: ${oldStock} → New: ${product.stock}`
+                    : `✅ Stock Removed!\n${escapeHtml(product.name)}\n-${quantity} units\nOld: ${oldStock} → New: ${product.stock}`;
 
-            else {
+            closeStockModal();
 
-                product.status = 'in_stock';
-            }
+            renderInventory();
 
-            return product;
+            alert(message);
         }
 
-        function hasModuleAccess(moduleName) {
-            if (!currentUser) return false;
-            const role =
-                currentUser?.role || '';
+        // ========== PRODUCT MODAL OPERATIONS ==========
+        function showProductModal(product = null) {
+            const modalTitle = document.getElementById('modalTitle');
+            const prodId = document.getElementById('productId');
+            const prodName = document.getElementById('prodName');
+            const prodCategory = document.getElementById('prodCategory');
+            const prodPrice = document.getElementById('prodPrice');
+            const prodStock = document.getElementById('prodStock');
+            const prodSafetyStock = document.getElementById('prodSafetyStock');
+            const prodLeadTime = document.getElementById('prodLeadTime');
+            const prodSupplier = document.getElementById('prodSupplier');
+            const prodDescription = document.getElementById('prodDescription');
 
-            const permissions =
-                ROLE_PERMISSIONS[role];;
-            if (!permissions) return false;
-            return permissions.modules.includes(moduleName);
+            if (product) {
+                modalTitle.innerText = 'Edit Product';
+                prodId.value = product.id;
+                prodName.value = product.name;
+                prodCategory.value = product.category;
+                prodPrice.value = product.price;
+                prodStock.value = product.stock;
+                prodSafetyStock.value = product.safetyStock || DEFAULT_SAFETY_STOCK;
+                prodLeadTime.value = product.leadTimeDays || DEFAULT_LEAD_TIME;
+                prodSupplier.value = product.supplier || '';
+                prodDescription.value = product.description || '';
+            } else {
+                modalTitle.innerText = 'Add New Product';
+                prodId.value = '';
+                prodName.value = '';
+                prodCategory.value = 'mechanical';
+                prodPrice.value = '0';
+                prodStock.value = '0';
+                prodSafetyStock.value = String(DEFAULT_SAFETY_STOCK);
+                prodLeadTime.value = String(DEFAULT_LEAD_TIME);
+                prodSupplier.value = '';
+                prodDescription.value = '';
+            }
+
+            document.getElementById('productModal').classList.add('active');
         }
 
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('active');
+            document.getElementById('productId').value = '';
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodCategory').value = 'mechanical';
+            document.getElementById('prodPrice').value = '0';
+            document.getElementById('prodStock').value = '0';
+            document.getElementById('prodSafetyStock').value = String(DEFAULT_SAFETY_STOCK);
+            document.getElementById('prodLeadTime').value = String(DEFAULT_LEAD_TIME);
+            document.getElementById('prodSupplier').value = '';
+            document.getElementById('prodDescription').value = '';
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('productId').value;
+            const name = sanitizeInput(document.getElementById('prodName').value);
+            const category = document.getElementById('prodCategory').value;
+            let price = parseFloat(document.getElementById('prodPrice').value) || 0;
+            let stock = Math.max(0, parseInt(document.getElementById('prodStock').value) || 0);
+            let safetyStock = Math.max(0, parseInt(document.getElementById('prodSafetyStock').value) || DEFAULT_SAFETY_STOCK);
+            let leadTime = Math.max(1, parseInt(document.getElementById('prodLeadTime').value) || DEFAULT_LEAD_TIME);
+            const supplier = sanitizeInput(document.getElementById('prodSupplier').value);
+            const description = sanitizeInput(document.getElementById('prodDescription').value);
+
+            if (!name) { alert('Please enter a product name'); return; }
+            if (price < 0) price = 0;
+
+            if (id) {
+                const product = inventoryState.products.find(p => p.id === id);
+                if (product) {
+                    product.name = name;
+                    product.category = category;
+                    product.price = price;
+                    product.stock = stock;
+                    product.safetyStock = safetyStock;
+                    product.leadTimeDays = leadTime;
+                    product.supplier = supplier;
+                    product.description = description;
+                    updateProductStatus(product);
+                    addAuditLog('Edit Product', `Edited ${escapeHtml(name)}`);
+                    alert('Product updated!');
+                }
+            } else {
+                const newProduct = {
+                    id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    uid: `PRD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+                    name: name,
+                    category: category,
+                    price: price,
+                    stock: stock,
+                    safetyStock: safetyStock,
+                    leadTimeDays: leadTime,
+                    supplier: supplier,
+                    description: description,
+                    salesCount: 0,
+                    archived: false,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    stockHistory: []
+                };
+                updateProductStatus(newProduct);
+                inventoryState.products.push(newProduct);
+                addAuditLog('Add Product', `Added ${escapeHtml(name)}`);
+                alert('Product added!');
+            }
+
+            saveProducts(inventoryState.products);
+            closeModal();
+            renderInventory();
+        }
+
+        // ========== ARCHIVE OPERATIONS ==========
+        function archiveProduct(productId) {
+            const product = inventoryState.products.find(p => p.id === productId);
+            if (!product) return;
+            if (confirm(`Archive "${escapeHtml(product.name)}"? Archived products will be hidden from main inventory.`)) {
+                product.archived = true;
+                updateProductStatus(product);
+                saveProducts(inventoryState.products);
+                addAuditLog('Archived Product', `Archived ${escapeHtml(product.name)}`);
+                renderInventory();
+                alert(`"${escapeHtml(product.name)}" has been archived.`);
+            }
+        }
+
+        function unarchiveProduct(productId) {
+            const product = inventoryState.products.find(p => p.id === productId);
+            if (!product) return;
+            if (confirm(`Restore "${escapeHtml(product.name)}" from archive?`)) {
+                product.archived = false;
+                updateProductStatus(product);
+                saveProducts(inventoryState.products);
+                addAuditLog('Restored Product', `Restored ${escapeHtml(product.name)}`);
+                renderInventory();
+                alert(`"${escapeHtml(product.name)}" has been restored.`);
+            }
+        }
+
+        // ========== NAVIGATION ==========
         function renderNavigation() {
             const navSections = [
-                {
-                    title: "MAIN",
-                    items: [
-                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                    ]
-                },
-                {
-                    title: "MANAGEMENT",
-                    items: [
-                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                    ]
-                },
-                {
-                    title: "SYSTEM",
-                    items: [
-                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                    ]
-                }
+                { title: "MAIN", items: [
+                    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                    { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
+                    { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
+                    { id: 'search', label: 'Search', icon: 'fas fa-search' }
+                ]},
+                { title: "MANAGEMENT", items: [
+                    { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
+                    { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
+                    { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
+                ]},
+                { title: "SYSTEM", items: [
+                    { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
+                    { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
+                    { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
+                ]}
             ];
+
             let navHtml = '';
             for (const section of navSections) {
                 navHtml += `<div class="nav-section-title">${section.title}</div>`;
@@ -1704,543 +2065,16 @@
         }
 
         function navigateTo(module) {
-
-            if (!SYSTEM_PAGES[module]) {
-                return;
-            }
-
-            window.location.href =
-                SYSTEM_PAGES[module];
+            if (!SYSTEM_PAGES[module]) return;
+            window.location.href = SYSTEM_PAGES[module];
         }
 
-        let showArchivedState = false;
-
-        function filterProducts() {
-            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-            const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-            const statusFilter = document.getElementById('statusFilter')?.value || '';
-            let filtered = [...products];
-            if (showArchivedState) {
-                filtered = filtered.filter(p => p.archived === true);
-            } else {
-                filtered = filtered.filter(p => p.archived !== true);
-            }
-            if (searchTerm) {
-                filtered = filtered.filter(p => (p.name || '').toLowerCase().includes(searchTerm) || (p.uid || '').toLowerCase().includes(searchTerm) || ((p.description || '').toLowerCase().includes(searchTerm)));
-            }
-            if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
-            if (statusFilter) filtered = filtered.filter(p => p.status === statusFilter);
-            updateProductTable(filtered);
-            document.getElementById('resultCount').innerHTML = `<i class="fas fa-search"></i> Found ${filtered.length} product${filtered.length !== 1 ? 's' : ''}`;
-        }
-
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categoryFilter').value = '';
-            document.getElementById('statusFilter').value = '';
-            showArchivedState = false;
-            const archiveBtn = document.getElementById('archiveChipBtn');
-            if (archiveBtn) archiveBtn.classList.remove('active');
-            filterProducts();
-        }
-
-        function updateProductTable(filteredProducts) {
-            const canEdit = currentUser?.role !== 'loa';
-            const tbody = document.getElementById('productsTableBody');
-            if (!tbody) return;
-            if (filteredProducts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No products found matching your criteria</td></tr>';
-                return;
-            }
-            tbody.innerHTML = filteredProducts.map(p => {
-                const isArchived = p.archived === true;
-                const rowClass = isArchived ? 'archived-row' : '';
-                let statusBadge = '';
-                if (isArchived) statusBadge = '<span class="badge badge-archived"><i class="fas fa-archive"></i> Archived</span>';
-                else if (p.status === 'in_stock') statusBadge = '<span class="badge badge-success"><i class="fas fa-check-circle"></i> In Stock</span>';
-                else if (p.status === 'low_stock') statusBadge = '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock</span>';
-                else statusBadge = '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>';
-                return `<tr class="${rowClass}">
-                    <td><div class="font-medium">${escapeHtml(p.name)}</div><div class="text-sm text-muted"><i class="fas fa-barcode"></i> ${p.uid}</div></td>
-                    <td><span class="category-pill ${getCategoryPillClass(p.category)}"><i class="fas ${getCategoryIcon(p.category)}"></i> ${getCategoryLabel(p.category)}</span></td>
-                    <td>${formatCurrency(p.price)}</td>
-                    <td class="${
-                        !isArchived &&
-                        Number(p.stock || 0) <= calculateReorderPoint(p)
-                            ? 'text-red'
-                            : ''
-                    }">
-                        ${p.stock}
-                    </td>
-                    <td>${statusBadge}</td>
-                    <td>${escapeHtml(p.supplier || '—')}</td>
-                    ${canEdit ? `<td><div class="action-buttons">${!isArchived ? `
-                        <button class="btn btn-success btn-sm btn-icon-only" onclick="openStockModal('${p.id}', 'add')" title="Add Stock"><i class="fas fa-plus"></i></button>
-                        <button class="btn btn-danger btn-sm btn-icon-only" onclick="openStockModal('${p.id}', 'remove')" title="Remove Stock"><i class="fas fa-minus"></i></button>
-                        <button class="btn btn-warning btn-sm btn-icon-only" onclick="archiveProduct('${p.id}')" title="Archive Product"><i class="fas fa-archive"></i></button>
-                    ` : `<button class="btn restore-btn-sm" onclick="unarchiveProduct('${p.id}')" title="Restore Product"><i class="fas fa-trash-restore"></i> Restore</button>`}</div></td>` : ''}
-                </tr>`;
-            }).join('');
-        }
-
-        function escapeHtml(str = '') {
-
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
-        function toggleArchivedFilter() {
-
-            showArchivedState = !showArchivedState;
-
-            const archiveBtn =
-                document.getElementById('archiveChipBtn');
-
-            if (archiveBtn) {
-                archiveBtn.classList.toggle(
-                    'active',
-                    showArchivedState
-                );
-            }
-
-            filterProducts();
-
-        }
-
-        function renderInventory() {
-
-            products = loadProducts().map(product =>
-                updateProductStatus(product)
-            );
-
-            const activeProducts =
-                products.filter(
-                    p => !p.archived
-                );
-
-            const stats = {
-
-                total:
-                    activeProducts.length,
-
-                inStock:
-                    activeProducts.filter(
-                        p => p.status === 'in_stock'
-                    ).length,
-
-                lowStock:
-                    activeProducts.filter(
-                        p => p.status === 'low_stock'
-                    ).length,
-
-                outOfStock:
-                    activeProducts.filter(
-                        p => p.status === 'out_of_stock'
-                    ).length,
-
-                archived:
-                    products.filter(
-                        p => p.archived
-                    ).length,
-
-                totalValue:
-                    activeProducts.reduce(
-                        (sum, p) =>
-                            sum + (p.price * p.stock),
-                        0
-                    )
-            };
-
-            const canEdit = currentUser?.role !== 'loa';
-            const html = `
-                <div class="space-y-6">
-                    <div class="flex items-center justify-between">
-                        <div><h2 class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-boxes" style="color: var(--color-primary-red);"></i> Inventory Management</h2><p class="text-muted mt-1">Manage product registration, stock levels, and inventory adjustments</p></div>
-                        ${canEdit ? `<button class="btn btn-primary" onclick="showProductModal()"><i class="fas fa-plus"></i> Add Product</button>` : ''}
-                    </div>
-                    <div class="grid grid-cols-5">
-                        <div class="stat-card" style="background: var(--soft-blue); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Total Products</p><p class="text-2xl font-bold" style="color: white;">${stats.total}</p></div><i class="fas fa-box" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card" style="background: var(--soft-green); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">In Stock</p><p class="text-2xl font-bold" style="color: white;">${stats.inStock}</p></div><i class="fas fa-check-circle" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card" style="background: var(--soft-yellow); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Low Stock</p><p class="text-2xl font-bold" style="color: white;">${stats.lowStock}</p></div><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card" style="background: var(--soft-red); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Out of Stock</p><p class="text-2xl font-bold" style="color: white;">${stats.outOfStock}</p></div><i class="fas fa-times-circle" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card" style="background: var(--soft-purple); border-radius: 1rem; padding: 1.5rem;"><div><p class="text-sm" style="color: rgba(255,255,255,0.9);">Archived</p><p class="text-2xl font-bold" style="color: white;">${stats.archived}</p></div><i class="fas fa-archive" style="font-size: 2rem; color: white;"></i></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><h3 class="card-title"><i class="fas fa-list"></i> Product Inventory</h3></div>
-                        <div class="card-content">
-                    <div class="search-box">
-
-                        <!-- SEARCH -->
-
-                        <div class="search-input-wrapper">
-                            <i class="fas fa-search"></i>
-
-                            <input
-                                type="text"
-                                id="searchInput"
-                                class="search-input"
-                                placeholder="Search by product name, UID, or description..."
-                                onkeyup="filterProducts()"
-                            >
-                        </div>
-
-                        <!-- CATEGORY -->
-
-                        <select
-                            id="categoryFilter"
-                            class="filter-select"
-                            onchange="filterProducts()"
-                        >
-                            <option value="">All Categories</option>
-                            <option value="mechanical">🔧 Mechanical Components</option>
-                            <option value="electrical">⚡ Electrical Components</option>
-                            <option value="body">🚗 Body Parts</option>
-                            <option value="maintenance">🛢️ Maintenance & Fluids</option>
-                        </select>
-
-                        <!-- STATUS -->
-
-                        <select
-                            id="statusFilter"
-                            class="filter-select"
-                            onchange="filterProducts()"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="in_stock">✅ In Stock</option>
-                            <option value="low_stock">⚠️ Low Stock</option>
-                            <option value="out_of_stock">❌ Out of Stock</option>
-                        </select>
-
-                        <!-- ARCHIVE -->
-
-                        <button
-                            id="archiveChipBtn"
-                            onclick="toggleArchivedFilter()"
-                        >
-                            <i class="fas fa-box-archive"></i>
-                            <span>Archived Only</span>
-                        </button>
-
-                        <!-- CLEAR -->
-
-                        <button
-                            class="clear-filter-btn"
-                            onclick="clearFilters()"
-                        >
-                            <i class="fas fa-eraser"></i>
-                            Clear
-                        </button>
-
-                    </div>
-                            <div class="result-count" id="resultCount">
-                                <i class="fas fa-search"></i>
-                                Found ${products.filter(p => !p.archived).length} products
-                            </div>
-
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Category</th>
-                                            <th>Price</th>
-                                            <th>Stock</th>
-                                            <th>Status</th>
-                                            <th>Supplier</th>
-                                            ${canEdit ? '<th>Actions</th>' : ''}
-                                        </tr>
-                                    </thead>
-
-                                    <tbody id="productsTableBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-
-            initStockModalEvents();
-            filterProducts();
-        }
-
-        function openStockModal(productId, action) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            currentStockProduct = product;
-            currentStockAction = action;
-            currentStockQuantity = 1;
-            const quantityInput =
-                document.getElementById('stockQuantityInput');
-
-            if (quantityInput) {
-                quantityInput.value = 1;
-            }
-            
-            const modal = document.getElementById('stockModal');
-            const isAdd = action === 'add';
-            
-            // Set modal class for coloring
-            modal.className = `stock-modal-overlay ${isAdd ? 'add' : 'remove'}`;
-            
-            // Update header
-            const headerIcon = document.getElementById('stockHeaderIcon');
-            const headerTitle = document.getElementById('stockModalHeaderTitle');
-            const quantityLabel = document.getElementById('stockQuantityLabel');
-            const alertBox = document.getElementById('stockAlert');
-            const alertText = document.getElementById('stockAlertText');
-            const alertIcon = document.querySelector('#stockAlert i');
-            const confirmIcon = document.getElementById('stockConfirmIcon');
-            const confirmText = document.getElementById('stockConfirmText');
-            const productName = document.getElementById('stockProductName');
-            const productSku = document.getElementById('stockProductSku');
-            const currentValueSpan = document.getElementById('stockCurrentValue');
-            
-            if (isAdd) {
-                headerIcon.innerHTML = '<i class="fas fa-plus"></i>';
-                headerTitle.textContent = 'Increase Stock';
-                quantityLabel.textContent = 'Quantity to Add';
-                alertIcon.className = 'fas fa-plus-circle';
-                alertText.innerHTML = 'This will increase the current stock quantity.';
-                confirmIcon.className = 'fas fa-plus';
-                confirmText.textContent = 'Increase Stock';
-            } else {
-                headerIcon.innerHTML = '<i class="fas fa-minus"></i>';
-                headerTitle.textContent = 'Decrease Stock';
-                quantityLabel.textContent = 'Quantity to Remove';
-                alertIcon.className = 'fas fa-minus-circle';
-                alertText.innerHTML = 'This will decrease the current stock quantity.';
-                confirmIcon.className = 'fas fa-minus';
-                confirmText.textContent = 'Decrease Stock';
-            }
-            
-            productName.textContent = product.name;
-            productSku.textContent = `SKU: ${product.uid}`;
-            currentValueSpan.textContent = product.stock;
-            
-            updateStockModalDisplay();
-            modal.classList.add('active');
-        }
-
-        function updateStockModalDisplay() {
-
-            if (!currentStockProduct) return;
-
-            const quantityInput =
-                document.getElementById('stockQuantityInput');
-
-            const newValueSpan =
-                document.getElementById('stockNewValue');
-
-            currentStockQuantity =
-                Math.max(
-                    1,
-                    parseInt(quantityInput.value) || 1
-                );
-
-            if (currentStockQuantity < 1) {
-                currentStockQuantity = 1;
-                quantityInput.value = 1;
-            }
-            if (currentStockAction === 'add') {
-                newValueSpan.textContent = currentStockProduct.stock + currentStockQuantity;
-            } else {
-                newValueSpan.textContent = Math.max(0, currentStockProduct.stock - currentStockQuantity);
-            }
-        }
-
-        function closeStockModal() {
-            document.getElementById('stockModal').classList.remove('active');
-            currentStockProduct = null;
-            currentStockAction = null;
-            currentStockQuantity = 1;
-        }
-
-        function confirmStockAdjustment() {
-            if (!currentStockAction || !currentStockProduct) return;
-            
-            const product = products.find(p => p.id === currentStockProduct.id);
-            if (!product) return;
-            
-            const oldStock = product.stock;
-            
-            if (currentStockAction === 'add') {
-                product.stock += currentStockQuantity;
-                addAuditLog('Stock Added', `${product.name}: +${currentStockQuantity} units`);
-            } else {
-                if (currentStockQuantity > product.stock) {
-                    alert(`❌ Cannot remove ${currentStockQuantity} units. Only ${product.stock} units available.`);
-                    return;
-                }
-                product.stock -= currentStockQuantity;
-                addAuditLog('Stock Removed', `${product.name}: -${currentStockQuantity} units`);
-            }
-            
-            if (!product.stockHistory) product.stockHistory = [];
-            product.stockHistory.unshift({
-                type: currentStockAction,
-                quantity: currentStockQuantity,
-                user: currentUser?.username || 'system',
-                date: new Date().toLocaleString(),
-                oldStock: oldStock,
-                newStock: product.stock
-            });
-            if (product.stockHistory.length > 50) product.stockHistory.pop();
-            
-            updateProductStatus(product);
-            saveProducts(products);
-            closeStockModal();
-            renderInventory();
-            
-            const message = currentStockAction === 'add' 
-                ? `✅ Stock Added!\n${product.name}\n+${currentStockQuantity} units\nOld: ${oldStock} → New: ${product.stock}`
-                : `✅ Stock Removed!\n${product.name}\n-${currentStockQuantity} units\nOld: ${oldStock} → New: ${product.stock}`;
-            alert(message);
-        }
-
-        function archiveProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            if (confirm(`Archive "${product.name}"? Archived products will be hidden from main inventory.`)) {
-                product.archived = true;
-                updateProductStatus(product);
-                saveProducts(products);
-                addAuditLog('Archived Product', `Archived ${product.name}`);
-                renderInventory();
-                alert(`"${product.name}" has been archived.`);
-            }
-        }
-
-        function unarchiveProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            if (confirm(`Restore "${product.name}" from archive?`)) {
-                product.archived = false;
-                updateProductStatus(product);
-                saveProducts(products);
-                addAuditLog('Restored Product', `Restored ${product.name}`);
-                renderInventory();
-                alert(`"${product.name}" has been restored.`);
-            }
-        }
-
-        function showProductModal(product = null) {
-            const modalTitle = document.getElementById('modalTitle');
-            if (product) {
-                modalTitle.innerText = 'Edit Product';
-                document.getElementById('productId').value = product.id;
-                document.getElementById('prodName').value = product.name;
-                document.getElementById('prodCategory').value = product.category;
-                document.getElementById('prodPrice').value = product.price;
-                document.getElementById('prodStock').value = product.stock;
-                document.getElementById('prodMinStock').value = product.safetyStock || 5;
-                document.getElementById('prodSupplier').value = product.supplier || '';
-                document.getElementById('prodDescription').value = product.description || '';
-            } else {
-                modalTitle.innerText = 'Add New Product';
-                document.getElementById('productId').value = '';
-                document.getElementById('prodName').value = '';
-                document.getElementById('prodCategory').value = 'mechanical';
-                document.getElementById('prodPrice').value = 0;
-                document.getElementById('prodStock').value = 0;
-                document.getElementById('prodMinStock').value = 5;
-                document.getElementById('prodSupplier').value = '';
-                document.getElementById('prodDescription').value = '';
-            }
-            document.getElementById('productModal').classList.add('active');
-        }
-
-        function closeModal() {
-
-            document.getElementById('productModal')
-                .classList.remove('active');
-
-            document.getElementById('productId').value = '';
-            document.getElementById('prodName').value = '';
-            document.getElementById('prodCategory').value = 'mechanical';
-            document.getElementById('prodPrice').value = '0';
-            document.getElementById('prodStock').value = '0';
-            document.getElementById('prodMinStock').value = '5';
-            document.getElementById('prodSupplier').value = '';
-            document.getElementById('prodDescription').value = '';
-
-        }
-
-        function saveProduct() {
-            const id = document.getElementById('productId').value;
-            let price = parseFloat(document.getElementById('prodPrice').value) || 0;
-            let stock = parseInt(document.getElementById('prodStock').value) || 0;
-            let safetyStock = parseInt(document.getElementById('prodMinStock').value) || 0;
-            if (price < 0) price = 0;
-            if (stock < 0) stock = 0;
-            if (safetyStock < 0) safetyStock = 0;
-            let status = 'in_stock';
-            if (stock === 0) status = 'out_of_stock';
-            else if (stock <= safetyStock) status = 'low_stock';
-            const uid = id ? (products.find(p => p.id === id)?.uid || 'P' + String(Date.now()).slice(-6)) : 'P' + String(Date.now()).slice(-6);
-            const newProduct = {
-                id: 'p' + Date.now(),
-
-                uid: 'PRD-' + Date.now(),
-
-                name,
-
-                category,
-
-                price: Number(price || 0),
-
-                stock: Number(stock || 0),
-
-                safetyStock: Number(safetyStock || 0),
-
-                leadTimeDays: Number(leadTimeDays || 3),
-
-                supplier,
-
-                description,
-
-                salesCount: 0,
-
-                archived: false,
-
-                status: 'in_stock',
-
-                createdAt: new Date().toISOString(),
-
-                updatedAt: new Date().toISOString()
-            };
-
-            updateProductStatus(newProduct);
-
-            if (!newProduct.name) {
-                alert('Please enter a product name');
-                return;
-            }
-            if (id) {
-                const index = products.findIndex(p => p.id === id);
-                if (index !== -1) products[index] = newProduct;
-                addAuditLog('Edit Product', `Edited ${newProduct.name}`);
-                alert('Product updated!');
-            } else {
-                products.push(newProduct);
-                addAuditLog('Add Product', `Added ${newProduct.name}`);
-                alert('Product added!');
-            }
-            saveProducts(products);
-            closeModal();
-            renderInventory();
-        }
-
+        // ========== UI CONTROLS ==========
         function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
+            inventoryState.sidebarOpen = !inventoryState.sidebarOpen;
             const sidebar = document.getElementById('sidebar');
             const main = document.querySelector('main');
-            if (sidebarOpen) {
+            if (inventoryState.sidebarOpen) {
                 sidebar.classList.remove('sidebar-closed');
                 main.classList.remove('sidebar-closed');
             } else {
@@ -2261,123 +2095,67 @@
             if (confirm('Logout?')) {
                 localStorage.removeItem('userSession');
                 sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
+                window.location.href = LOGIN_PAGE;
             }
         }
 
-        // Set up stock modal event listeners
+        // ========== STOCK MODAL EVENT INITIALIZATION ==========
         function initStockModalEvents() {
-            const quantityInput =
-                document.getElementById('stockQuantityInput');
-
-            if (quantityInput) {
-
-                quantityInput.oninput = () => {
-
-                    let value =
-                        parseInt(quantityInput.value) || 1;
-
-                    if (value < 1) value = 1;
-
-                    currentStockQuantity = value;
-
-                    updateStockModalDisplay();
-
-                };
-
-            }
+            const quantityInput = document.getElementById('stockQuantityInput');
             const minusBtn = document.getElementById('stockMinusBtn');
             const plusBtn = document.getElementById('stockPlusBtn');
             const confirmBtn = document.getElementById('stockConfirmBtn');
             const cancelBtn = document.getElementById('stockCancelBtn');
             const closeBtn = document.getElementById('stockCloseBtn');
-            
-            if (minusBtn) {
-
-                minusBtn.onclick = () => {
-
-                    const input =
-                        document.getElementById('stockQuantityInput');
-
-                    if (currentStockQuantity > 1) {
-
-                        currentStockQuantity--;
-
-                        input.value = currentStockQuantity;
-
-                        updateStockModalDisplay();
-
-                    }
-
-                };
-
-            }
-
-            if (plusBtn) {
-
-                plusBtn.onclick = () => {
-
-                    const input =
-                        document.getElementById('stockQuantityInput');
-
-                    currentStockQuantity++;
-
-                    input.value = currentStockQuantity;
-
-                    updateStockModalDisplay();
-
-                };
-
-            }
-
-            if (confirmBtn) {
-                confirmBtn.onclick = confirmStockAdjustment;
-            }
-
-            if (cancelBtn) {
-                cancelBtn.onclick = closeStockModal;
-            }
-
-            if (closeBtn) {
-                closeBtn.onclick = closeStockModal;
-            }
-            
             const modal = document.getElementById('stockModal');
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) closeStockModal();
-                });
-            }
+
+            if (quantityInput) { quantityInput.oninput = () => { updateStockModalDisplay(); }; }
+            if (minusBtn) { minusBtn.onclick = () => { if (inventoryState.currentStockQuantity > 1) { inventoryState.currentStockQuantity--; quantityInput.value = inventoryState.currentStockQuantity; updateStockModalDisplay(); } }; }
+            if (plusBtn) { plusBtn.onclick = () => { inventoryState.currentStockQuantity++; quantityInput.value = inventoryState.currentStockQuantity; updateStockModalDisplay(); }; }
+            if (confirmBtn) confirmBtn.onclick = confirmStockAdjustment;
+            if (cancelBtn) cancelBtn.onclick = closeStockModal;
+            if (closeBtn) closeBtn.onclick = closeStockModal;
+
+            if (modal) { modal.addEventListener('click', (e) => { if (e.target === modal) closeStockModal(); }); }
+
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModal(); closeStockModal(); } });
         }
 
+        // ========== PAGE INITIALIZATION ==========
         if (currentUser) {
             document.getElementById('userName').innerText = currentUser?.fullName || 'User';
             document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
         }
-        
+
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
-            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
+            const icon = document.querySelector('#darkModeToggle i');
+            if (icon) icon.className = 'fas fa-sun';
         }
-        
+
         renderNavigation();
         renderInventory();
-        initStockModalEvents();
-        
+
         document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
         document.getElementById('logoutBtn').addEventListener('click', logout);
-        
+
+        // ========== GLOBAL EXPORTS ==========
         window.navigateTo = navigateTo;
         window.showProductModal = showProductModal;
         window.closeModal = closeModal;
         window.saveProduct = saveProduct;
         window.filterProducts = filterProducts;
+        window.debounceFilterProducts = debounceFilterProducts;
         window.clearFilters = clearFilters;
+        window.toggleArchivedFilter = toggleArchivedFilter;
         window.openStockModal = openStockModal;
         window.closeStockModal = closeStockModal;
         window.archiveProduct = archiveProduct;
         window.unarchiveProduct = unarchiveProduct;
-    </script>
+        window.updateStockModalDisplay = updateStockModalDisplay;
+
+
+</script>
 </body>
 </html>
