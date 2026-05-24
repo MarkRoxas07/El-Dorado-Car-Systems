@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - El Dorado Car Components</title>
     
+    <link rel="stylesheet" href="components/sidebar/sidebar.css">
+    <script src="components/sidebar/sidebar.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -99,106 +102,6 @@
         .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
         .card-content { padding: 1.5rem; }
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-        body.dark header { background: rgba(42, 42, 53, 0.95); }
-        .header-content {
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            height: 4rem;
-            gap: 1rem;
-        }
-        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
-        .logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
-        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
-        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.875rem; font-weight: 500; }
-        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
-
-        .layout { display: flex; }
-        aside {
-            position: fixed;
-            left: 0;
-            top: 4rem;
-            bottom: 0;
-            width: 18rem;
-            background: var(--color-bg-white);
-            border-right: 1px solid var(--color-border);
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        aside.sidebar-closed { transform: translateX(-100%); }
-        .sidebar-nav { padding: 1rem; }
-                .nav-section-title { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--color-text-secondary); 
-            text-transform: uppercase; 
-            margin: 1rem 0 0.5rem 0.5rem; 
-            letter-spacing: 0.08em;
-        }
-        .nav-section-title:first-of-type { margin-top: 0; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            color: var(--color-text-primary);
-        }
-        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
-        .nav-item.active { background: var(--color-primary-red); color: white; }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-border);
-            background: var(--color-bg-light);
-            margin-top: auto;
-        }
-
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        main {
-            flex: 1;
-            margin-left: 18rem;
-            padding: 1.5rem;
-            transition: margin-left 0.3s ease;
-        }
-        main.sidebar-closed { margin-left: 0; }
 
         .grid { display: grid; gap: 1.5rem; }
         .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
@@ -324,126 +227,60 @@
         .text-muted { color: var(--color-text-secondary); }
         .text-center { text-align: center; }
 
-        .dark-mode-toggle {
-            background: var(--color-primary-red);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 </head>
 <body>
     <div id="app">
-        <header>
-            <div class="header-content">
-                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo-section">
-                    <div class="logo"><i class="fas fa-car"></i></div>
-                    <div class="company-info">
-                        <h1>El Dorado Car Components</h1>
-                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Loading...</div>
-                        <div class="user-role" id="userRole"></div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
         
         <div class="layout">
-            <aside id="sidebar">
-                <nav class="sidebar-nav">
-                    <div id="navLinks"></div>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="system-status">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Network Status:</span>
-                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
-                    </div>
-                    <div class="system-status" style="margin-top: 0.5rem;">
-                        <i class="fas fa-code-branch"></i>
-                        <span>System Version:</span>
-                        <span>v3.0.0</span>
-                    </div>
-                </div>
-            </aside>
+            
+        <div id="sidebar-container"></div>
             
             <main id="mainContent"></main>
         </div>
     </div>
 
     <script>
-        function checkAuth() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!session) {
-                window.location.href = 'index.html';
-                return null;
+        // Load and initialize sidebar
+        (async function initPage() {
+            try {
+                const response = await fetch('components/sidebar/sidebar.html');
+                const sidebarHtml = await response.text();
+                document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+                
+                if (typeof renderNavigation === 'function') renderNavigation();
+                if (typeof initializeSidebar === 'function') initializeSidebar();
+                if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+                
+                const user = getCurrentUser();
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                initReportsPage();
+                
+            } catch (error) {
+                console.error('Error initializing reports page:', error);
             }
-            return JSON.parse(session);
-        }
+        })();
 
-        const currentUser = checkAuth();
-        const activeModule = 'reports';
-
-        const ROLE_PERMISSIONS = {
-            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'], salesAccess: 'full' },
-            inventory_clerk: { modules: ['inventory','search','help','about'], salesAccess: 'none' },
-            loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
-        };
-
-        function hasModuleAccess(moduleName) {
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-            return permissions ? permissions.modules.includes(moduleName) : false;
-        }
-
-        if (!hasModuleAccess(activeModule)) {
-            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
-        }
+        // ============ REPORTS MODULE ============
 
         function loadProducts() {
             const stored = localStorage.getItem('eldorado_products');
             if (stored) return JSON.parse(stored);
-            return [
-                { id: 'p1', uid: 'BRK001', name: 'Brake Pads Set', category: 'mechanical', price: 1250, stock: 45, salesCount: 145 },
-                { id: 'p2', uid: 'LED002', name: 'LED Headlight', category: 'electrical', price: 2800, stock: 3, salesCount: 85 },
-                { id: 'p3', uid: 'OIL003', name: 'Engine Oil', category: 'maintenance', price: 450, stock: 0, salesCount: 200 },
-                { id: 'p4', uid: 'MRR004', name: 'Side Mirror', category: 'body', price: 1800, stock: 12, salesCount: 65 },
-                { id: 'p5', uid: 'FIL005', name: 'Air Filter', category: 'mechanical', price: 350, stock: 2, salesCount: 120 },
-                { id: 'p6', uid: 'ALT006', name: 'Alternator', category: 'electrical', price: 5200, stock: 7, salesCount: 32 },
-                { id: 'p7', uid: 'BMP007', name: 'Front Bumper', category: 'body', price: 3450, stock: 5, salesCount: 28 }
-            ];
+            return []; // Empty array instead of demo data
         }
 
         function loadSales() {
             const stored = localStorage.getItem('eldorado_sales');
             if (stored) return JSON.parse(stored);
-            return [
-                { receiptNo: 'RCP-2024-0001', customerName: 'John Smith', items: [{ name: 'Brake Pads Set', quantity: 2, price: 1250 }], total: 2500, paymentMethod: 'Cash', date: new Date().toLocaleString(), cashier: 'admin' },
-                { receiptNo: 'RCP-2024-0002', customerName: 'Maria Garcia', items: [{ name: 'Engine Oil', quantity: 3, price: 450 }], total: 1350, paymentMethod: 'GCash', date: new Date().toLocaleString(), cashier: 'clerk' }
-            ];
+            return []; // Empty array instead of demo data
         }
 
         let products = loadProducts();
         let sales = loadSales();
-        let sidebarOpen = true;
 
         function formatCurrency(amount) {
             return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
@@ -457,65 +294,6 @@
         function getCategoryColor(category) {
             const colors = { mechanical: '#4dabf7', electrical: '#ffa94d', body: '#20c997', maintenance: '#9775fa' };
             return colors[category] || '#adb5bd';
-        }
-
-        function getRoleDisplayName(role) {
-            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-
-        function renderNavigation() {
-            const navSections = [
-                {
-                    title: "MAIN",
-                    items: [
-                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                    ]
-                },
-                {
-                    title: "MANAGEMENT",
-                    items: [
-                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                    ]
-                },
-                {
-                    title: "SYSTEM",
-                    items: [
-                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                    ]
-                }
-            ];
-            
-            let navHtml = '';
-            for (const section of navSections) {
-                navHtml += `<div class="nav-section-title">${section.title}</div>`;
-                for (const item of section.items) {
-                    if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `
-                        <button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')">
-                            <i class="${item.icon}" style="width: 1.25rem;"></i>
-                            <span>${item.label}</span>
-                        </button>
-                    `;
-                }
-            }
-            document.getElementById('navLinks').innerHTML = navHtml;
-        }
-
-        function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
-                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
-            };
-            if (pages[module]) window.location.href = pages[module];
         }
 
         function exportToCSV(data, filename) {
@@ -564,33 +342,20 @@
         }
 
         function showTab(tabName, clickedButton) {
-            // Hide all tab contents
             const tabs = ['overview', 'inventory', 'products', 'sales-detail'];
             tabs.forEach(tab => {
                 const element = document.getElementById(`${tab}-tab`);
                 if (element) element.classList.remove('active');
             });
-            
-            // Show selected tab content
             document.getElementById(`${tabName}-tab`).classList.add('active');
             
-            // Update active state on buttons
             const buttons = document.querySelectorAll('.tab-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
-            if (clickedButton) {
-                clickedButton.classList.add('active');
-            } else {
-                // Find button by tab name
-                const buttonMap = {
-                    'overview': 0,
-                    'inventory': 1,
-                    'products': 2,
-                    'sales-detail': 3
-                };
-                if (buttons[buttonMap[tabName]]) {
-                    buttons[buttonMap[tabName]].classList.add('active');
-                }
-            }
+            if (clickedButton) clickedButton.classList.add('active');
+        }
+
+        function initReportsPage() {
+            renderReports();
         }
 
         function renderReports() {
@@ -739,7 +504,7 @@
                                                         <td>${((count/totalTransactions)*100).toFixed(1)}%</div></td>
                                                     </tr>
                                                 `).join('')}
-                                                ${Object.keys(paymentMethods).length === 0 ? '<tr><td colspan="3" class="text-center">No sales data available</div></td></tr>' : ''}
+                                                ${Object.keys(paymentMethods).length === 0 ? '<tr><td colspan="3" class="text-center">No sales data available</div></tr>' : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -790,7 +555,7 @@
                             </div>
                             <div class="card-content">
                                 <div class="table-container">
-                                    <table>
+                                    </table>
                                         <thead>
                                             <tr><th>Rank</th><th>Product Name</th><th>Category</th><th>Units Sold</th><th>Revenue</th></tr>
                                         </thead>
@@ -846,52 +611,7 @@
             document.getElementById('mainContent').innerHTML = html;
         }
 
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            const sidebar = document.getElementById('sidebar');
-            const main = document.querySelector('main');
-            if (sidebarOpen) {
-                sidebar.classList.remove('sidebar-closed');
-                main.classList.remove('sidebar-closed');
-            } else {
-                sidebar.classList.add('sidebar-closed');
-                main.classList.add('sidebar-closed');
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            const icon = document.querySelector('#darkModeToggle i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Initialize
-        document.getElementById('userName').innerText = currentUser?.fullName || 'User';
-        document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
-        
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
-        }
-        
-        renderNavigation();
-        renderReports();
-        
-        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-        
-        window.navigateTo = navigateTo;
+        // Make functions available globally
         window.showTab = showTab;
         window.exportSalesReport = exportSalesReport;
         window.exportInventoryReport = exportInventoryReport;

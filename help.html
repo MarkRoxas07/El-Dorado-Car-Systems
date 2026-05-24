@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help & Support - El Dorado Car Components</title>
     
+    <link rel="stylesheet" href="components/sidebar/sidebar.css">
+    <script src="components/sidebar/sidebar.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -115,106 +118,6 @@
         .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
         .card-content { padding: 1.5rem; }
 
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-        body.dark header { background: rgba(42, 42, 53, 0.95); }
-        .header-content {
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            height: 4rem;
-            gap: 1rem;
-        }
-        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
-        .logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
-        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
-        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.875rem; font-weight: 500; }
-        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
-
-        .layout { display: flex; }
-        aside {
-            position: fixed;
-            left: 0;
-            top: 4rem;
-            bottom: 0;
-            width: 18rem;
-            background: var(--color-bg-white);
-            border-right: 1px solid var(--color-border);
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        aside.sidebar-closed { transform: translateX(-100%); }
-        .sidebar-nav { padding: 1rem; }
-        .nav-section-title { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--color-text-secondary); 
-            text-transform: uppercase; 
-            margin: 1rem 0 0.5rem 0.5rem; 
-            letter-spacing: 0.08em;
-        }
-        .nav-section-title:first-of-type { margin-top: 0; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            color: var(--color-text-primary);
-        }
-        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
-        .nav-item.active { background: var(--color-primary-red); color: white; }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-border);
-            background: var(--color-bg-light);
-            margin-top: auto;
-        }
-
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        main {
-            flex: 1;
-            margin-left: 18rem;
-            padding: 1.5rem;
-            transition: margin-left 0.3s ease;
-        }
-        main.sidebar-closed { margin-left: 0; }
-
         .grid { display: grid; gap: 1.5rem; }
         .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
         .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
@@ -299,19 +202,6 @@
         .text-muted { color: var(--color-text-secondary); }
         .text-center { text-align: center; }
 
-        .dark-mode-toggle {
-            background: var(--color-primary-red);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         .success-message {
             background: var(--color-green-light);
             color: #15803d;
@@ -324,139 +214,48 @@
 </head>
 <body>
     <div id="app">
-        <header>
-            <div class="header-content">
-                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo-section">
-                    <div class="logo"><i class="fas fa-car"></i></div>
-                    <div class="company-info">
-                        <h1>El Dorado Car Components</h1>
-                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Loading...</div>
-                        <div class="user-role" id="userRole"></div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
         
         <div class="layout">
-            <aside id="sidebar">
-                <nav class="sidebar-nav">
-                    <div id="navLinks"></div>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="system-status">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Network Status:</span>
-                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
-                    </div>
-                    <div class="system-status" style="margin-top: 0.5rem;">
-                        <i class="fas fa-code-branch"></i>
-                        <span>System Version:</span>
-                        <span>v3.0.0</span>
-                    </div>
-                </div>
-            </aside>
+
+        <div id="sidebar-container"></div>
             
             <main id="mainContent"></main>
         </div>
     </div>
 
     <script>
-        function checkAuth() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!session) {
-                window.location.href = 'index.html';
-                return null;
+        // Load and initialize sidebar
+        (async function initPage() {
+            try {
+                const response = await fetch('components/sidebar/sidebar.html');
+                const sidebarHtml = await response.text();
+                document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+                
+                if (typeof renderNavigation === 'function') renderNavigation();
+                if (typeof initializeSidebar === 'function') initializeSidebar();
+                if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+                
+                const user = getCurrentUser();
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                initHelpPage();
+                
+            } catch (error) {
+                console.error('Error initializing help page:', error);
             }
-            return JSON.parse(session);
-        }
+        })();
 
-        const currentUser = checkAuth();
-        const activeModule = 'help';
-
-        const ROLE_PERMISSIONS = {
-            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'], salesAccess: 'full' },
-            inventory_clerk: { modules: ['inventory','search','help','about'], salesAccess: 'none' },
-            loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
-        };
-
-        function hasModuleAccess(moduleName) {
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-            return permissions ? permissions.modules.includes(moduleName) : false;
-        }
-
-        if (!hasModuleAccess(activeModule)) {
-            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
-        }
+        // ============ HELP & SUPPORT MODULE ============
 
         function addAuditLog(action, details) {
             const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+            const currentUser = getCurrentUser();
             logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString(), module: 'Help', severity: 'info' });
             if (logs.length > 100) logs.pop();
             localStorage.setItem('eldorado_audit', JSON.stringify(logs));
-        }
-
-        function getRoleDisplayName(role) {
-            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-
-                function renderNavigation() {
-            const navSections = [
-                { title: "MAIN", items: [
-                    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                    { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                    { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                    { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                ] },
-                { title: "MANAGEMENT", items: [
-                    { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                    { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                    { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                ] },
-                { title: "SYSTEM", items: [
-                    { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                    { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                    { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                ] }
-            ];
-            
-            let navHtml = '';
-            for (const section of navSections) {
-                navHtml += `<div class="nav-section-title">${section.title}</div>`;
-                for (const item of section.items) {
-                    if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `
-                        <button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')">
-                            <i class="${item.icon}" style="width: 1.25rem;"></i>
-                            <span>${item.label}</span>
-                        </button>
-                    `;
-                }
-            }
-            document.getElementById('navLinks').innerHTML = navHtml;
-        }
-
-        function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
-                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
-            };
-            if (pages[module]) window.location.href = pages[module];
         }
 
         function toggleFAQ(faqId) {
@@ -504,6 +303,10 @@
             }, 5000);
         }
 
+        function initHelpPage() {
+            renderHelp();
+        }
+
         function renderHelp() {
             const html = `
                 <div class="space-y-6">
@@ -515,7 +318,6 @@
                         <p class="text-muted mt-1">Get assistance with using the El Dorado Car Components system</p>
                     </div>
                     
-                    <!-- Quick Contact Cards (3 cards with soft colors) -->
                     <div class="grid grid-cols-3">
                         <div class="contact-card" style="background: var(--soft-sky);">
                             <i class="fas fa-headset" style="font-size: 2rem; color: white;"></i>
@@ -535,7 +337,6 @@
                     </div>
                     
                     <div class="grid grid-cols-2">
-                        <!-- FAQ Section -->
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-question"></i> Frequently Asked Questions</h3>
@@ -600,7 +401,6 @@
                             </div>
                         </div>
                         
-                        <!-- Support Ticket Form -->
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Submit Support Ticket</h3>
@@ -635,7 +435,6 @@
                         </div>
                     </div>
                     
-                    <!-- System Status - Updated with unique icons -->
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><i class="fas fa-check-circle"></i> System Status</h3>
@@ -655,60 +454,12 @@
                             </div>
                         </div>
                     </div>
+                </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
         }
 
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            const sidebar = document.getElementById('sidebar');
-            const main = document.querySelector('main');
-            if (sidebarOpen) {
-                sidebar.classList.remove('sidebar-closed');
-                main.classList.remove('sidebar-closed');
-            } else {
-                sidebar.classList.add('sidebar-closed');
-                main.classList.add('sidebar-closed');
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            const icon = document.querySelector('#darkModeToggle i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
-            }
-        }
-
-        let sidebarOpen = true;
-
-        // Initialize
-        if (currentUser) {
-            document.getElementById('userName').innerText = currentUser?.fullName || 'User';
-            document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
-        }
-        
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
-        }
-        
-        renderNavigation();
-        renderHelp();
-        
-        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-        
-        window.navigateTo = navigateTo;
+        // Make functions available globally
         window.toggleFAQ = toggleFAQ;
         window.submitSupportTicket = submitSupportTicket;
     </script>

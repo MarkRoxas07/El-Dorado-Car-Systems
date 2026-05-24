@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - El Dorado Car Components</title>
     
+    <link rel="stylesheet" href="components/sidebar/sidebar.css">
+    <script src="components/sidebar/sidebar.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -131,109 +134,6 @@
             flex-direction: column;
             gap: 14px;
         }
-
-        /* ===== HEADER STYLES ===== */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-        body.dark header { background: rgba(42, 42, 53, 0.95); }
-        .header-content {
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            height: 4rem;
-            gap: 1rem;
-        }
-        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
-        .logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
-        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
-        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.875rem; font-weight: 500; }
-        .user-role-display { font-size: 0.75rem; color: var(--color-text-secondary); }
-
-        /* ===== SIDEBAR STYLES (Matching Inventory) ===== */
-        .layout { display: flex; }
-        aside {
-            position: fixed;
-            left: 0;
-            top: 4rem;
-            bottom: 0;
-            width: 18rem;
-            background: var(--color-bg-white);
-            border-right: 1px solid var(--color-border);
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        aside.sidebar-closed { transform: translateX(-100%); }
-        .sidebar-nav { padding: 1rem; }
-        .nav-section-title { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--color-text-secondary); 
-            text-transform: uppercase; 
-            margin: 1rem 0 0.5rem 0.5rem; 
-            letter-spacing: 0.08em;
-        }
-        .nav-section-title:first-of-type { margin-top: 0; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            color: var(--color-text-primary);
-        }
-        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
-        .nav-item.active { background: var(--color-primary-red); color: white; }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-border);
-            background: var(--color-bg-light);
-            margin-top: auto;
-        }
-
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        main {
-            flex: 1;
-            margin-left: 18rem;
-            padding: 1.5rem;
-            transition: margin-left 0.3s ease;
-        }
-        main.sidebar-closed { margin-left: 0; }
 
         /* ===== GRID & STAT CARDS ===== */
         .grid { display: grid; gap: 1.5rem; }
@@ -730,19 +630,6 @@
         .text-sm { font-size: 0.875rem; }
         .font-medium { font-weight: 500; }
 
-        .dark-mode-toggle {
-            background: var(--color-primary-red);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         .toast-msg {
             position: fixed;
             bottom: 24px;
@@ -779,52 +666,11 @@
     </style>
 </head>
 <body>
-    <div id="app">
-        <header>
-            <div class="header-content">
-                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo-section">
-                    <div class="logo"><i class="fas fa-car"></i></div>
-                    <div class="company-info">
-                        <h1>El Dorado Car Components</h1>
-                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Loading...</div>
-                        <div class="user-role-display" id="headerUserRole"></div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-        
-        <div class="layout">
-            <aside id="sidebar">
-                <nav class="sidebar-nav">
-                    <div id="navLinks"></div>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="system-status">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Network Status:</span>
-                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
-                    </div>
-                    <div class="system-status" style="margin-top: 0.5rem;">
-                        <i class="fas fa-code-branch"></i>
-                        <span>System Version:</span>
-                        <span>v3.0.0</span>
-                    </div>
-                </div>
-            </aside>
+        <div id="app">
+            
+            <div class="layout">
+
+            <div id="sidebar-container"></div>
             
             <main id="mainContent"></main>
         </div>
@@ -905,649 +751,282 @@
         </div>
     </div>
 
-    <script>
-        // Keep all your existing JavaScript exactly as it was
-        function showToast(message, isError = false) {
-            const toast = document.createElement('div');
-            toast.className = 'toast-msg';
-            toast.style.borderLeftColor = isError ? 'var(--color-red)' : 'var(--color-green)';
-            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right: 8px;"></i>${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2800);
-        }
-        
-        const LOGIN_PAGE = 'index.html';
-        const CURRENT_PAGE = 'user_management';
-
-        const SYSTEM_PAGES = {
-            dashboard: 'dashboard.html',
-            inventory: 'inventory.html',
-            sales: 'sales.html',
-            user_management: 'users.html',
-            reports: 'reports.html',
-            audit_logs: 'audit.html',
-            search: 'search.html',
-            maintenance: 'maintenance.html',
-            help: 'help.html',
-            about: 'about.html'
-        };
-
-        // ========================================
-        // CENTRALIZED AUTHENTICATION SYSTEM
-        // ========================================
-
-        function normalizeRoles(user) {
-
-            if (!user) return [];
-
-            if (Array.isArray(user.roles)) {
-                return user.roles;
-            }
-
-            if (typeof user.role === 'string') {
-
-                user.roles = [user.role];
-
-                return user.roles;
-            }
-
-            user.roles = [];
-
-            return user.roles;
-        }
-
-        function ensureUserRoleData(user) {
-
-            if (!user) return user;
-
-            if (!Array.isArray(user.roles)) {
-
-                user.roles =
-                    typeof user.role === 'string'
-                        ? [user.role]
-                        : [];
-            }
-
-            if (!user.role && user.roles.length) {
-                user.role = user.roles[0];
-            }
-
-            return user;
-        }
-
-        function mergeRoles(roles) {
-
-            const list = [];
-
-            if (Array.isArray(roles)) {
-
-                roles.forEach(role => {
-
-                    if (Array.isArray(role)) {
-                        return role.forEach(r => list.push(r));
+        <script>
+            // Load and initialize sidebar
+            (async function initPage() {
+                try {
+                    const response = await fetch('components/sidebar/sidebar.html');
+                    const sidebarHtml = await response.text();
+                    document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+                    
+                    if (typeof renderNavigation === 'function') renderNavigation();
+                    if (typeof initializeSidebar === 'function') initializeSidebar();
+                    if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+                    
+                    const user = getCurrentUser();
+                    if (!user) {
+                        window.location.href = 'index.html';
+                        return;
                     }
-
-                    if (role) {
-                        list.push(role);
-                    }
-                });
-
-            } else if (roles) {
-
-                list.push(roles);
-            }
-
-            return Array.from(new Set(list));
-        }
-
-        function getCurrentUser() {
-
-            const sessionJSON =
-                localStorage.getItem('userSession') ||
-                sessionStorage.getItem('userSession');
-
-            if (!sessionJSON) return null;
-
-            let sessionData;
-
-            try {
-
-                sessionData = JSON.parse(sessionJSON);
-
-            } catch (e) {
-
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-
-                return null;
-            }
-
-            ensureUserRoleData(sessionData);
-
-            if (
-                !sessionData.expiresAt ||
-                Date.now() > sessionData.expiresAt
-            ) {
-
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-
-                if (
-                    window.location.pathname &&
-                    !window.location.pathname.includes(LOGIN_PAGE)
-                ) {
-
-                    window.location.href = LOGIN_PAGE;
+                    
+                    // Initialize user management page
+                    initUserManagement();
+                    
+                } catch (error) {
+                    console.error('Error initializing user management:', error);
                 }
+            })();
 
-                return null;
-            }
-
-            return sessionData;
-        }
-
-        function requireAuth() {
-
-            const currentUser = getCurrentUser();
-
-            if (!currentUser) {
-
-                window.location.href = LOGIN_PAGE;
-
-                return null;
-            }
-
-        if (currentUser.active === false) {
-
-            logout(false);
-
-            return null;
-        }
-
-            return currentUser;
-        }
-
-        function logout(showConfirmation = true) {
-
-            if (
-                showConfirmation &&
-                !confirm('Are you sure you want to logout?')
-            ) {
-
-                return;
-            }
-
-            addAuditLog(
-            'User Logout',
-            `${currentUser?.username || 'Unknown'} logged out`
-        );
-
-            localStorage.removeItem('userSession');
-            sessionStorage.removeItem('userSession');
-
-            window.location.href = LOGIN_PAGE;
-        }
-
-        const currentUser = requireAuth();
-
-        // ========================================
-        // ROLE-BASED ACCESS CONTROL (RBAC)
-        // ========================================
-
-        const ROLE_PERMISSIONS = {
-
-            admin: {
-                modules: [
-                    'dashboard',
-                    'inventory',
-                    'sales',
-                    'search',
-                    'user_management',
-                    'reports',
-                    'audit_logs',
-                    'maintenance',
-                    'help',
-                    'about'
-                ]
-            },
-
-            inventory_clerk: {
-                modules: [
-                    'inventory',
-                    'search',
-                    'help',
-                    'about'
-                ]
-            },
-
-            loa: {
-                modules: [
-                    'sales',
-                    'search',
-                    'help',
-                    'about'
-                ]
-            }
-        };
-
-        function checkPermissions(userRoles, moduleName) {
-
-            const normalizedRoles = mergeRoles(userRoles);
-
-            return normalizedRoles.some(role => {
-
-                const permissions = ROLE_PERMISSIONS[role];
-
-                return (
-                    permissions &&
-                    permissions.modules.includes(moduleName)
-                );
-            });
-        }
-
-        function hasModuleAccess(moduleName) {
-
-            return checkPermissions(
-                currentUser.roles,
-                moduleName
-            );
-        }
-
-        if (!hasModuleAccess(CURRENT_PAGE)) {
-
-            window.location.href =
-                hasModuleAccess('dashboard')
-                    ? SYSTEM_PAGES.dashboard
-                    : LOGIN_PAGE;
-        }
-        
-        function loadUsers() {
-
-            const stored =
-                localStorage.getItem('eldorado_users');
-
-            if (!stored) {
-
-                localStorage.setItem(
-                    'eldorado_users',
-                    JSON.stringify([])
-                );
-
-                return [];
-            }
-
-            try {
-
-                return JSON.parse(stored);
-
-            } catch {
-
-                localStorage.removeItem('eldorado_users');
-
-                return [];
-            }
-        }
-        
-        function saveUsers(users) { localStorage.setItem('eldorado_users', JSON.stringify(users)); }
-
-        function synchronizeCurrentSession() {
-
-            const sessionJSON =
-                localStorage.getItem('userSession') ||
-                sessionStorage.getItem('userSession');
-
-            if (!sessionJSON) return;
-
-            let sessionData;
-
-            try {
-
-                sessionData = JSON.parse(sessionJSON);
-
-            } catch {
-
-                return;
-            }
-
-            const updatedUser = users.find(
-                u => u.username === sessionData.username
-            );
-
-            if (!updatedUser) return;
-
-            const updatedSession = {
-                ...sessionData,
-                ...updatedUser
-            };
-
-            if (localStorage.getItem('userSession')) {
-
-                localStorage.setItem(
-                    'userSession',
-                    JSON.stringify(updatedSession)
-                );
-            }
-
-            if (sessionStorage.getItem('userSession')) {
-
-                sessionStorage.setItem(
-                    'userSession',
-                    JSON.stringify(updatedSession)
-                );
-            }
-        }
-        
-        function addAuditLog(action, details) {
-            const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
-            logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString() });
-            if (logs.length > 100) logs.pop();
-            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
-        }
-        
-        let users = loadUsers();
-        let sidebarOpen = true;
-        
-        function getRoleDisplayName(role) {
-            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-        
-        function getRoleIcon(role) {
-            const icons = { admin: 'fa-crown', inventory_clerk: 'fa-clipboard-check', loa: 'fa-receipt' };
-            return icons[role] || 'fa-user';
-        }
-        
-        function getRolePillClass(role) {
-            const classes = { admin: 'admin', inventory_clerk: 'clerk', loa: 'loa' };
-            return classes[role] || 'admin';
-        }
-
-        function renderRoleDisplay(role) {
-
-            return `
-                <div class="role-display ${role}">
-                    <i class="fas ${getRoleIcon(role)}"></i>
-                    <span>${getRoleDisplayName(role)}</span>
-                </div>
-            `;
-        }
-        
-        function renderCurrentUserHeader() {
-
-            const currentUser = getCurrentUser();
-
-            if (!currentUser) return;
-
-            document.getElementById('userName').innerText =
-                currentUser.fullName || currentUser.username;
-
-            const headerRole =
-                document.getElementById('headerUserRole');
-
-            if (!headerRole) return;
-
-            headerRole.innerHTML = `
-                <div class="role-display ${currentUser.role}">
-                    <i class="fas ${getRoleIcon(currentUser.role)}"></i>
-                    <span>${getRoleDisplayName(currentUser.role)}</span>
-                </div>
-            `;
-        }
-
-        function renderNavigation() {
-            const navSections = [
-                { title: "MAIN", items: [
-                    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                    { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                    { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                    { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                ] },
-                { title: "MANAGEMENT", items: [
-                    { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                    { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                    { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                ] },
-                { title: "SYSTEM", items: [
-                    { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                    { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                    { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                ] }
-            ];
-            let navHtml = '';
-            for (const section of navSections) {
-                navHtml += `<div class="nav-section-title">${section.title}</div>`;
-                for (const item of section.items) {
-                    if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `<button class="nav-item ${item.id === CURRENT_PAGE ? 'active' : ''}" onclick="navigateTo('${item.id}')"><i class="${item.icon}" style="width: 1.25rem;"></i><span>${item.label}</span></button>`;
-                }
-            }
-            document.getElementById('navLinks').innerHTML = navHtml;
-        }
-
-        function navigateTo(module) {
-
-            if (!SYSTEM_PAGES[module]) {
-                return;
-            }
-
-            window.location.href =
-                SYSTEM_PAGES[module];
-        }
-        
-        function renderUsers() {
-
-            users = loadUsers();
-
-            const stats = {
-                total: users.length,
-                active: users.filter(u => u.active !== false).length,
-                inactive: users.filter(u => u.active === false).length,
-                admins: users.filter(u => u.role === 'admin').length
-            };
+            // ============ USER MANAGEMENT MODULE ============
             
-            const searchInputElement =
-                document.getElementById('searchInput');
-
-            const searchTypeElement =
-                document.getElementById('userSearchType');
-
-            const roleFilterElement =
-                document.getElementById('roleFilter');
-
-            const statusFilterElement =
-                document.getElementById('statusFilter');
-
-            const searchTerm =
-                searchInputElement?.value.toLowerCase() || '';
-
-            const searchType =
-                searchTypeElement?.value || 'name';
-
-            const roleFilter =
-                roleFilterElement?.value || '';
-
-            const statusFilter =
-                statusFilterElement?.value || '';
-
-            let filteredUsers = [...users];
-            if (searchTerm) {
-                filteredUsers = filteredUsers.filter(u => {
-
-                    if (searchType === 'name') {
-                        return u.fullName.toLowerCase().includes(searchTerm);
-                    }
-
-                    if (searchType === 'username') {
-                        return u.username.toLowerCase().includes(searchTerm);
-                    }
-
-                    if (searchType === 'email') {
-                        return u.email.toLowerCase().includes(searchTerm);
-                    }
-
-                    return true;
-                });
-            }
-            if (roleFilter) filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
-            if (statusFilter) {
-                if (statusFilter === 'active') filteredUsers = filteredUsers.filter(u => u.active !== false);
-                if (statusFilter === 'inactive') filteredUsers = filteredUsers.filter(u => u.active === false);
+            function showToast(message, isError = false) {
+                const toast = document.createElement('div');
+                toast.className = 'toast-msg';
+                toast.style.borderLeftColor = isError ? 'var(--color-red)' : 'var(--color-green)';
+                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right: 8px;"></i>${message}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2800);
             }
             
-            const html = `
-                <div class="space-y-6">
-                    <div class="flex items-center justify-between">
-                        <div><h2 class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-users" style="color: var(--color-primary-red);"></i>User Management</h2><p class="text-muted mt-1">Manage system users and access levels</p></div>
-                        <button class="btn btn-primary" id="addUserBtn"><i class="fas fa-plus"></i> Add User</button>
+            function loadUsers() {
+                const stored = localStorage.getItem('eldorado_users');
+                if (!stored) {
+                    localStorage.setItem('eldorado_users', JSON.stringify([]));
+                    return [];
+                }
+                try {
+                    return JSON.parse(stored);
+                } catch {
+                    localStorage.removeItem('eldorado_users');
+                    return [];
+                }
+            }
+            
+            function saveUsers(users) { 
+                localStorage.setItem('eldorado_users', JSON.stringify(users)); 
+            }
+
+            function synchronizeCurrentSession() {
+                const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+                if (!sessionJSON) return;
+                let sessionData;
+                try {
+                    sessionData = JSON.parse(sessionJSON);
+                } catch {
+                    return;
+                }
+                const updatedUser = users.find(u => u.username === sessionData.username);
+                if (!updatedUser) return;
+                const updatedSession = { ...sessionData, ...updatedUser };
+                if (localStorage.getItem('userSession')) {
+                    localStorage.setItem('userSession', JSON.stringify(updatedSession));
+                }
+                if (sessionStorage.getItem('userSession')) {
+                    sessionStorage.setItem('userSession', JSON.stringify(updatedSession));
+                }
+            }
+            
+            function addAuditLog(action, details) {
+                const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+                const currentUser = getCurrentUser();
+                logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString() });
+                if (logs.length > 100) logs.pop();
+                localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+            }
+            
+            let users = loadUsers();
+            
+            function renderRoleDisplay(role) {
+                const roleNames = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
+                const roleIcons = { admin: 'fa-crown', inventory_clerk: 'fa-clipboard-check', loa: 'fa-receipt' };
+                const roleColors = { admin: '#c084fc', inventory_clerk: '#60a5fa', loa: '#4ade80' };
+                return `
+                    <div class="role-display ${role}" style="color: ${roleColors[role]};">
+                        <i class="fas ${roleIcons[role]}"></i>
+                        <span>${roleNames[role]}</span>
                     </div>
-                    <div class="grid grid-cols-4">
-                        <div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Total Users</p><p class="stat-value">${stats.total}</p></div><i class="fas fa-users" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">Active Users</p><p class="stat-value">${stats.active}</p></div><i class="fas fa-check-circle" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card-soft" style="background: var(--soft-red);"><div><p class="text-sm">Inactive Users</p><p class="stat-value">${stats.inactive}</p></div><i class="fas fa-user-slash" style="font-size: 2rem; color: white;"></i></div>
-                        <div class="stat-card-soft" style="background: var(--soft-purple);"><div><p class="text-sm">Administrators</p><p class="stat-value">${stats.admins}</p></div><i class="fas fa-crown" style="font-size: 2rem; color: white;"></i></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><h3 class="card-title"><i class="fas fa-list"></i> System Users</h3></div>
-                        <div class="card-content">
-                            <div class="search-box">
-                                <div class="search-input-wrapper">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name, username, or email..." onkeyup="renderUsers()">
+                `;
+            }
+            
+            function renderUsers() {
+                users = loadUsers();
+                
+                const stats = {
+                    total: users.length,
+                    active: users.filter(u => u.active !== false).length,
+                    inactive: users.filter(u => u.active === false).length,
+                    admins: users.filter(u => u.role === 'admin').length
+                };
+                
+                const searchInputElement = document.getElementById('searchInput');
+                const searchTypeElement = document.getElementById('userSearchType');
+                const roleFilterElement = document.getElementById('roleFilter');
+                const statusFilterElement = document.getElementById('statusFilter');
+                
+                const searchTerm = searchInputElement?.value.toLowerCase() || '';
+                const searchType = searchTypeElement?.value || 'name';
+                const roleFilter = roleFilterElement?.value || '';
+                const statusFilter = statusFilterElement?.value || '';
+                
+                let filteredUsers = [...users];
+                if (searchTerm) {
+                    filteredUsers = filteredUsers.filter(u => {
+                        if (searchType === 'name') return u.fullName.toLowerCase().includes(searchTerm);
+                        if (searchType === 'username') return u.username.toLowerCase().includes(searchTerm);
+                        if (searchType === 'email') return u.email.toLowerCase().includes(searchTerm);
+                        return true;
+                    });
+                }
+                if (roleFilter) filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
+                if (statusFilter) {
+                    if (statusFilter === 'active') filteredUsers = filteredUsers.filter(u => u.active !== false);
+                    if (statusFilter === 'inactive') filteredUsers = filteredUsers.filter(u => u.active === false);
+                }
+                
+                const html = `
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div><h2 class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-users" style="color: var(--color-primary-red);"></i>User Management</h2><p class="text-muted mt-1">Manage system users and access levels</p></div>
+                            <button class="btn btn-primary" id="addUserBtn"><i class="fas fa-plus"></i> Add User</button>
+                        </div>
+                        <div class="grid grid-cols-4">
+                            <div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Total Users</p><p class="stat-value">${stats.total}</p></div><i class="fas fa-users" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">Active Users</p><p class="stat-value">${stats.active}</p></div><i class="fas fa-check-circle" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card-soft" style="background: var(--soft-red);"><div><p class="text-sm">Inactive Users</p><p class="stat-value">${stats.inactive}</p></div><i class="fas fa-user-slash" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card-soft" style="background: var(--soft-purple);"><div><p class="text-sm">Administrators</p><p class="stat-value">${stats.admins}</p></div><i class="fas fa-crown" style="font-size: 2rem; color: white;"></i></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h3 class="card-title"><i class="fas fa-list"></i> System Users</h3></div>
+                            <div class="card-content">
+                                <div class="search-box">
+                                    <div class="search-input-wrapper">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="searchInput" class="search-input" placeholder="Search by name, username, or email..." onkeyup="renderUsers()">
+                                    </div>
+                                    <select id="userSearchType" class="filter-select" onchange="updateUserSearchPlaceholder(); renderUsers()">
+                                        <option value="name">Search by Name</option>
+                                        <option value="username">Search by Username</option>
+                                        <option value="email">Search by Email</option>
+                                    </select>
+                                    <select id="roleFilter" class="filter-select" onchange="renderUsers()">
+                                        <option value="">All Roles</option>
+                                        <option value="admin">Administrator</option>
+                                        <option value="inventory_clerk">Inventory Clerk</option>
+                                        <option value="loa">LOA (Cashier)</option>
+                                    </select>
+                                    <select id="statusFilter" class="filter-select" onchange="renderUsers()">
+                                        <option value="">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                    <button class="clear-filter-btn" onclick="clearFilters()">
+                                        <i class="fas fa-eraser"></i> Clear
+                                    </button>
                                 </div>
-                                <select id="userSearchType" class="filter-select" onchange="updateUserSearchPlaceholder(); renderUsers()">
-                                    <option value="name">Search by Name</option>
-                                    <option value="username">Search by Username</option>
-                                    <option value="email">Search by Email</option>
-                                </select>
-                                <select id="roleFilter" class="filter-select" onchange="renderUsers()">
-                                    <option value="">All Roles</option>
-                                    <option value="admin">Administrator</option>
-                                    <option value="inventory_clerk">Inventory Clerk</option>
-                                    <option value="loa">LOA (Cashier)</option>
-                                </select>
-                                <select id="statusFilter" class="filter-select" onchange="renderUsers()">
-                                    <option value="">All Status</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                                <button class="clear-filter-btn" onclick="clearFilters()">
-                                    <i class="fas fa-eraser"></i> Clear
-                                </button>
-                            </div>
-                            <div class="result-count">
-                                <i class="fas fa-search"></i> Found ${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''}
-                            </div>
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr><th>User</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        ${filteredUsers.map(u => `<tr>
-                                            <td><div class="font-medium">${u.fullName}</div></td>
-                                            <td><i class="fas fa-at"></i> ${u.username}</td>
-                                            <td>
-                                                ${renderRoleDisplay(u.role)}
-                                            </td>
-                                            <td>${u.email}</td>
-                                            <td><span class="badge ${u.active !== false ? 'badge-success' : 'badge-danger'}"><i class="fas fa-circle"></i> ${u.active !== false ? 'Active' : 'Inactive'}</span></td>
-                                            <td><small>${new Date(u.createdAt).toLocaleDateString()}</small></td>
-                                            <td><div class="flex gap-2">
-                                                <button class="btn btn-purple btn-sm edit-user" data-id="${u.id}"><i class="fas fa-edit"></i></button>
-                                                ${u.username !== 'admin' ? `
-                                                <button class="btn btn-danger btn-sm toggle-status" data-id="${u.id}">
-                                                    <i class="fas ${u.active !== false ? 'fa-ban' : 'fa-check-circle'}"></i>
-                                                </button>
-                                                ` : ''}
-                                            </div></td>
-                                        </tr>`).join('')}
-                                    </tbody>
-                                </table>
+                                <div class="result-count">
+                                    <i class="fas fa-search"></i> Found ${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''}
+                                </div>
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr><th>User</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${filteredUsers.map(u => `<td>
+                                                <td><div class="font-medium">${u.fullName}</div></td>
+                                                <td><i class="fas fa-at"></i> ${u.username}</td>
+                                                <td>${renderRoleDisplay(u.role)}</div></td>
+                                                <td>${u.email}</td>
+                                                <td><span class="badge ${u.active !== false ? 'badge-success' : 'badge-danger'}"><i class="fas fa-circle"></i> ${u.active !== false ? 'Active' : 'Inactive'}</span></td>
+                                                <td><small>${new Date(u.createdAt).toLocaleDateString()}</small></td>
+                                                <td><div class="flex gap-2">
+                                                    <button class="btn btn-purple btn-sm edit-user" data-id="${u.id}"><i class="fas fa-edit"></i></button>
+                                                    ${u.username !== 'admin' ? `
+                                                    <button class="btn btn-danger btn-sm toggle-status" data-id="${u.id}">
+                                                        <i class="fas ${u.active !== false ? 'fa-ban' : 'fa-check-circle'}"></i>
+                                                    </button>
+                                                    ` : ''}
+                                                </div></td>
+                                            </tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-
-            document.getElementById('searchInput').value =
-                searchInputElement?.value || '';
-
-            document.getElementById('userSearchType').value =
-                searchType;
-
-            document.getElementById('roleFilter').value =
-                roleFilter;
-
-            document.getElementById('statusFilter').value =
-                statusFilter;
-
-            updateUserSearchPlaceholder();
+                `;
+                document.getElementById('mainContent').innerHTML = html;
+                
+                document.getElementById('searchInput').value = searchInputElement?.value || '';
+                document.getElementById('userSearchType').value = searchType;
+                document.getElementById('roleFilter').value = roleFilter;
+                document.getElementById('statusFilter').value = statusFilter;
+                
+                updateUserSearchPlaceholder();
+                
+                document.getElementById('addUserBtn')?.addEventListener('click', () => openUserModal());
+                document.querySelectorAll('.edit-user').forEach(btn => btn.addEventListener('click', () => { 
+                    const id = btn.getAttribute('data-id'); 
+                    const user = users.find(u => u.id === id); 
+                    if(user) openUserModal(user); 
+                }));
+                document.querySelectorAll('.toggle-status').forEach(btn => btn.addEventListener('click', () => { 
+                    const id = btn.getAttribute('data-id'); 
+                    toggleUserStatus(id); 
+                }));
+            }
             
-            document.getElementById('addUserBtn')?.addEventListener('click', () => openUserModal());
-            document.querySelectorAll('.edit-user').forEach(btn => btn.addEventListener('click', () => { const id = btn.getAttribute('data-id'); const user = users.find(u => u.id === id); if(user) openUserModal(user); }));
-            document.querySelectorAll('.toggle-status').forEach(btn => btn.addEventListener('click', () => { const id = btn.getAttribute('data-id'); toggleUserStatus(id); }));
-        }
-        
-        function clearFilters() {
-
-            document.getElementById('searchInput').value = '';
-
-            document.getElementById('userSearchType').value =
-                'name';
-
-            document.getElementById('roleFilter').value = '';
-
-            document.getElementById('statusFilter').value = '';
-
-            updateUserSearchPlaceholder();
-
-            renderUsers();
-        }
-        
-        function updateUserSearchPlaceholder() {
-
-            const searchType =
-                document.getElementById('userSearchType')?.value;
-
-            const input =
-                document.getElementById('searchInput');
-
-            if (!input) return;
-
-            if (searchType === 'name') {
-                input.placeholder =
-                    'Search users by full name...';
+            function clearFilters() {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('userSearchType').value = 'name';
+                document.getElementById('roleFilter').value = '';
+                document.getElementById('statusFilter').value = '';
+                updateUserSearchPlaceholder();
+                renderUsers();
+            }
+            
+            function updateUserSearchPlaceholder() {
+                const searchType = document.getElementById('userSearchType')?.value;
+                const input = document.getElementById('searchInput');
+                if (!input) return;
+                if (searchType === 'name') input.placeholder = 'Search users by full name...';
+                else if (searchType === 'username') input.placeholder = 'Search users by username...';
+                else if (searchType === 'email') input.placeholder = 'Search users by email address...';
             }
 
-            else if (searchType === 'username') {
-                input.placeholder =
-                    'Search users by username...';
+            function openUserModal(user = null) {
+                const modal = document.getElementById('userModal');
+                const modalTitle = document.getElementById('modalTitle');
+                if (user) {
+                    modalTitle.innerHTML = 'Edit User Account';
+                    document.getElementById('modalUserId').value = user.id;
+                    document.getElementById('modalUserRole').value = user.role;
+                    document.getElementById('modalFirstName').value = user.firstName || '';
+                    document.getElementById('modalMiddleInitial').value = user.middleInitial || '';
+                    document.getElementById('modalLastName').value = user.lastName || '';
+                    document.getElementById('modalEmail').value = user.email || '';
+                    document.getElementById('modalUsername').value = user.username;
+                    document.getElementById('modalPassword').value = '';
+                    document.getElementById('modalPassword').placeholder = 'Leave blank to keep current';
+                    document.getElementById('passwordReqNote').innerHTML = ' (optional)';
+                } else {
+                    modalTitle.innerHTML = 'Create New User Account';
+                    document.getElementById('modalUserId').value = '';
+                    document.getElementById('modalUserRole').value = 'loa';
+                    document.getElementById('modalFirstName').value = '';
+                    document.getElementById('modalMiddleInitial').value = '';
+                    document.getElementById('modalLastName').value = '';
+                    document.getElementById('modalEmail').value = '';
+                    document.getElementById('modalUsername').value = '';
+                    document.getElementById('modalPassword').value = '';
+                    document.getElementById('modalPassword').placeholder = 'Enter password';
+                    document.getElementById('passwordReqNote').innerHTML = ' *';
+                }
+                modal.classList.add('active');
             }
-
-            else if (searchType === 'email') {
-                input.placeholder =
-                    'Search users by email address...';
-            }
-        }
-
-        function openUserModal(user = null) {
-            const modal = document.getElementById('userModal');
-            const modalTitle = document.getElementById('modalTitle');
-            if (user) {
-                modalTitle.innerHTML = 'Edit User Account';
-                document.getElementById('modalUserId').value = user.id;
-                document.getElementById('modalUserRole').value = user.role;
-                document.getElementById('modalFirstName').value = user.firstName || '';
-                document.getElementById('modalMiddleInitial').value = user.middleInitial || '';
-                document.getElementById('modalLastName').value = user.lastName || '';
-                document.getElementById('modalEmail').value = user.email || '';
-                document.getElementById('modalUsername').value = user.username;
-                document.getElementById('modalPassword').value = '';
-                document.getElementById('modalPassword').placeholder = 'Leave blank to keep current';
-                document.getElementById('passwordReqNote').innerHTML = ' (optional)';
-            } else {
-                modalTitle.innerHTML = 'Create New User Account';
+            
+            function closeUserModal() {
+                document.getElementById('userModal').classList.remove('active');
                 document.getElementById('modalUserId').value = '';
                 document.getElementById('modalUserRole').value = 'loa';
                 document.getElementById('modalFirstName').value = '';
@@ -1557,241 +1036,109 @@
                 document.getElementById('modalUsername').value = '';
                 document.getElementById('modalPassword').value = '';
                 document.getElementById('modalPassword').placeholder = 'Enter password';
-                document.getElementById('passwordReqNote').innerHTML = ' *';
+                document.getElementById('passwordReqNote').innerHTML = '*';
+                document.getElementById('modalTitle').innerHTML = 'Add New User';
             }
-            modal.classList.add('active');
-        }
-        
-function closeUserModal() {
-
-    document.getElementById('userModal')
-        .classList.remove('active');
-
-    document.getElementById('modalUserId').value = '';
-
-    document.getElementById('modalUserRole').value =
-        'loa';
-
-    document.getElementById('modalFirstName').value = '';
-
-    document.getElementById('modalMiddleInitial').value = '';
-
-    document.getElementById('modalLastName').value = '';
-
-    document.getElementById('modalEmail').value = '';
-
-    document.getElementById('modalUsername').value = '';
-
-    document.getElementById('modalPassword').value = '';
-
-    document.getElementById('modalPassword').placeholder =
-        'Enter password';
-
-    document.getElementById('passwordReqNote').innerHTML =
-        '*';
-
-    document.getElementById('modalTitle').innerHTML =
-        'Add New User';
-
-}
-        
-        function saveUserHandler() {
-            const id = document.getElementById('modalUserId').value;
-            const role = document.getElementById('modalUserRole').value;
-            const firstName = document.getElementById('modalFirstName').value.trim();
-            const middleInitial = document.getElementById('modalMiddleInitial').value.trim();
-            const lastName = document.getElementById('modalLastName').value.trim();
-            const email = document.getElementById('modalEmail').value.trim();
-            const username = document.getElementById('modalUsername').value.trim();
-            const password = document.getElementById('modalPassword').value;
             
-            if (!firstName || !lastName || !username) { alert('First Name, Last Name and Username required.'); return; }
-            if (!id && !password) { alert('Password required for new user.'); return; }
-            if (users.find(u => u.username === username && u.id !== id)) { alert('Username already exists.'); return; }
-            
-            const fullName = middleInitial ? `${firstName} ${middleInitial}. ${lastName}` : `${firstName} ${lastName}`;
-            if (id) {
-                const idx = users.findIndex(u => u.id === id);
-                if(idx !== -1) {
-                    users[idx] = {
-                    ...users[idx],
-                    role,
-                    roles: [role],
-                    firstName,
-                    middleInitial,
-                    lastName,
-                    fullName,
-                    email,
-                    username
-                };
-                    if (password) users[idx].password = password;
-                    addAuditLog('Edit User', `Updated ${username}`);
-                    showToast(`User ${username} updated`);
-                }
-            } else {
-                const newUser = {
-                    id: 'u' + Date.now(),
-                    username,
-                    password,
-                    firstName,
-                    middleInitial,
-                    lastName,
-                    fullName,
-                    role,
-                    roles: [role],
-                    email,
-                    active: true,
-                    createdAt: new Date().toISOString()
-                };
-                users.push(newUser);
-                addAuditLog('Add User', `Created ${username}`);
-                showToast(`User ${username} created`);
-            }
-            saveUsers(users);
-
-            synchronizeCurrentSession();
-
-            closeUserModal();
-
-            renderUsers();
-        }
-        
-        function toggleUserStatus(id) {
-
-            const user = users.find(u => u.id === id);
-
-            if (
-                user &&
-                user.username !== 'admin' &&
-                user.username !== currentUser.username
-            ) {
-
-                user.active =
-                    user.active === false ? true : false;
-
-                saveUsers(users);
-
-                synchronizeCurrentSession();
-
-                // Force logout if deactivated user is currently logged in
-                const sessionData = JSON.parse(
-                    localStorage.getItem('userSession') ||
-                    sessionStorage.getItem('userSession') ||
-                    'null'
-                );
-
-                if (
-                    sessionData &&
-                    sessionData.username === user.username &&
-                    user.active === false
-                ) {
-
-                    localStorage.removeItem('userSession');
-
-                    sessionStorage.removeItem('userSession');
-                }
-
-                addAuditLog(
-                    'User ' + (user.active ? 'Activated' : 'Deactivated'),
-                    `${user.username} was ${user.active ? 'activated' : 'deactivated'}`
-                );
-
-                showToast(
-                    `${user.username} ${user.active ? 'activated' : 'deactivated'}`
-                );
-
-                renderUsers();
-
-            }
-
-            else if (user?.username === 'admin') {
-
-                alert('Cannot change admin status');
-            }
-
-            else if (
-                user?.username === currentUser.username
-            ) {
-
-                alert('You cannot deactivate your own account');
-            }
-        }
-        
-        document.addEventListener('click', (e) => {
-            if(e.target.classList.contains('toggle-password')) {
-                const targetId = e.target.getAttribute('data-target');
-                const input = document.getElementById(targetId);
-                if(input) {
-                    input.type = input.type === 'password' ? 'text' : 'password';
-                    e.target.classList.toggle('fa-eye');
-                    e.target.classList.toggle('fa-eye-slash');
-                }
-            }
-        });
-        
-        function initUI() {
-            const darkStored = localStorage.getItem('darkMode') === 'true';
-            if(darkStored) document.body.classList.add('dark');
-            const darkIcon = document.querySelector('#darkModeToggle i');
-            if(darkIcon) darkIcon.className = darkStored ? 'fas fa-sun' : 'fas fa-moon';
-            document.getElementById('darkModeToggle')?.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                const isDark = document.body.classList.contains('dark');
-                localStorage.setItem('darkMode', isDark);
-                const icon = document.querySelector('#darkModeToggle i');
-                icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-            });
-            document.getElementById('sidebarToggleBtn')?.addEventListener('click', () => {
-                sidebarOpen = !sidebarOpen;
-                document.getElementById('sidebar').classList.toggle('sidebar-closed', !sidebarOpen);
-                document.querySelector('main').classList.toggle('sidebar-closed', !sidebarOpen);
-            });
-            document.getElementById('logoutBtn')
-                ?.addEventListener('click', () => {
-
-                    logout();
-                });
-            document.getElementById('cancelModalBtn')?.addEventListener('click', closeUserModal);
-            document.getElementById('saveUserBtn')?.addEventListener('click', saveUserHandler);
-            document.getElementById('userModal')?.addEventListener('click', (e) => {
-                if(e.target.classList.contains('stock-modal-overlay')) closeUserModal();
-            });
-        }
-        
-            renderCurrentUserHeader();
-        
-            window.addEventListener('storage', function(event) {
-
-                if (event.key === 'userSession') {
-
-                    const currentUser = getCurrentUser();
-
-                    if (!currentUser) {
-
-                        window.location.href = LOGIN_PAGE;
-
-                        return;
+            function saveUserHandler() {
+                const id = document.getElementById('modalUserId').value;
+                const role = document.getElementById('modalUserRole').value;
+                const firstName = document.getElementById('modalFirstName').value.trim();
+                const middleInitial = document.getElementById('modalMiddleInitial').value.trim();
+                const lastName = document.getElementById('modalLastName').value.trim();
+                const email = document.getElementById('modalEmail').value.trim();
+                const username = document.getElementById('modalUsername').value.trim();
+                const password = document.getElementById('modalPassword').value;
+                
+                if (!firstName || !lastName || !username) { alert('First Name, Last Name and Username required.'); return; }
+                if (!id && !password) { alert('Password required for new user.'); return; }
+                if (users.find(u => u.username === username && u.id !== id)) { alert('Username already exists.'); return; }
+                
+                const fullName = middleInitial ? `${firstName} ${middleInitial}. ${lastName}` : `${firstName} ${lastName}`;
+                if (id) {
+                    const idx = users.findIndex(u => u.id === id);
+                    if(idx !== -1) {
+                        users[idx] = { ...users[idx], role, roles: [role], firstName, middleInitial, lastName, fullName, email, username };
+                        if (password) users[idx].password = password;
+                        addAuditLog('Edit User', `Updated ${username}`);
+                        showToast(`User ${username} updated`);
                     }
-
-                    renderNavigation();
+                } else {
+                    const newUser = {
+                        id: 'u' + Date.now(),
+                        username,
+                        password,
+                        firstName,
+                        middleInitial,
+                        lastName,
+                        fullName,
+                        role,
+                        roles: [role],
+                        email,
+                        active: true,
+                        createdAt: new Date().toISOString()
+                    };
+                    users.push(newUser);
+                    addAuditLog('Add User', `Created ${username}`);
+                    showToast(`User ${username} created`);
                 }
-
-                if (event.key === 'eldorado_users') {
-
-                    users = loadUsers();
-
+                saveUsers(users);
+                synchronizeCurrentSession();
+                closeUserModal();
+                renderUsers();
+            }
+            
+            function toggleUserStatus(id) {
+                const user = users.find(u => u.id === id);
+                const currentUser = getCurrentUser();
+                
+                if (user && user.username !== 'admin' && user.username !== currentUser?.username) {
+                    user.active = user.active === false ? true : false;
+                    saveUsers(users);
+                    synchronizeCurrentSession();
+                    
+                    const sessionData = JSON.parse(localStorage.getItem('userSession') || sessionStorage.getItem('userSession') || 'null');
+                    if (sessionData && sessionData.username === user.username && user.active === false) {
+                        localStorage.removeItem('userSession');
+                        sessionStorage.removeItem('userSession');
+                    }
+                    
+                    addAuditLog('User ' + (user.active ? 'Activated' : 'Deactivated'), `${user.username} was ${user.active ? 'activated' : 'deactivated'}`);
+                    showToast(`${user.username} ${user.active ? 'activated' : 'deactivated'}`);
                     renderUsers();
-
-                    renderNavigation();
-
-                    renderCurrentUserHeader();
+                } else if (user?.username === 'admin') {
+                    alert('Cannot change admin status');
+                } else if (user?.username === currentUser?.username) {
+                    alert('You cannot deactivate your own account');
+                }
+            }
+            
+            document.addEventListener('click', (e) => {
+                if(e.target.classList.contains('toggle-password')) {
+                    const targetId = e.target.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    if(input) {
+                        input.type = input.type === 'password' ? 'text' : 'password';
+                        e.target.classList.toggle('fa-eye');
+                        e.target.classList.toggle('fa-eye-slash');
+                    }
                 }
             });
-
-            renderNavigation();
-            renderUsers();
-            updateUserSearchPlaceholder();
-            initUI();
-    </script>
+            
+            function initUI() {
+                document.getElementById('cancelModalBtn')?.addEventListener('click', closeUserModal);
+                document.getElementById('saveUserBtn')?.addEventListener('click', saveUserHandler);
+                document.getElementById('userModal')?.addEventListener('click', (e) => {
+                    if(e.target.classList.contains('stock-modal-overlay')) closeUserModal();
+                });
+            }
+            
+            function initUserManagement() {
+                users = loadUsers();
+                renderUsers();
+                updateUserSearchPlaceholder();
+                initUI();
+            }
+        </script>
 </body>
 </html>

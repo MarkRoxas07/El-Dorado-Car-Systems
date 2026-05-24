@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search - El Dorado Car Components</title>
     
+    <link rel="stylesheet" href="components/sidebar/sidebar.css">
+
+    <script src="components/sidebar/sidebar.js"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -95,106 +99,6 @@
         .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
         .card-content { padding: 1.5rem; }
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-        body.dark header { background: rgba(42, 42, 53, 0.95); }
-        .header-content {
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            height: 4rem;
-            gap: 1rem;
-        }
-        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
-        .logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
-        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
-        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.875rem; font-weight: 500; }
-        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
-
-        .layout { display: flex; }
-        aside {
-            position: fixed;
-            left: 0;
-            top: 4rem;
-            bottom: 0;
-            width: 18rem;
-            background: var(--color-bg-white);
-            border-right: 1px solid var(--color-border);
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        aside.sidebar-closed { transform: translateX(-100%); }
-        .sidebar-nav { padding: 1rem; }
-        .nav-section-title { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--color-text-secondary); 
-            text-transform: uppercase; 
-            margin: 1rem 0 0.5rem 0.5rem; 
-            letter-spacing: 0.08em;
-        }
-        .nav-section-title:first-of-type { margin-top: 0; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            color: var(--color-text-primary);
-        }
-        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
-        .nav-item.active { background: var(--color-primary-red); color: white; }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-border);
-            background: var(--color-bg-light);
-            margin-top: auto;
-        }
-
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-        }
-        
-        main {
-            flex: 1;
-            margin-left: 18rem;
-            padding: 1.5rem;
-            transition: margin-left 0.3s ease;
-        }
-        main.sidebar-closed { margin-left: 0; }
 
         .grid { display: grid; gap: 1.5rem; }
         .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
@@ -420,19 +324,6 @@
         .text-center { text-align: center; }
         .text-red { color: var(--color-red); }
 
-        .dark-mode-toggle {
-            background: var(--color-primary-red);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         /* Clear Button - Hover Effect (matching Inventory module) */
         .search-box .btn-secondary:hover {
             background: #f8fafc;
@@ -458,147 +349,45 @@
     </style>
 </head>
 <body>
-    <div id="app">
-        <header>
-            <div class="header-content">
-                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo-section">
-                    <div class="logo"><i class="fas fa-car"></i></div>
-                    <div class="company-info">
-                        <h1>El Dorado Car Components</h1>
-                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Loading...</div>
-                        <div class="user-role" id="userRole"></div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-        
-        <div class="layout">
-            <aside id="sidebar">
-                <nav class="sidebar-nav">
-                    <div id="navLinks"></div>
-                </nav>
-                    <div class="sidebar-footer">
-                        <div class="system-status">
-                            <i class="fas fa-network-wired"></i>
-                            <span>Network Status:</span>
-                            <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
-                        </div>
-                        <div class="system-status" style="margin-top: 0.5rem;">
-                            <i class="fas fa-code-branch"></i>
-                            <span>System Version:</span>
-                            <span>v3.0.0</span>
-                        </div>
-                    </div>
-            </aside>
-            
-            <main id="mainContent"></main>
-        </div>
-    </div>
+
+    <div class="layout">
+
+     <div id="sidebar-container"></div>
+
+    <main id="mainContent"></main>
+
+</div>
 
     <script>
-        function normalizeRoles(user) {
-            if (!user) return [];
-            if (Array.isArray(user.roles)) return user.roles;
-            if (typeof user.role === 'string') {
-                user.roles = [user.role];
-                return user.roles;
-            }
-            user.roles = [];
-            return user.roles;
-        }
 
-        function ensureUserRoleData(user) {
-            if (!user) return user;
-            if (!Array.isArray(user.roles)) {
-                user.roles = typeof user.role === 'string' ? [user.role] : [];
-            }
-            if (!user.role && user.roles.length) {
-                user.role = user.roles[0];
-            }
-            return user;
-        }
-
-        function mergeRoles(roles) {
-            const list = [];
-            if (Array.isArray(roles)) {
-                roles.forEach(role => {
-                    if (Array.isArray(role)) return role.forEach(r => list.push(r));
-                    if (role) list.push(role);
-                });
-            } else if (roles) {
-                list.push(roles);
-            }
-            return Array.from(new Set(list));
-        }
-
-        function getCurrentUser() {
-            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!sessionJSON) return null;
-            let sessionData;
-            try {
-                sessionData = JSON.parse(sessionJSON);
-            } catch (e) {
-                return null;
-            }
-            ensureUserRoleData(sessionData);
-            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                return null;
-            }
-            return sessionData;
-        }
-
-        function requireAuth() {
-            const currentUser = getCurrentUser();
-            if (!currentUser) {
+    // Load and initialize sidebar
+    (async function initPage() {
+        try {
+            // Load sidebar HTML
+            const response = await fetch('components/sidebar/sidebar.html');
+            const sidebarHtml = await response.text();
+            document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+            
+            // Initialize sidebar from sidebar.js
+            if (typeof renderNavigation === 'function') renderNavigation();
+            if (typeof initializeSidebar === 'function') initializeSidebar();
+            if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+            
+            // Check authentication
+            const user = getCurrentUser();
+            if (!user) {
                 window.location.href = 'index.html';
-                return null;
+                return;
             }
-            return currentUser;
+            
+            // Initialize search page
+            initSearchPage();
+            
+        } catch (error) {
+            console.error('Error initializing search page:', error);
         }
+    })();
 
-        function checkAuth() {
-            return requireAuth();
-        }
-
-        const currentUser = checkAuth();
-        const activeModule = 'search';
-
-        const ROLE_PERMISSIONS = {
-            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'], salesAccess: 'full' },
-            inventory_clerk: { modules: ['inventory','search','help','about'], salesAccess: 'none' },
-            loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
-        };
-
-        function checkPermissions(userRoles, moduleName) {
-            const roles = mergeRoles(userRoles);
-            if (!roles.length) return false;
-            if (roles.includes('admin')) return true;
-            return roles.some(role => ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].modules.includes(moduleName));
-        }
-
-        function hasModuleAccess(moduleName) {
-            return checkPermissions(currentUser.roles, moduleName);
-        }
-
-        if (!hasModuleAccess(activeModule)) {
-            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
-        }
     function loadProducts() {
 
         const stored =
@@ -654,7 +443,6 @@
 
         let products = loadProducts();
         let users = loadUsers();
-        let sidebarOpen = true;
 
         function formatCurrency(amount) {
             return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
@@ -675,79 +463,10 @@
             return classes[category] || 'mechanical';
         }
 
-        function getRoleDisplayName(role) {
-            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-
-        function getRoleIcon(role) {
-            const icons = {
-                admin: 'fa-crown',
-                inventory_clerk: 'fa-clipboard-check',
-                loa: 'fa-receipt'
-            };
-
-            return icons[role] || 'fa-user';
-        }
-
         function getStockBadge(stock, minStock = 10) {
             if (stock === 0) return '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>';
             if (stock <= minStock) return '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock</span>';
             return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> In Stock</span>';
-        }
-
-        function renderNavigation() {
-            const navSections = [
-                {
-                    title: "MAIN",
-                    items: [
-                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                    ]
-                },
-                {
-                    title: "MANAGEMENT",
-                    items: [
-                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                    ]
-                },
-                {
-                    title: "SYSTEM",
-                    items: [
-                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                    ]
-                }
-            ];
-            
-            let navHtml = '';
-            for (const section of navSections) {
-                navHtml += `<div class="nav-section-title">${section.title}</div>`;
-                for (const item of section.items) {
-                    if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `
-                        <button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')">
-                            <i class="${item.icon}" style="width: 1.25rem;"></i>
-                            <span>${item.label}</span>
-                        </button>
-                    `;
-                }
-            }
-            document.getElementById('navLinks').innerHTML = navHtml;
-        }
-
-        function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
-                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
-            };
-            if (pages[module]) window.location.href = pages[module];
         }
 
         function showTab(tabName) {
@@ -768,6 +487,17 @@
             
             if (tabName === 'item') performItemSearch();
             else performUserSearch();
+        }
+
+        function initSearchPage() {
+            products = loadProducts();
+            users = loadUsers();
+            renderSearch();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
         function performItemSearch() {
@@ -1020,52 +750,9 @@
             performUserSearch();
             updateUserSearchPlaceholder();
         }
-
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            const sidebar = document.getElementById('sidebar');
-            const main = document.querySelector('main');
-            if (sidebarOpen) {
-                sidebar.classList.remove('sidebar-closed');
-                main.classList.remove('sidebar-closed');
-            } else {
-                sidebar.classList.add('sidebar-closed');
-                main.classList.add('sidebar-closed');
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            const icon = document.querySelector('#darkModeToggle i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
-            }
-        }
-
-        document.getElementById('userName').innerText = currentUser?.fullName || 'User';
-        document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
         
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
-        }
-        
-        renderNavigation();
         renderSearch();
         
-        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-        
-        window.navigateTo = navigateTo;
         window.showTab = showTab;
         window.performItemSearch = performItemSearch;
         window.performUserSearch = performUserSearch;

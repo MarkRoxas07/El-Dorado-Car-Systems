@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Maintenance - El Dorado Car Components</title>
     
+    <link rel="stylesheet" href="components/sidebar/sidebar.css">
+    <script src="components/sidebar/sidebar.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -97,106 +100,6 @@
         .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
         .card-content { padding: 1.5rem; }
 
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-        body.dark header { background: rgba(42, 42, 53, 0.95); }
-        .header-content {
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            height: 4rem;
-            gap: 1rem;
-        }
-        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
-        .logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
-        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
-        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.875rem; font-weight: 500; }
-        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
-
-        .layout { display: flex; }
-        aside {
-            position: fixed;
-            left: 0;
-            top: 4rem;
-            bottom: 0;
-            width: 18rem;
-            background: var(--color-bg-white);
-            border-right: 1px solid var(--color-border);
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        aside.sidebar-closed { transform: translateX(-100%); }
-        .sidebar-nav { padding: 1rem; }
-        .nav-section-title { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--color-text-secondary); 
-            text-transform: uppercase; 
-            margin: 1rem 0 0.5rem 0.5rem; 
-            letter-spacing: 0.08em;
-        }
-        .nav-section-title:first-of-type { margin-top: 0; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            color: var(--color-text-primary);
-        }
-        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
-        .nav-item.active { background: var(--color-primary-red); color: white; }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-border);
-            background: var(--color-bg-light);
-            margin-top: auto;
-        }
-        
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        main {
-            flex: 1;
-            margin-left: 18rem;
-            padding: 1.5rem;
-            transition: margin-left 0.3s ease;
-        }
-        main.sidebar-closed { margin-left: 0; }
-
         .grid { display: grid; gap: 1.5rem; }
         .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
         .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
@@ -282,539 +185,380 @@
         .text-muted { color: var(--color-text-secondary); }
         .text-center { text-align: center; }
 
-        .dark-mode-toggle {
-            background: var(--color-primary-red);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 </head>
 <body>
     <div id="app">
-        <header>
-            <div class="header-content">
-                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo-section">
-                    <div class="logo"><i class="fas fa-car"></i></div>
-                    <div class="company-info">
-                        <h1>El Dorado Car Components</h1>
-                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Loading...</div>
-                        <div class="user-role" id="userRole"></div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
         
         <div class="layout">
-            <aside id="sidebar">
-                <nav class="sidebar-nav">
-                    <div id="navLinks"></div>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="system-status">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Network Status:</span>
-                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
-                    </div>
-                    <div class="system-status" style="margin-top: 0.5rem;">
-                        <i class="fas fa-code-branch"></i>
-                        <span>System Version:</span>
-                        <span>v3.0.0</span>
-                    </div>
-                </div>
-            </aside>
+
+        <div id="sidebar-container"></div>
             
             <main id="mainContent"></main>
         </div>
     </div>
 
     <script>
-        function checkAuth() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!session) {
+    // Load and initialize sidebar
+    (async function initPage() {
+        try {
+            const response = await fetch('components/sidebar/sidebar.html');
+            const sidebarHtml = await response.text();
+            document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+            
+            if (typeof renderNavigation === 'function') renderNavigation();
+            if (typeof initializeSidebar === 'function') initializeSidebar();
+            if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+            
+            const user = getCurrentUser();
+            if (!user) {
                 window.location.href = 'index.html';
-                return null;
+                return;
             }
-            return JSON.parse(session);
+            
+            initMaintenancePage();
+            
+        } catch (error) {
+            console.error('Error initializing maintenance page:', error);
         }
+    })();
 
-        const currentUser = checkAuth();
-        const activeModule = 'maintenance';
+    // ============ MAINTENANCE MODULE ============
 
-        const ROLE_PERMISSIONS = {
-            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'], salesAccess: 'full' },
-            inventory_clerk: { modules: ['inventory','search','help','about'], salesAccess: 'none' },
-            loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
+    // Backup history storage
+    let backups = JSON.parse(localStorage.getItem('eldorado_backups') || '[]');
+
+    function addAuditLog(action, details) {
+        const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+        const currentUser = getCurrentUser();
+        logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString(), module: 'Maintenance', severity: 'info' });
+        if (logs.length > 100) logs.pop();
+        localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+    }
+
+    function calculateStorageSize() {
+        let total = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            total += (key.length + (value?.length || 0)) * 2;
+        }
+        return total;
+    }
+
+    function createBackup() {
+        const backupData = {
+            id: Date.now(),
+            name: `backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}`,
+            date: new Date().toLocaleString(),
+            size: '~' + Math.round(calculateStorageSize() / 1024) + ' KB',
+            data: {
+                products: localStorage.getItem('eldorado_products'),
+                users: localStorage.getItem('eldorado_users'),
+                sales: localStorage.getItem('eldorado_sales'),
+                audit: localStorage.getItem('eldorado_audit'),
+                backups: localStorage.getItem('eldorado_backups')
+            }
         };
-
-        function hasModuleAccess(moduleName) {
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-            return permissions ? permissions.modules.includes(moduleName) : false;
-        }
-
-        if (!hasModuleAccess(activeModule)) {
-            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
-        }
-
-        // Backup history storage
-        let backups = JSON.parse(localStorage.getItem('eldorado_backups') || '[]');
         
-        function addAuditLog(action, details) {
-            const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
-            logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString(), module: 'Maintenance', severity: 'info' });
-            if (logs.length > 100) logs.pop();
-            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
-        }
+        backups.unshift(backupData);
+        if (backups.length > 10) backups.pop();
+        localStorage.setItem('eldorado_backups', JSON.stringify(backups));
+        
+        addAuditLog('Backup Created', `System backup "${backupData.name}" created successfully`);
+        alert(`Backup created successfully!\nName: ${backupData.name}\nSize: ${backupData.size}`);
+        renderMaintenance();
+    }
 
-        function getRoleDisplayName(role) {
-            const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-
-        function calculateStorageSize() {
-            let total = 0;
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                const value = localStorage.getItem(key);
-                total += (key.length + (value?.length || 0)) * 2; // Approximate size in bytes
-            }
-            return total;
-        }
-
-                function renderNavigation() {
-            const navSections = [
-                {
-                    title: "MAIN",
-                    items: [
-                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                    ]
-                },
-                {
-                    title: "MANAGEMENT",
-                    items: [
-                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                    ]
-                },
-                {
-                    title: "SYSTEM",
-                    items: [
-                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                    ]
-                }
-            ];
+    function restoreBackup(backupId) {
+        const backup = backups.find(b => b.id === backupId);
+        if (!backup) return;
+        
+        if (confirm(`Restore backup "${backup.name}"? This will overwrite current data.`)) {
+            if (backup.data.products) localStorage.setItem('eldorado_products', backup.data.products);
+            if (backup.data.users) localStorage.setItem('eldorado_users', backup.data.users);
+            if (backup.data.sales) localStorage.setItem('eldorado_sales', backup.data.sales);
+            if (backup.data.audit) localStorage.setItem('eldorado_audit', backup.data.audit);
             
-            let navHtml = '';
-            for (const section of navSections) {
-                navHtml += `<div class="nav-section-title">${section.title}</div>`;
-                for (const item of section.items) {
-                    if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `
-                        <button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')">
-                            <i class="${item.icon}" style="width: 1.25rem;"></i>
-                            <span>${item.label}</span>
-                        </button>
-                    `;
-                }
-            }
-            document.getElementById('navLinks').innerHTML = navHtml;
+            addAuditLog('Backup Restored', `System restored from backup "${backup.name}"`);
+            alert('Backup restored successfully! The page will reload.');
+            location.reload();
         }
+    }
 
-        function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
-                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
-            };
-            if (pages[module]) window.location.href = pages[module];
-        }
-
-        function createBackup() {
-            const backupData = {
-                id: Date.now(),
-                name: `backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}`,
-                date: new Date().toLocaleString(),
-                size: '~' + Math.round(calculateStorageSize() / 1024) + ' KB',
-                data: {
-                    products: localStorage.getItem('eldorado_products'),
-                    users: localStorage.getItem('eldorado_users'),
-                    sales: localStorage.getItem('eldorado_sales'),
-                    audit: localStorage.getItem('eldorado_audit'),
-                    backups: localStorage.getItem('eldorado_backups')
-                }
-            };
-            
-            backups.unshift(backupData);
-            if (backups.length > 10) backups.pop();
+    function deleteBackup(backupId) {
+        if (confirm('Delete this backup?')) {
+            backups = backups.filter(b => b.id !== backupId);
             localStorage.setItem('eldorado_backups', JSON.stringify(backups));
-            
-            addAuditLog('Backup Created', `System backup "${backupData.name}" created successfully`);
-            alert(`Backup created successfully!\nName: ${backupData.name}\nSize: ${backupData.size}`);
+            addAuditLog('Backup Deleted', `Backup deleted from history`);
             renderMaintenance();
         }
+    }
 
-        function restoreBackup(backupId) {
-            const backup = backups.find(b => b.id === backupId);
-            if (!backup) return;
+    function clearAllData() {
+        if (confirm('⚠️ DANGER: This will delete ALL system data including products, users, sales, and audit logs. This action cannot be undone. Are you absolutely sure?')) {
+            if (confirm('LAST WARNING: All data will be permanently deleted. Type "DELETE" to confirm.')) {
+                const confirmation = prompt('Type "DELETE" to confirm data deletion:');
+                if (confirmation === 'DELETE') {
+                    localStorage.removeItem('eldorado_products');
+                    localStorage.removeItem('eldorado_users');
+                    localStorage.removeItem('eldorado_sales');
+                    localStorage.removeItem('eldorado_audit');
+                    localStorage.removeItem('eldorado_backups');
+                    
+                    addAuditLog('System Reset', 'All system data was cleared by administrator');
+                    alert('All data has been cleared. The page will now reload.');
+                    location.reload();
+                } else {
+                    alert('Data deletion cancelled.');
+                }
+            }
+        }
+    }
+
+    function exportSystemData() {
+        const currentUser = getCurrentUser();
+        const exportData = {
+            exportDate: new Date().toLocaleString(),
+            exportedBy: currentUser?.username,
+            systemVersion: 'v3.0.0',
+            data: {
+                products: JSON.parse(localStorage.getItem('eldorado_products') || '[]'),
+                users: JSON.parse(localStorage.getItem('eldorado_users') || '[]'),
+                sales: JSON.parse(localStorage.getItem('eldorado_sales') || '[]'),
+                audit: JSON.parse(localStorage.getItem('eldorado_audit') || '[]')
+            }
+        };
+        
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `eldorado_export_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        addAuditLog('Data Export', `System data exported to JSON file`);
+    }
+
+    function importSystemData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
             
-            if (confirm(`Restore backup "${backup.name}"? This will overwrite current data.`)) {
-                if (backup.data.products) localStorage.setItem('eldorado_products', backup.data.products);
-                if (backup.data.users) localStorage.setItem('eldorado_users', backup.data.users);
-                if (backup.data.sales) localStorage.setItem('eldorado_sales', backup.data.sales);
-                if (backup.data.audit) localStorage.setItem('eldorado_audit', backup.data.audit);
-                
-                addAuditLog('Backup Restored', `System restored from backup "${backup.name}"`);
-                alert('Backup restored successfully! The page will reload.');
-                location.reload();
-            }
-        }
-
-        function deleteBackup(backupId) {
-            if (confirm('Delete this backup?')) {
-                backups = backups.filter(b => b.id !== backupId);
-                localStorage.setItem('eldorado_backups', JSON.stringify(backups));
-                addAuditLog('Backup Deleted', `Backup deleted from history`);
-                renderMaintenance();
-            }
-        }
-
-        function clearAllData() {
-            if (confirm('⚠️ DANGER: This will delete ALL system data including products, users, sales, and audit logs. This action cannot be undone. Are you absolutely sure?')) {
-                if (confirm('LAST WARNING: All data will be permanently deleted. Type "DELETE" to confirm.')) {
-                    const confirmation = prompt('Type "DELETE" to confirm data deletion:');
-                    if (confirmation === 'DELETE') {
-                        // Clear all El Dorado data
-                        localStorage.removeItem('eldorado_products');
-                        localStorage.removeItem('eldorado_users');
-                        localStorage.removeItem('eldorado_sales');
-                        localStorage.removeItem('eldorado_audit');
-                        localStorage.removeItem('eldorado_backups');
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (imported.data) {
+                        if (imported.data.products) localStorage.setItem('eldorado_products', JSON.stringify(imported.data.products));
+                        if (imported.data.users) localStorage.setItem('eldorado_users', JSON.stringify(imported.data.users));
+                        if (imported.data.sales) localStorage.setItem('eldorado_sales', JSON.stringify(imported.data.sales));
+                        if (imported.data.audit) localStorage.setItem('eldorado_audit', JSON.stringify(imported.data.audit));
                         
-                        addAuditLog('System Reset', 'All system data was cleared by administrator');
-                        alert('All data has been cleared. The page will now reload with default data.');
+                        addAuditLog('Data Import', `System data imported from file`);
+                        alert('Data imported successfully! Page will reload.');
                         location.reload();
                     } else {
-                        alert('Data deletion cancelled.');
+                        alert('Invalid file format');
                     }
-                }
-            }
-        }
-
-        function exportSystemData() {
-            const exportData = {
-                exportDate: new Date().toLocaleString(),
-                exportedBy: currentUser?.username,
-                systemVersion: 'v3.0.0',
-                data: {
-                    products: JSON.parse(localStorage.getItem('eldorado_products') || '[]'),
-                    users: JSON.parse(localStorage.getItem('eldorado_users') || '[]'),
-                    sales: JSON.parse(localStorage.getItem('eldorado_sales') || '[]'),
-                    audit: JSON.parse(localStorage.getItem('eldorado_audit') || '[]')
+                } catch (err) {
+                    alert('Error parsing file');
                 }
             };
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `eldorado_export_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            addAuditLog('Data Export', `System data exported to JSON file`);
-        }
+            reader.readAsText(file);
+        };
+        input.click();
+    }
 
-        function importSystemData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const imported = JSON.parse(event.target.result);
-                        if (imported.data) {
-                            if (imported.data.products) localStorage.setItem('eldorado_products', JSON.stringify(imported.data.products));
-                            if (imported.data.users) localStorage.setItem('eldorado_users', JSON.stringify(imported.data.users));
-                            if (imported.data.sales) localStorage.setItem('eldorado_sales', JSON.stringify(imported.data.sales));
-                            if (imported.data.audit) localStorage.setItem('eldorado_audit', JSON.stringify(imported.data.audit));
-                            
-                            addAuditLog('Data Import', `System data imported from file`);
-                            alert('Data imported successfully! Page will reload.');
-                            location.reload();
-                        } else {
-                            alert('Invalid file format');
-                        }
-                    } catch (err) {
-                        alert('Error parsing file');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        }
-
-        function optimizeStorage() {
-            addAuditLog('Storage Optimized', 'Local storage optimization performed');
-            alert('Storage optimization completed. Redundant data has been cleaned.');
-            renderMaintenance();
-        }
-
-        function renderMaintenance() {
-            // System health metrics
-            const cpuUsage = Math.floor(Math.random() * 30) + 35; // 35-65%
-            const memoryUsage = Math.floor(Math.random() * 25) + 55; // 55-80%
-            const diskUsage = Math.floor(Math.random() * 20) + 60; // 60-80%
-            const storageSize = calculateStorageSize();
-            const storageMB = (storageSize / (1024 * 1024)).toFixed(2);
-            
-            // Data counts
-            const products = JSON.parse(localStorage.getItem('eldorado_products') || '[]');
-            const users = JSON.parse(localStorage.getItem('eldorado_users') || '[]');
-            const sales = JSON.parse(localStorage.getItem('eldorado_sales') || '[]');
-            const audit = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
-            
-            const html = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-3xl font-bold flex items-center gap-2">
-                            <i class="fas fa-tools" style="color: var(--color-primary-red);"></i>
-                            System Maintenance Module
-                        </h2>
-                        <p class="text-muted mt-1">Backup data, restore data, and manage system integrity</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-2">
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-heartbeat"></i> System Health Status</h3>
-    </div>
-    <div class="card-content">
-        <div class="space-y-4">
-            <!-- CPU Usage -->
-            <div>
-                <div class="flex justify-between mb-1">
-                    <span><i class="fas fa-microchip"></i> CPU Usage</span>
-                    <span style="color: ${cpuUsage > 70 ? '#ef4444' : cpuUsage > 50 ? '#f59e0b' : '#22c55e'}">${cpuUsage}%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-fill ${cpuUsage > 70 ? 'red' : cpuUsage > 50 ? 'yellow' : 'green'}" style="width: ${cpuUsage}%"></div>
-                </div>
-            </div>
-            <!-- Memory Usage -->
-            <div>
-                <div class="flex justify-between mb-1">
-                    <span><i class="fas fa-memory"></i> Memory Usage</span>
-                    <span style="color: ${memoryUsage > 80 ? '#ef4444' : memoryUsage > 60 ? '#f59e0b' : '#22c55e'}">${memoryUsage}%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-fill ${memoryUsage > 80 ? 'red' : memoryUsage > 60 ? 'yellow' : 'green'}" style="width: ${memoryUsage}%"></div>
-                </div>
-            </div>
-            <!-- Storage Usage -->
-            <div>
-                <div class="flex justify-between mb-1">
-                    <span><i class="fas fa-hdd"></i> Storage Usage</span>
-                    <span style="color: ${diskUsage > 85 ? '#ef4444' : diskUsage > 70 ? '#f59e0b' : '#22c55e'}">${diskUsage}%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-fill ${diskUsage > 85 ? 'red' : diskUsage > 70 ? 'yellow' : 'green'}" style="width: ${diskUsage}%"></div>
-                </div>
-            </div>
-        </div>
-        <div class="flex justify-between mt-4 pt-3 border-t border-border">
-            <span class="text-sm text-muted"><i class="fas fa-clock"></i> Last health check: ${new Date().toLocaleString()}</span>
-            <div class="flex gap-2">
-                <button class="btn btn-secondary btn-sm" onclick="optimizeStorage()"><i class="fas fa-broom"></i> Optimize</button>
-            </div>
-        </div>
-    </div>
-</div>
-                        
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-database"></i> Backup Operations</h3>
-    </div>
-    <div class="card-content">
-        <div class="flex gap-3">
-            <button class="btn btn-primary" onclick="createBackup()"><i class="fas fa-download"></i> Create Backup</button>
-            <button class="btn btn-secondary" onclick="exportSystemData()"><i class="fas fa-file-export"></i> Export Data</button>
-            <button class="btn btn-secondary" onclick="importSystemData()"><i class="fas fa-file-import"></i> Import Data</button>
-        </div>
-        <div class="grid grid-cols-3 gap-3 mt-4">
-            <div class="stat-box">
-                <div class="text-2xl font-bold" style="color: var(--color-primary-blue);">${backups.length}</div>
-                <div class="text-sm text-muted">Backups</div>
-            </div>
-            <div class="stat-box">
-                <div class="text-2xl font-bold" style="color: var(--color-green);">${products.length}</div>
-                <div class="text-sm text-muted">Products</div>
-            </div>
-            <div class="stat-box">
-                <div class="text-2xl font-bold" style="color: var(--color-purple);">${storageMB} MB</div>
-                <div class="text-sm text-muted">Storage Used</div>
-            </div>
-        </div>
-    </div>
-</div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-info-circle"></i> System Information</h3>
-                        </div>
-                        <div class="card-content">
-                            <div class="grid grid-cols-3 gap-4">
-                                <div><span class="text-muted">System Version:</span><br><strong>El Dorado LAN v3.0.0</strong></div>
-                                <div><span class="text-muted">Database:</span><br><strong>LocalStorage API</strong></div>
-                                <div><span class="text-muted">Last Backup:</span><br><strong>${backups[0]?.date || 'Never'}</strong></div>
-                                <div><span class="text-muted">Total Records:</span><br><strong>${products.length + users.length + sales.length + audit.length}</strong></div>
-                                <div><span class="text-muted">Active Users:</span><br><strong>${users.filter(u => u.active !== false).length}</strong></div>
-                                <div><span class="text-muted">Uptime:</span><br><strong>Session active</strong></div>
-                            </div>
-                            <div class="mt-4 pt-3 border-t border-border">
-                                <div class="flex items-center gap-2 text-green">
-                                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-                                    <span>All services running normally</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-clock-rotate-left"></i> Backup History</h3>
-                        </div>
-                        <div class="card-content">
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr><th>Backup Name</th><th>Date</th><th>Size</th><th>Status</th><th>Actions</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        ${backups.length === 0 ? '<tr><td colspan="5" class="text-center">No backups available. Create your first backup!</td></tr>' : backups.map(b => `
-                                            <tr>
-                                                <td><i class="fas fa-archive"></i> ${b.name}</td>
-                                                <td><small>${b.date}</small></td>
-                                                <td>${b.size}</td>
-                                                <td><span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified</span></td>
-                                                <td>
-                                                    <div class="flex gap-2">
-                                                        <button class="btn btn-secondary btn-sm" onclick="restoreBackup(${b.id})"><i class="fas fa-undo-alt"></i> Restore</button>
-                                                        <button class="btn btn-danger btn-sm" onclick="deleteBackup(${b.id})"><i class="fas fa-trash"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card" style="border-color: var(--color-red);">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-exclamation-triangle" style="color: var(--color-red);"></i> Danger Zone</h3>
-                        </div>
-                        <div class="card-content">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <div class="font-bold">Clear All System Data</div>
-                                    <div class="text-sm text-muted">This will permanently delete all products, users, sales, and audit logs.</div>
-                                </div>
-                                <button class="btn btn-danger" onclick="clearAllData()"><i class="fas fa-trash-alt"></i> Clear All Data</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-        }
-
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            const sidebar = document.getElementById('sidebar');
-            const main = document.querySelector('main');
-            if (sidebarOpen) {
-                sidebar.classList.remove('sidebar-closed');
-                main.classList.remove('sidebar-closed');
-            } else {
-                sidebar.classList.add('sidebar-closed');
-                main.classList.add('sidebar-closed');
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            const icon = document.querySelector('#darkModeToggle i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Initialize
-        if (currentUser) {
-            document.getElementById('userName').innerText = currentUser?.fullName || 'User';
-            document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
-        }
-        
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
-        }
-        
-        renderNavigation();
+    function optimizeStorage() {
+        addAuditLog('Storage Optimized', 'Local storage optimization performed');
+        alert('Storage optimization completed. Redundant data has been cleaned.');
         renderMaintenance();
+    }
+
+    function initMaintenancePage() {
+        renderMaintenance();
+    }
+
+    function renderMaintenance() {
+        const cpuUsage = Math.floor(Math.random() * 30) + 35;
+        const memoryUsage = Math.floor(Math.random() * 25) + 55;
+        const diskUsage = Math.floor(Math.random() * 20) + 60;
+        const storageSize = calculateStorageSize();
+        const storageMB = (storageSize / (1024 * 1024)).toFixed(2);
         
-        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
+        const products = JSON.parse(localStorage.getItem('eldorado_products') || '[]');
+        const users = JSON.parse(localStorage.getItem('eldorado_users') || '[]');
+        const sales = JSON.parse(localStorage.getItem('eldorado_sales') || '[]');
+        const audit = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
         
-        window.navigateTo = navigateTo;
-        window.createBackup = createBackup;
-        window.restoreBackup = restoreBackup;
-        window.deleteBackup = deleteBackup;
-        window.clearAllData = clearAllData;
-        window.exportSystemData = exportSystemData;
-        window.importSystemData = importSystemData;
-        window.optimizeStorage = optimizeStorage;
+        const html = `
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-3xl font-bold flex items-center gap-2">
+                        <i class="fas fa-tools" style="color: var(--color-primary-red);"></i>
+                        System Maintenance Module
+                    </h2>
+                    <p class="text-muted mt-1">Backup data, restore data, and manage system integrity</p>
+                </div>
+                
+                <div class="grid grid-cols-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-heartbeat"></i> System Health Status</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span><i class="fas fa-microchip"></i> CPU Usage</span>
+                                        <span style="color: ${cpuUsage > 70 ? '#ef4444' : cpuUsage > 50 ? '#f59e0b' : '#22c55e'}">${cpuUsage}%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-fill ${cpuUsage > 70 ? 'red' : cpuUsage > 50 ? 'yellow' : 'green'}" style="width: ${cpuUsage}%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span><i class="fas fa-memory"></i> Memory Usage</span>
+                                        <span style="color: ${memoryUsage > 80 ? '#ef4444' : memoryUsage > 60 ? '#f59e0b' : '#22c55e'}">${memoryUsage}%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-fill ${memoryUsage > 80 ? 'red' : memoryUsage > 60 ? 'yellow' : 'green'}" style="width: ${memoryUsage}%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span><i class="fas fa-hdd"></i> Storage Usage</span>
+                                        <span style="color: ${diskUsage > 85 ? '#ef4444' : diskUsage > 70 ? '#f59e0b' : '#22c55e'}">${diskUsage}%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-fill ${diskUsage > 85 ? 'red' : diskUsage > 70 ? 'yellow' : 'green'}" style="width: ${diskUsage}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-4 pt-3 border-t border-border">
+                                <span class="text-sm text-muted"><i class="fas fa-clock"></i> Last health check: ${new Date().toLocaleString()}</span>
+                                <div class="flex gap-2">
+                                    <button class="btn btn-secondary btn-sm" onclick="optimizeStorage()"><i class="fas fa-broom"></i> Optimize</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-database"></i> Backup Operations</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="flex gap-3">
+                                <button class="btn btn-primary" onclick="createBackup()"><i class="fas fa-download"></i> Create Backup</button>
+                                <button class="btn btn-secondary" onclick="exportSystemData()"><i class="fas fa-file-export"></i> Export Data</button>
+                                <button class="btn btn-secondary" onclick="importSystemData()"><i class="fas fa-file-import"></i> Import Data</button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3 mt-4">
+                                <div class="stat-box">
+                                    <div class="text-2xl font-bold" style="color: var(--color-primary-blue);">${backups.length}</div>
+                                    <div class="text-sm text-muted">Backups</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="text-2xl font-bold" style="color: var(--color-green);">${products.length}</div>
+                                    <div class="text-sm text-muted">Products</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="text-2xl font-bold" style="color: var(--color-purple);">${storageMB} MB</div>
+                                    <div class="text-sm text-muted">Storage Used</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> System Information</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div><span class="text-muted">System Version:</span><br><strong>El Dorado LAN v3.0.0</strong></div>
+                            <div><span class="text-muted">Database:</span><br><strong>LocalStorage API</strong></div>
+                            <div><span class="text-muted">Last Backup:</span><br><strong>${backups[0]?.date || 'Never'}</strong></div>
+                            <div><span class="text-muted">Total Records:</span><br><strong>${products.length + users.length + sales.length + audit.length}</strong></div>
+                            <div><span class="text-muted">Active Users:</span><br><strong>${users.filter(u => u.active !== false).length}</strong></div>
+                            <div><span class="text-muted">Uptime:</span><br><strong>Session active</strong></div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-border">
+                            <div class="flex items-center gap-2 text-green">
+                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                <span>All services running normally</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-clock-rotate-left"></i> Backup History</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr><th>Backup Name</th><th>Date</th><th>Size</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${backups.length === 0 ? '<tr><td colspan="5" class="text-center">No backups available. Create your first backup!</div></tr>' : backups.map(b => `
+                                        <tr>
+                                            <td><i class="fas fa-archive"></i> ${b.name}</td>
+                                            <td><small>${b.date}</small></td>
+                                            <td>${b.size}</td>
+                                            <td><span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified</span></td>
+                                            <td>
+                                                <div class="flex gap-2">
+                                                    <button class="btn btn-secondary btn-sm" onclick="restoreBackup(${b.id})"><i class="fas fa-undo-alt"></i> Restore</button>
+                                                    <button class="btn btn-danger btn-sm" onclick="deleteBackup(${b.id})"><i class="fas fa-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="border-color: var(--color-red);">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-exclamation-triangle" style="color: var(--color-red);"></i> Danger Zone</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-bold">Clear All System Data</div>
+                                <div class="text-sm text-muted">This will permanently delete all products, users, sales, and audit logs.</div>
+                            </div>
+                            <button class="btn btn-danger" onclick="clearAllData()"><i class="fas fa-trash-alt"></i> Clear All Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('mainContent').innerHTML = html;
+    }
+
+    // Make functions available globally
+    window.createBackup = createBackup;
+    window.restoreBackup = restoreBackup;
+    window.deleteBackup = deleteBackup;
+    window.clearAllData = clearAllData;
+    window.exportSystemData = exportSystemData;
+    window.importSystemData = importSystemData;
+    window.optimizeStorage = optimizeStorage;
     </script>
 </body>
 </html>

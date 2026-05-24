@@ -43,13 +43,24 @@
             padding: 1.5rem;
         }
 
-        /* Login Container */
+        body.dark {
+            --color-bg-light: #1e1e2e;
+            --color-bg-white: #2a2a35;
+            --color-border: #3a3a45;
+            --color-text-primary: #e9ecef;
+            --color-text-secondary: #ced4da;
+            --color-text-muted: #adb5bd;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
+        }
+
         .login-container {
             width: 100%;
             max-width: 450px;
         }
 
-        /* Logo Section */
         .logo-section {
             text-align: center;
             margin-bottom: 2rem;
@@ -81,7 +92,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Login Card */
         .login-card {
             background: var(--color-bg-white);
             border-radius: 1.5rem;
@@ -110,7 +120,6 @@
             padding: 1.75rem;
         }
 
-        /* Form Styles */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -168,7 +177,6 @@
             left: auto;
         }
 
-        /* Checkbox */
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -204,7 +212,6 @@
             text-decoration: underline;
         }
 
-        /* Login Button */
         .login-btn {
             width: 100%;
             padding: 0.875rem;
@@ -227,7 +234,6 @@
             transform: translateY(-1px);
         }
 
-        /* Demo Credentials */
         .demo-credentials {
             margin-top: 1.5rem;
             padding: 1rem;
@@ -259,7 +265,6 @@
             font-family: monospace;
         }
 
-        /* Error Message */
         .error-message {
             background: #fff5f5;
             border: 1px solid var(--color-red);
@@ -277,16 +282,6 @@
             display: flex;
         }
 
-        /* Dark Mode */
-        body.dark {
-            --color-bg-light: #1e1e2e;
-            --color-bg-white: #2a2a35;
-            --color-border: #3a3a45;
-            --color-text-primary: #e9ecef;
-            --color-text-secondary: #ced4da;
-            --color-text-muted: #adb5bd;
-        }
-
         body.dark .demo-credentials {
             background: #1e1e2e;
         }
@@ -296,7 +291,6 @@
             border-color: #ff6b6b;
         }
 
-        /* Dark Mode Toggle */
         .dark-mode-toggle {
             position: fixed;
             top: 1rem;
@@ -393,200 +387,185 @@
                         <span class="cred-label">LOA (Cashier):</span>
                         <span class="cred-value">loa / loa123</span>
                     </div>
+                    <div class="cred-row">
+                        <span class="cred-label">Multi-Role (Clerk+LOA):</span>
+                        <span class="cred-value">multirole / multi123</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // ========================================
+        // EL DORADO - UNIFIED LOGIN SYSTEM
+        // Multi-Role Support | RBAC Ready | Consistent Time Format
+        // ========================================
 
         const DEFAULT_REDIRECT_PAGE = 'dashboard.html';
-        const LOGIN_PAGE = 'index.html';    
-        
-        function initializeUsers() {
+        const LOGIN_PAGE = 'index.html';
+
+        // ========== CONSISTENT TIME FORMATTER ==========
+        function formatTimestamp(date) {
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }) + ' • ' + date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+        }
+
+        // ========== INITIALIZE DATA STORES (EMPTY) ==========
+        function initializeDataStores() {
+            // Products - EMPTY, no hardcoded values
+            if (!localStorage.getItem('eldorado_products')) {
+                localStorage.setItem('eldorado_products', JSON.stringify([]));
+            }
+            
+            // Sales - EMPTY, no hardcoded values
+            if (!localStorage.getItem('eldorado_sales')) {
+                localStorage.setItem('eldorado_sales', JSON.stringify([]));
+            }
+            
+            // Users with MULTI-ROLE support (roles array)
             if (!localStorage.getItem('systemUsers')) {
-                const defaultUsers = [
+                var defaultUsers = [
                     {
                         id: 1,
                         username: 'admin',
                         password: 'admin123',
                         fullName: 'Admin User',
-                        role: 'admin',
                         roles: ['admin'],
                         email: 'admin@eldorado.com',
-                        status: 'active'
+                        status: 'active',
+                        createdAt: new Date().toISOString()
                     },
                     {
                         id: 2,
                         username: 'clerk',
                         password: 'clerk123',
                         fullName: 'Inventory Clerk',
-                        role: 'inventory_clerk',
                         roles: ['inventory_clerk'],
                         email: 'clerk@eldorado.com',
-                        status: 'active'
+                        status: 'active',
+                        createdAt: new Date().toISOString()
                     },
                     {
                         id: 3,
                         username: 'loa',
                         password: 'loa123',
-                        fullName: 'LOA User',
-                        role: 'loa',
+                        fullName: 'LOA Cashier',
                         roles: ['loa'],
                         email: 'loa@eldorado.com',
-                        status: 'active'
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 4,
+                        username: 'multirole',
+                        password: 'multi123',
+                        fullName: 'Multi-Role User',
+                        roles: ['inventory_clerk', 'loa'],
+                        email: 'multi@eldorado.com',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
                     }
                 ];
-
                 localStorage.setItem('systemUsers', JSON.stringify(defaultUsers));
+            }
+
+            // System settings
+            if (!localStorage.getItem('systemSettings')) {
+                var defaultSettings = {
+                    companyName: 'El Dorado Car Components',
+                    allowRegistration: false,
+                    maintenanceMode: false,
+                    darkModeEnabled: true,
+                    auditLogsEnabled: true
+                };
+                localStorage.setItem('systemSettings', JSON.stringify(defaultSettings));
+            }
+
+            // Activity logs
+            if (!localStorage.getItem('activityLogs')) {
+                localStorage.setItem('activityLogs', JSON.stringify([]));
             }
         }
 
+        // ========== AUDIT LOG HELPER (CONSISTENT TIME) ==========
+        function addAuditLog(action, details, user, userRoles) {
+            try {
+                var logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+                var now = new Date();
+                var formattedTime = formatTimestamp(now);
+                
+                logs.unshift({
+                    id: Date.now(),
+                    action: action,
+                    details: details,
+                    user: user || 'system',
+                    userRoles: userRoles || ['system'],
+                    module: 'System',
+                    timestamp: formattedTime,
+                    rawTimestamp: now.toISOString()
+                });
+                
+                while (logs.length > 500) logs.pop();
+                localStorage.setItem('activityLogs', JSON.stringify(logs));
+            } catch (e) {
+                console.error('Audit log error:', e);
+            }
+        }
+
+        // ========== USER MANAGEMENT ==========
         function getUsers() {
             return JSON.parse(localStorage.getItem('systemUsers')) || [];
         }
 
-        // ========================================
-        // ROLE-BASED ACCESS CONTROL (RBAC)
-        // ========================================
+        function saveUsers(users) {
+            localStorage.setItem('systemUsers', JSON.stringify(users));
+        }
 
-        const ROLE_PERMISSIONS = {
-
-            admin: {
-                modules: [
-                    'dashboard',
-                    'registration',
-                    'user_management',
-                    'inventory',
-                    'sales',
-                    'search',
-                    'customers',
-                    'audit_logs',
-                    'reports',
-                    'maintenance',
-                    'help',
-                    'about'
-                ],
-                salesAccess: 'full'
-            },
-
-            inventory_clerk: {
-                modules: [
-                    'inventory',
-                    'search',
-                    'help',
-                    'about'
-                ],
-                salesAccess: 'inventory_summary_only'
-            },
-
-            loa: {
-                modules: [
-                    'sales',
-                    'search',
-                    'help',
-                    'about'
-                ],
-                salesAccess: 'today_only'
-            }
-        };
-
-        function normalizeRoles(user) {
+        // ========== MULTI-ROLE HELPERS ==========
+        function getUserRoles(user) {
             if (!user) return [];
             if (Array.isArray(user.roles)) return user.roles;
-            if (typeof user.role === 'string') {
-                user.roles = [user.role];
-                return user.roles;
-            }
-            user.roles = [];
-            return user.roles;
+            if (typeof user.role === 'string') return [user.role];
+            return [];
         }
 
-        function ensureUserRoleData(user) {
-            if (!user) return user;
-            if (!Array.isArray(user.roles)) {
-                user.roles = typeof user.role === 'string' ? [user.role] : [];
-            }
-            if (!user.role && user.roles.length) {
-                user.role = user.roles[0];
-            }
-            return user;
+        function hasAnyRole(userRoles, allowedRoles) {
+            if (!userRoles || !allowedRoles) return false;
+            return userRoles.some(function(role) { return allowedRoles.includes(role); });
         }
 
-        function mergeRoles(roles) {
-            const list = [];
-            if (Array.isArray(roles)) {
-                roles.forEach(role => {
-                    if (Array.isArray(role)) return role.forEach(r => list.push(r));
-                    if (role) list.push(role);
-                });
-            } else if (roles) {
-                list.push(roles);
-            }
-            return Array.from(new Set(list));
+        function isAdmin(userRoles) {
+            return userRoles && userRoles.includes('admin');
         }
 
+        // ========== AUTHENTICATION ==========
         function getCurrentUser() {
-            const sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+            var sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
             if (!sessionJSON) return null;
-            let sessionData;
             try {
-                sessionData = JSON.parse(sessionJSON);
-            } catch (e) {
-
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-
-                return null;
-            }
-            ensureUserRoleData(sessionData);
-            if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
-
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-
-                if (
-                    window.location.pathname &&
-                    !window.location.pathname.includes(LOGIN_PAGE)
-                ) {
-
-                    window.location.href = LOGIN_PAGE;
+                var sessionData = JSON.parse(sessionJSON);
+                if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
+                    localStorage.removeItem('userSession');
+                    sessionStorage.removeItem('userSession');
+                    return null;
                 }
-
+                return sessionData;
+            } catch (e) {
                 return null;
             }
-            return sessionData;
-        }
-
-        function checkPermissions(userRoles, moduleName) {
-            const roles = mergeRoles(userRoles);
-            if (!roles.length) return false;
-            if (roles.includes('admin')) return true;
-            return roles.some(role => ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].modules.includes(moduleName));
-        }
-
-        function hasModuleAccess(moduleName) {
-            const currentUser = getCurrentUser();
-            return currentUser ? checkPermissions(currentUser.roles, moduleName) : false;
-        }
-
-        function getSalesAccess(userRoles) {
-            const roles = mergeRoles(userRoles);
-            if (roles.includes('admin')) return 'full';
-            if (roles.includes('loa')) return 'today_only';
-            if (roles.includes('inventory_clerk')) return 'inventory_summary_only';
-            return 'none';
-        }
-
-        function getSalesAccessLevel() {
-            const currentUser = getCurrentUser();
-            if (!currentUser) return null;
-            return getSalesAccess(currentUser.roles);
         }
 
         // Dark Mode
         function initDarkMode() {
-            const isDark = localStorage.getItem('darkMode') === 'true';
+            var isDark = localStorage.getItem('darkMode') === 'true';
             if (isDark) {
                 document.body.classList.add('dark');
                 document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
@@ -595,9 +574,9 @@
 
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
+            var isDark = document.body.classList.contains('dark');
             localStorage.setItem('darkMode', isDark);
-            const icon = document.querySelector('#darkModeToggle i');
+            var icon = document.querySelector('#darkModeToggle i');
             if (isDark) {
                 icon.className = 'fas fa-sun';
             } else {
@@ -605,163 +584,71 @@
             }
         }
 
-        // Show error message
         function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
+            var errorDiv = document.getElementById('errorMessage');
+            var errorText = document.getElementById('errorText');
             errorText.textContent = message;
             errorDiv.classList.add('show');
-            setTimeout(() => {
+            setTimeout(function() {
                 errorDiv.classList.remove('show');
             }, 3000);
         }
 
-        // Login function
         function login(event) {
             event.preventDefault();
             
-            const username = document.getElementById('username')
-                .value
-                .trim()
-                .toLowerCase();
-            const password = document.getElementById('password').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
+            var username = document.getElementById('username').value.trim().toLowerCase();
+            var password = document.getElementById('password').value;
+            var rememberMe = document.getElementById('rememberMe').checked;
 
             if (!username || !password) {
                 showError('Please enter both username and password');
                 return;
             }
 
-            const users = getUsers();
-
-            const systemSettings = JSON.parse(
-                localStorage.getItem('systemSettings')
-            );
-
-            // Prevent login during maintenance
-            if (
-                systemSettings?.maintenanceMode &&
-                username !== 'admin'
-            ) {
-
-                showError(
-                    'System is currently under maintenance'
-                );
-
-                return;
-            }
-
-            const user = users.find(u =>
-                u.username === username &&
-                u.password === password
-            );
+            var users = getUsers();
+            var user = users.find(function(u) { return u.username === username && u.password === password; });
 
             if (user && user.status === 'active') {
-
-                // ========================================
-                // ACTIVITY LOGGING
-                // ========================================
-
-                const activityLogs = JSON.parse(
-                    localStorage.getItem('activityLogs')
-                ) || [];
-
-                activityLogs.unshift({
-                    
-                    id: Date.now(),
-                    username: user.username,
-                    fullName: user.fullName,
-                    role: user.role,
-                    action: 'User Logged In',
-                    timestamp: new Date().toISOString()
-                });
-
-                // Keep only latest 100 logs
-                activityLogs.splice(100);
-
-                localStorage.setItem(
-                    'activityLogs',
-                    JSON.stringify(activityLogs)
-                );
-
-                // Normalize user role structure
-                ensureUserRoleData(user);
-
-                // Store user session
-                const sessionData = {
+                var userRoles = getUserRoles(user);
+                
+                addAuditLog('User Logged In', user.username + ' logged into the system', user.username, userRoles);
+                
+                var sessionData = {
                     id: user.id,
                     sessionVersion: 1,
                     username: user.username,
                     fullName: user.fullName,
-                    role: user.role,
-                    roles: user.roles || [user.role],
+                    roles: userRoles,
                     email: user.email,
                     status: user.status,
                     loginTime: new Date().toISOString(),
                     expiresAt: Date.now() + (8 * 60 * 60 * 1000)
-                    
                 };
 
-                // Clear old sessions first
                 localStorage.removeItem('userSession');
                 sessionStorage.removeItem('userSession');
 
                 if (rememberMe) {
-
-                    localStorage.setItem(
-                        'userSession',
-                        JSON.stringify(sessionData)
-                    );
-
+                    localStorage.setItem('userSession', JSON.stringify(sessionData));
                 } else {
-
-                    sessionStorage.setItem(
-                        'userSession',
-                        JSON.stringify(sessionData)
-                    );
+                    sessionStorage.setItem('userSession', JSON.stringify(sessionData));
                 }
 
-                // Redirect to unified dashboard
                 window.location.href = DEFAULT_REDIRECT_PAGE;
-                } else {
-
-                    // User exists but inactive
-                    if (user && user.status !== 'active') {
-
-                        showError(
-                            'Your account has been deactivated'
-                        );
-
-                        return;
-                    }
-
-                    // Log failed login attempt
-                    const failedAttempts = JSON.parse(
-                        localStorage.getItem('failedLoginAttempts')
-                    ) || [];
-
-                    failedAttempts.unshift({
-                        attemptedUsername: username,
-                        action: 'Failed Login Attempt',
-                        timestamp: new Date().toISOString()
-                    });
-
-                    // Keep only latest 100 failed attempts
-                    failedAttempts.splice(100);
-
-                    localStorage.setItem(
-                        'failedLoginAttempts',
-                        JSON.stringify(failedAttempts)
-                    );
-
-                    showError('Invalid username or password');
+            } else {
+                if (user && user.status !== 'active') {
+                    showError('Your account has been deactivated');
+                    return;
                 }
+                addAuditLog('Failed Login Attempt', 'Failed login for username: ' + username, username, []);
+                showError('Invalid username or password');
+            }
         }
 
-        // Toggle password visibility
         function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('togglePassword');
+            var passwordInput = document.getElementById('password');
+            var toggleIcon = document.getElementById('togglePassword');
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
@@ -772,103 +659,23 @@
             }
         }
 
-        // ========================================
-        // AUTHENTICATION PROTECTION
-        // ========================================
-
-        function requireAuth() {
-
-            const currentUser = getCurrentUser();
-
-            if (!currentUser) {
-
-                window.location.href = LOGIN_PAGE;
-                return null;
-            }
-
-            if (currentUser.status !== 'active') {
-
-                logout();
-                return null;
-            }
-
-            return currentUser;
-        }
-
-        function logout() {
-
-            localStorage.removeItem('userSession');
-            sessionStorage.removeItem('userSession');
-
-            window.location.href = LOGIN_PAGE;
-        }
-
-        // Check if already logged in
         function checkExistingSession() {
-
-            const currentUser = getCurrentUser();
-
-            if (!currentUser) return;
-
-            if (currentUser.status !== 'active') {
-
-                logout();
-                return;
+            var currentUser = getCurrentUser();
+            if (currentUser && currentUser.status === 'active') {
+                window.location.href = DEFAULT_REDIRECT_PAGE;
             }
-
-            window.location.href = DEFAULT_REDIRECT_PAGE;
         }
 
-        // Event listeners
+        // ========== INITIALIZE ==========
+        initializeDataStores();
+        initDarkMode();
+        checkExistingSession();
+
         document.getElementById('loginForm').addEventListener('submit', login);
         document.getElementById('togglePassword').addEventListener('click', togglePassword);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-
-        // ========================================
-        // SYSTEM SETTINGS INITIALIZATION
-        // ========================================
-
-        function initializeSystemSettings() {
-
-            if (!localStorage.getItem('systemSettings')) {
-
-                const defaultSettings = {
-
-                    companyName: 'El Dorado Car Components',
-
-                    allowRegistration: false,
-
-                    maintenanceMode: false,
-
-                    darkModeEnabled: true,
-
-                    auditLogsEnabled: true,
-
-                    salesDateRestriction: {
-                        admin: 'full',
-                        loa: 'today_only',
-                        inventory_clerk: 'inventory_summary_only'
-                    }
-                };
-
-                localStorage.setItem(
-                    'systemSettings',
-                    JSON.stringify(defaultSettings)
-                );
-            }
-        }
-
-        // ========================================
-        // INITIALIZE SYSTEM
-        // ========================================
-
-        initializeUsers();
-        initializeSystemSettings();
-        initDarkMode();
-        checkExistingSession();
         document.getElementById('username').focus();
 
-        // Optional: Add enter key support
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 login(e);
@@ -876,18 +683,13 @@
         });
 
         window.addEventListener('storage', function(event) {
-
             if (event.key === 'userSession') {
-
-                const currentUser = getCurrentUser();
-
+                var currentUser = getCurrentUser();
                 if (!currentUser) {
-
                     window.location.href = LOGIN_PAGE;
                 }
             }
         });
-
     </script>
 </body>
 </html>

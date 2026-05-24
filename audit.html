@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Log - El Dorado Car Components</title>
     
+    <link rel="stylesheet" href="components/sidebar/sidebar.css">
+    <script src="components/sidebar/sidebar.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -140,106 +143,6 @@
         .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
         .card-content { padding: 1.5rem; }
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-        body.dark header { background: rgba(42, 42, 53, 0.95); }
-        .header-content {
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            height: 4rem;
-            gap: 1rem;
-        }
-        .logo-section { display: flex; align-items: center; gap: 0.75rem; margin-right: 1.5rem; }
-        .logo {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--color-primary-red), var(--color-primary-red-hover));
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .company-info h1 { font-size: 1.125rem; font-weight: 700; }
-        .company-info .motto { font-size: 0.75rem; color: var(--color-primary-blue); font-weight: 500; }
-        .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.875rem; font-weight: 500; }
-        .user-role { font-size: 0.75rem; color: var(--color-text-secondary); }
-
-        .layout { display: flex; }
-        aside {
-            position: fixed;
-            left: 0;
-            top: 4rem;
-            bottom: 0;
-            width: 18rem;
-            background: var(--color-bg-white);
-            border-right: 1px solid var(--color-border);
-            box-shadow: var(--shadow-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        aside.sidebar-closed { transform: translateX(-100%); }
-        .sidebar-nav { padding: 1rem; }
-        .nav-section-title { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--color-text-secondary); 
-            text-transform: uppercase; 
-            margin: 1rem 0 0.5rem 0.5rem; 
-            letter-spacing: 0.08em;
-        }
-        .nav-section-title:first-of-type { margin-top: 0; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            color: var(--color-text-primary);
-        }
-        .nav-item:hover { background: var(--color-primary-blue-light); color: var(--color-primary-blue); }
-        .nav-item.active { background: var(--color-primary-red); color: white; }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid var(--color-border);
-            background: var(--color-bg-light);
-            margin-top: auto;
-        }
-        
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        main {
-            flex: 1;
-            margin-left: 18rem;
-            padding: 1.5rem;
-            transition: margin-left 0.3s ease;
-        }
-        main.sidebar-closed { margin-left: 0; }
 
         .grid { display: grid; gap: 1.5rem; }
         .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
@@ -435,139 +338,54 @@
         .text-muted { color: var(--color-text-secondary); }
         .text-center { text-align: center; }
 
-        .dark-mode-toggle {
-            background: var(--color-primary-red);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 </head>
 <body>
     <div id="app">
-        <header>
-            <div class="header-content">
-                <button class="btn btn-ghost btn-icon" id="sidebarToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo-section">
-                    <div class="logo"><i class="fas fa-car"></i></div>
-                    <div class="company-info">
-                        <h1>El Dorado Car Components</h1>
-                        <p class="motto">65 Years of Integrity, Honesty, Reliability</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="dark-mode-toggle" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Loading...</div>
-                        <div class="user-role" id="userRole"></div>
-                    </div>
-                    <button class="btn btn-ghost btn-icon" id="logoutBtn" style="color: var(--color-red);">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
         
         <div class="layout">
-            <aside id="sidebar">
-                <nav class="sidebar-nav">
-                    <div id="navLinks"></div>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="system-status">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Network Status:</span>
-                        <span class="text-green"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LAN Connected</span>
-                    </div>
-                    <div class="system-status" style="margin-top: 0.5rem;">
-                        <i class="fas fa-code-branch"></i>
-                        <span>System Version:</span>
-                        <span>v3.0.0</span>
-                    </div>
-                </div>
-            </aside>
+
+        <div id="sidebar-container"></div>
             
             <main id="mainContent"></main>
         </div>
     </div>
 
     <script>
-        function checkAuth() {
-            const session = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!session) {
-                window.location.href = 'index.html';
-                return null;
+        // Load and initialize sidebar
+        (async function initPage() {
+            try {
+                const response = await fetch('components/sidebar/sidebar.html');
+                const sidebarHtml = await response.text();
+                document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+                
+                if (typeof renderNavigation === 'function') renderNavigation();
+                if (typeof initializeSidebar === 'function') initializeSidebar();
+                if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+                
+                const user = getCurrentUser();
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                initAuditPage();
+                
+            } catch (error) {
+                console.error('Error initializing audit page:', error);
             }
-            return JSON.parse(session);
-        }
+        })();
 
-        const currentUser = checkAuth();
-        const activeModule = 'audit_logs';
+        // ============ AUDIT LOG MODULE ============
 
-        const ROLE_PERMISSIONS = {
-            admin: { modules: ['dashboard','inventory','sales','search','user_management','reports','audit_logs','maintenance','help','about'], salesAccess: 'full' },
-            inventory_clerk: { modules: ['inventory','search','help','about'], salesAccess: 'none' },
-            loa: { modules: ['sales','search','help','about'], salesAccess: 'today_only' }
-        };
-
-        function hasModuleAccess(moduleName) {
-            const permissions = ROLE_PERMISSIONS[currentUser.role];
-            return permissions ? permissions.modules.includes(moduleName) : false;
-        }
-
-        if (!hasModuleAccess(activeModule)) {
-            window.location.href = hasModuleAccess('dashboard') ? 'dashboard.html' : 'index.html';
-        }
-
-        function getCurrentModule() {
-            const page = window.location.pathname.split('/').pop();
-
-            const modules = {
-                'dashboard.html': 'Dashboard',
-                'inventory.html': 'Inventory',
-                'sales.html': 'Sales',
-                'search.html': 'Search',
-                'users.html': 'Users',
-                'reports.html': 'Reports',
-                'audit.html': 'Audit Logs',
-                'maintenance.html': 'Maintenance',
-                'help.html': 'Support',
-                'about.html': 'About'
-            };
-
-            return modules[page] || 'System';
-        }
-        
         function loadAuditLogs() {
             const stored = localStorage.getItem('eldorado_audit');
             if (stored) return JSON.parse(stored);
-            return [
-                { id: 1, action: 'Login', details: 'User logged into system', user: 'admin', role: 'Administrator', timestamp: new Date().toLocaleString(), module: 'System', severity: 'info' },
-                { id: 2, action: 'View Dashboard', details: 'Accessed main dashboard', user: 'admin', role: 'Administrator', timestamp: new Date().toLocaleString(), module: 'Dashboard', severity: 'info' },
-                { id: 3, action: 'Add Product', details: 'Added Brake Pads Set', user: 'admin', role: 'Administrator', timestamp: new Date(Date.now() - 3600000).toLocaleString(), module: 'Inventory', severity: 'success' },
-                { id: 4, action: 'Update Stock', details: 'Updated Engine Oil stock to 50', user: 'clerk', role: 'Inventory Clerk', timestamp: new Date(Date.now() - 7200000).toLocaleString(), module: 'Inventory', severity: 'success' },
-                { id: 5, action: 'Sale', details: 'Processed sale RCP-2024-0001 for ₱2,500', user: 'loa', role: 'LOA - Cashier', timestamp: new Date(Date.now() - 86400000).toLocaleString(), module: 'Sales', severity: 'success' },
-                { id: 6, action: 'Failed Login', details: 'Failed login attempt for user "test"', user: 'unknown', role: 'Unknown', timestamp: new Date(Date.now() - 172800000).toLocaleString(), module: 'Security', severity: 'warning' }
-            ];
-        }
-
-        function saveAuditLogs(logs) {
-            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+            return []; // Empty array - no demo data
         }
 
         let auditLogs = loadAuditLogs();
         let filteredLogs = [...auditLogs];
-        let sidebarOpen = true;
 
         function getRoleDisplayName(role) {
             const roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
@@ -580,103 +398,24 @@
                 'Inventory Clerk': 'fa-clipboard-check',
                 'LOA - Cashier': 'fa-receipt'
             };
-
             return icons[role] || 'fa-user';
         }
 
-        // Get action icon and color based on action (STRONGER colors for better visibility)
         function getActionIconAndColor(action) {
             const styles = {
-                'Login': { icon: 'fas fa-sign-in-alt', color: 'var(--strong-blue)' },
-                'Logout': { icon: 'fas fa-sign-out-alt', color: 'var(--strong-indigo)' },
-                'Add Product': { icon: 'fas fa-plus-circle', color: 'var(--strong-orange)' },
-                'Edit Product': { icon: 'fas fa-edit', color: 'var(--strong-yellow)' },
-                'Delete Product': { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' },
-                'Update Stock': { icon: 'fas fa-boxes', color: 'var(--strong-orange)' },
-                'Sale': { icon: 'fas fa-shopping-cart', color: 'var(--strong-green)' },
-                'Add User': { icon: 'fas fa-user-plus', color: 'var(--strong-cyan)' },
-                'Edit User': { icon: 'fas fa-user-edit', color: 'var(--strong-emerald)' },
-                'Delete User': { icon: 'fas fa-user-times', color: 'var(--strong-rose)' },
-                'View Dashboard': { icon: 'fas fa-chart-line', color: 'var(--strong-blue)' },
-                'Failed Login': { icon: 'fas fa-exclamation-triangle', color: 'var(--strong-rose)' },
-                'Backup': { icon: 'fas fa-database', color: 'var(--strong-purple)' },
-                'Restore': { icon: 'fas fa-undo-alt', color: 'var(--strong-violet)' },
-                'Create Backup': { icon: 'fas fa-download', color: 'var(--strong-purple)' },
-                'Data Export': { icon: 'fas fa-file-export', color: 'var(--strong-pink)' },
-                'Data Import': { icon: 'fas fa-file-import', color: 'var(--strong-orange)' },
-                'System Reset': { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' },
-                'Storage Optimized': { icon: 'fas fa-broom', color: 'var(--strong-green)' },
-                'Archive Product': { icon: 'fas fa-box-archive', color: 'var(--strong-violet)' },
-                'Restore Product': { icon: 'fas fa-rotate-left', color: 'var(--strong-indigo)' },
-                'Delete Sale': { icon: 'fas fa-trash', color: 'var(--strong-red)' },
-                'Refund': { icon: 'fas fa-money-bill-wave', color: 'var(--strong-orange)' },
-                'Print Receipt': { icon: 'fas fa-print', color: 'var(--strong-cyan)' },
-                'View Report': { icon: 'fas fa-chart-pie', color: 'var(--strong-blue)' },
-                'Generate Report': { icon: 'fas fa-file-lines', color: 'var(--strong-purple)' },
-                'Change Password': { icon: 'fas fa-key', color: 'var(--strong-yellow)' },
-                'Toggle Status': { icon: 'fas fa-toggle-on', color: 'var(--strong-emerald)' },
-                'Deactivate User': { icon: 'fas fa-user-slash', color: 'var(--strong-rose)' },
-                'Activate User': { icon: 'fas fa-user-check', color: 'var(--strong-green)' },
-                'Search': { icon: 'fas fa-search', color: 'var(--strong-blue)' },
-                'Logout Session': { icon: 'fas fa-right-from-bracket', color: 'var(--strong-indigo)' }
+                'Login': { icon: 'fas fa-sign-in-alt', color: '#1a73e8' },
+                'Logout': { icon: 'fas fa-sign-out-alt', color: '#4c51bf' },
+                'Add Product': { icon: 'fas fa-plus-circle', color: '#ed8936' },
+                'Edit Product': { icon: 'fas fa-edit', color: '#ecc94b' },
+                'Update Stock': { icon: 'fas fa-boxes', color: '#ed8936' },
+                'Sale': { icon: 'fas fa-shopping-cart', color: '#48bb78' },
+                'Add User': { icon: 'fas fa-user-plus', color: '#00b5d8' },
+                'Edit User': { icon: 'fas fa-user-edit', color: '#38b2ac' },
+                'Delete User': { icon: 'fas fa-user-times', color: '#f56565' },
+                'Failed Login': { icon: 'fas fa-exclamation-triangle', color: '#f56565' }
             };
-            if (styles[action]) {
-                return styles[action];
-            }
-
-            const normalizedAction = action.toLowerCase();
-
-            if (
-                normalizedAction.includes('delete') ||
-                normalizedAction.includes('remove') ||
-                normalizedAction.includes('reset') ||
-                normalizedAction.includes('failed')
-            ) {
-                return { icon: 'fas fa-trash-alt', color: 'var(--strong-red)' };
-            }
-
-            if (
-                normalizedAction.includes('add') ||
-                normalizedAction.includes('create') ||
-                normalizedAction.includes('import')
-            ) {
-                return { icon: 'fas fa-plus-circle', color: 'var(--strong-green)' };
-            }
-
-            if (
-                normalizedAction.includes('edit') ||
-                normalizedAction.includes('update') ||
-                normalizedAction.includes('modify')
-            ) {
-                return { icon: 'fas fa-pen', color: 'var(--strong-yellow)' };
-            }
-
-            if (
-                normalizedAction.includes('backup') ||
-                normalizedAction.includes('restore')
-            ) {
-                return { icon: 'fas fa-database', color: 'var(--strong-purple)' };
-            }
-
-            if (
-                normalizedAction.includes('login') ||
-                normalizedAction.includes('logout')
-            ) {
-                return { icon: 'fas fa-right-from-bracket', color: 'var(--strong-blue)' };
-            }
-
-            return {
-                icon: 'fas fa-circle',
-                color: 'var(--strong-cyan)'
-            };
-        }
-
-        
-        function getSeverityBadge(severity) {
-            if (severity === 'success') return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Success</span>';
-            if (severity === 'warning') return '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Warning</span>';
-            if (severity === 'danger') return '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Critical</span>';
-            return '<span class="badge badge-info"><i class="fas fa-info-circle"></i> Info</span>';
+            if (styles[action]) return styles[action];
+            return { icon: 'fas fa-circle', color: '#00b5d8' };
         }
 
         function getModuleBadge(module) {
@@ -686,69 +425,9 @@
                 'Inventory': 'badge-success',
                 'Sales': 'badge-purple',
                 'Users': 'badge-warning',
-                'Security': 'badge-danger',
-                'Maintenance': 'badge-info',
-                'Reports': 'badge-purple',
-                'Search': 'badge-info',
-                'Audit Logs': 'badge-danger',
-                'Support': 'badge-warning',
-                'About': 'badge-info'
+                'Security': 'badge-danger'
             };
             return `<span class="badge ${modules[module] || 'badge-info'}">${module}</span>`;
-        }
-
-                function renderNavigation() {
-            const navSections = [
-                {
-                    title: "MAIN",
-                    items: [
-                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
-                        { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
-                        { id: 'sales', label: 'Sales', icon: 'fas fa-shopping-cart' },
-                        { id: 'search', label: 'Search', icon: 'fas fa-search' }
-                    ]
-                },
-                {
-                    title: "MANAGEMENT",
-                    items: [
-                        { id: 'user_management', label: 'Users', icon: 'fas fa-users' },
-                        { id: 'reports', label: 'Reports', icon: 'fas fa-chart-bar' },
-                        { id: 'audit_logs', label: 'Audit Logs', icon: 'fas fa-file-alt' }
-                    ]
-                },
-                {
-                    title: "SYSTEM",
-                    items: [
-                        { id: 'maintenance', label: 'Maintenance', icon: 'fas fa-tools' },
-                        { id: 'help', label: 'Support', icon: 'fas fa-question-circle' },
-                        { id: 'about', label: 'About', icon: 'fas fa-info-circle' }
-                    ]
-                }
-            ];
-            
-            let navHtml = '';
-            for (const section of navSections) {
-                navHtml += `<div class="nav-section-title">${section.title}</div>`;
-                for (const item of section.items) {
-                    if (!hasModuleAccess(item.id)) continue;
-                    navHtml += `
-                        <button class="nav-item ${item.id === activeModule ? 'active' : ''}" onclick="navigateTo('${item.id}')">
-                            <i class="${item.icon}" style="width: 1.25rem;"></i>
-                            <span>${item.label}</span>
-                        </button>
-                    `;
-                }
-            }
-            document.getElementById('navLinks').innerHTML = navHtml;
-        }
-
-        function navigateTo(module) {
-            const pages = {
-                dashboard: 'dashboard.html', inventory: 'inventory.html', sales: 'sales.html',
-                user_management: 'users.html', reports: 'reports.html', audit_logs: 'audit.html',
-                search: 'search.html', maintenance: 'maintenance.html', help: 'help.html', about: 'about.html'
-            };
-            if (pages[module]) window.location.href = pages[module];
         }
 
         function applyFilters() {
@@ -822,64 +501,71 @@
             
             tbody.innerHTML = filteredLogs.map(log => {
                 const actionStyle = getActionIconAndColor(log.action);
+                let roleClass = 'loa';
+                if (log.role === 'Administrator' || log.user === 'admin') roleClass = 'admin';
+                else if (log.role === 'Inventory Clerk' || log.user === 'clerk') roleClass = 'inventory_clerk';
+                
                 return `
                     <tr>
-                        <td><small>${log.timestamp}</small></td>
+                        <td><small>${log.timestamp}</small></div></td>
                         <td>
-                            <div class="role-display ${
-                                (log.role || log.user) === 'Administrator' || log.user === 'admin'
-                                    ? 'admin'
-                                    : (log.role || log.user) === 'Inventory Clerk' || log.user === 'clerk'
-                                    ? 'inventory_clerk'
-                                    : 'loa'
-                            }">
-
-                            <i class="fas ${
-                                getRoleIcon(
-                                    log.role ||
-                                    (log.user === 'admin'
-                                        ? 'Administrator'
-                                        : log.user === 'clerk'
-                                        ? 'Inventory Clerk'
-                                        : 'LOA - Cashier')
-                                )
-                            }"></i>
-
-                                <span>${
-                                    log.role ||
-                                    (log.user === 'admin'
-                                        ? 'Administrator'
-                                        : log.user === 'clerk'
-                                        ? 'Inventory Clerk'
-                                        : log.user === 'loa'
-                                        ? 'LOA - Cashier'
-                                        : log.user) ||
-                                    'Unknown User'
-                                }</span>
+                            <div class="role-display ${roleClass}">
+                                <i class="fas ${getRoleIcon(log.role || (log.user === 'admin' ? 'Administrator' : log.user === 'clerk' ? 'Inventory Clerk' : 'LOA - Cashier'))}"></i>
+                                <span>${log.role || (log.user === 'admin' ? 'Administrator' : log.user === 'clerk' ? 'Inventory Clerk' : log.user === 'loa' ? 'LOA - Cashier' : log.user) || 'Unknown User'}</span>
                             </div>
-                        </td>
-                        <td style="vertical-align: top;">
+                        </div></td>
+                        <td>
                             <i class="${actionStyle.icon}" style="color: ${actionStyle.color}; width: 1.2rem; margin-right: 0.75rem;"></i>
                             <span style="color: ${actionStyle.color}; font-weight: 500;">${log.action}</span>
                         </div></td>
-                        <td>${getModuleBadge(log.module || 'System')}</td>
-                        <td style="vertical-align: top;">
-                            <div>${log.details}</div>
-                        </td>
+                        <td>${getModuleBadge(log.module || 'System')}</div></td>
+                        <td>${log.details}</div></td>
                     </tr>
                 `;
             }).join('');
         }
 
+        function exportAuditLogs() {
+            const exportData = filteredLogs.map(log => ({
+                'Timestamp': log.timestamp,
+                'User': log.user,
+                'Role': log.role,
+                'Action': log.action,
+                'Module': log.module,
+                'Severity': log.severity,
+                'Details': log.details
+            }));
+            
+            if (exportData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const headers = Object.keys(exportData[0]);
+            const csvRows = [headers.join(',')];
+            for (const row of exportData) {
+                const values = headers.map(header => {
+                    const val = row[header]?.toString().replace(/,/g, ' ') || '';
+                    return `"${val}"`;
+                });
+                csvRows.push(values.join(','));
+            }
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audit_log_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function initAuditPage() {
+            renderAudit();
+        }
+
         function renderAudit() {
             const uniqueActions = [...new Set(auditLogs.map(l => l.action))];
-            const uniqueModules = [
-                ...new Set(
-                    auditLogs
-                        .map(l => l.module)
-                        .filter(m => m && m !== 'undefined')
-                )
-            ];
+            const uniqueModules = [...new Set(auditLogs.map(l => l.module).filter(m => m && m !== 'undefined'))];
             const uniqueUsers = [...new Set(auditLogs.map(l => l.user))];
             
             const html = `
@@ -898,113 +584,31 @@
                     </div>
                     
                     <div class="grid grid-cols-4">
-                        <div class="stat-card-blue">
-                            <div class="stat-info">
-                                <p class="text-sm">Total Actions</p>
-                                <h2 class="text-2xl font-bold" id="statTotal">0</h2>
-                            </div>
-                            <i class="fas fa-chart-line" style="font-size: 2rem;"></i>
-                        </div>
-                        <div class="stat-card-green">
-                            <div class="stat-info">
-                                <p class="text-sm">Successful</p>
-                                <h2 class="text-2xl font-bold" id="statSuccessful">0</h2>
-                            </div>
-                            <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
-                        </div>
-                        <div class="stat-card-red">
-                            <div class="stat-info">
-                                <p class="text-sm">Failed/Warning</p>
-                                <h2 class="text-2xl font-bold" id="statFailed">0</h2>
-                            </div>
-                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
-                        </div>
-                        <div class="stat-card-yellow">
-                            <div class="stat-info">
-                                <p class="text-sm">Critical</p>
-                                <h2 class="text-2xl font-bold" id="statCritical">0</h2>
-                            </div>
-                            <i class="fas fa-skull-crossbones" style="font-size: 2rem;"></i>
-                        </div>
+                        <div class="stat-card-blue"><div class="stat-info"><p class="text-sm">Total Actions</p><h2 class="text-2xl font-bold" id="statTotal">0</h2></div><i class="fas fa-chart-line" style="font-size: 2rem;"></i></div>
+                        <div class="stat-card-green"><div class="stat-info"><p class="text-sm">Successful</p><h2 class="text-2xl font-bold" id="statSuccessful">0</h2></div><i class="fas fa-check-circle" style="font-size: 2rem;"></i></div>
+                        <div class="stat-card-red"><div class="stat-info"><p class="text-sm">Failed/Warning</p><h2 class="text-2xl font-bold" id="statFailed">0</h2></div><i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i></div>
+                        <div class="stat-card-yellow"><div class="stat-info"><p class="text-sm">Critical</p><h2 class="text-2xl font-bold" id="statCritical">0</h2></div><i class="fas fa-skull-crossbones" style="font-size: 2rem;"></i></div>
                     </div>
                     
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><i class="fas fa-filter"></i> Activity History</h3>
-                            <p class="card-description">Filter and search audit log entries</p>
                         </div>
                         <div class="card-content">
                             <div class="filter-group">
-                                <div class="filter-input">
-                                    <label><i class="fas fa-search"></i> Search</label>
-                                    <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="applyFilters()">
-                                </div>
-                                <div class="filter-input">
-                                    <label><i class="fas fa-tag"></i> Action</label>
-                                    <select id="actionFilter" onchange="applyFilters()">
-                                        <option value="">All Actions</option>
-                                        ${uniqueActions.map(a => `<option value="${a}">${a}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="filter-input">
-                                    <label><i class="fas fa-cube"></i> Module</label>
-                                    <select id="moduleFilter" onchange="applyFilters()">
-                                        <option value="">All Modules</option>
-                                        ${uniqueModules.map(m => `<option value="${m}">${m}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="filter-input">
-                                    <label><i class="fas fa-user"></i> User</label>
-                                    <select id="userFilter" onchange="applyFilters()">
-                                        <option value="">All Users</option>
-                                        ${uniqueUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
-                                    </select>
-                                </div>
+                                <div class="filter-input"><label><i class="fas fa-search"></i> Search</label><input type="text" id="searchInput" placeholder="Search logs..." onkeyup="applyFilters()"></div>
+                                <div class="filter-input"><label><i class="fas fa-tag"></i> Action</label><select id="actionFilter" onchange="applyFilters()"><option value="">All Actions</option>${uniqueActions.map(a => `<option value="${a}">${a}</option>`).join('')}</select></div>
+                                <div class="filter-input"><label><i class="fas fa-cube"></i> Module</label><select id="moduleFilter" onchange="applyFilters()"><option value="">All Modules</option>${uniqueModules.map(m => `<option value="${m}">${m}</option>`).join('')}</select></div>
+                                <div class="filter-input"><label><i class="fas fa-user"></i> User</label><select id="userFilter" onchange="applyFilters()"><option value="">All Users</option>${uniqueUsers.map(u => `<option value="${u}">${u}</option>`).join('')}</select></div>
                             </div>
-                            
                             <div class="filter-group">
-                                <div class="filter-input">
-                                    <label><i class="fas fa-exclamation"></i> Severity</label>
-                                    <select id="severityFilter" onchange="applyFilters()">
-                                        <option value="">All Severities</option>
-                                        <option value="info">Info</option>
-                                        <option value="success">Success</option>
-                                        <option value="warning">Warning</option>
-                                        <option value="danger">Danger</option>
-                                    </select>
-                                </div>
-                                <div class="filter-input">
-                                    <label><i class="fas fa-calendar"></i> Date From</label>
-                                    <input type="date" id="dateFrom" onchange="applyFilters()">
-                                </div>
-                                <div class="filter-input">
-                                    <label><i class="fas fa-calendar"></i> Date To</label>
-                                    <input type="date" id="dateTo" onchange="applyFilters()">
-                                </div>
-                                <div class="filter-input">
-                                    <label style="opacity: 0;">Clear</label>
-                                    <button class="btn btn-secondary filter-clear-btn" onclick="clearFilters()" style="width: 100%;">
-                                        <i class="fas fa-eraser"></i> Clear Filters
-                                    </button>
-                                </div>
+                                <div class="filter-input"><label><i class="fas fa-exclamation"></i> Severity</label><select id="severityFilter" onchange="applyFilters()"><option value="">All Severities</option><option value="info">Info</option><option value="success">Success</option><option value="warning">Warning</option><option value="danger">Danger</option></select></div>
+                                <div class="filter-input"><label><i class="fas fa-calendar"></i> Date From</label><input type="date" id="dateFrom" onchange="applyFilters()"></div>
+                                <div class="filter-input"><label><i class="fas fa-calendar"></i> Date To</label><input type="date" id="dateTo" onchange="applyFilters()"></div>
+                                <div class="filter-input"><label style="opacity: 0;">Clear</label><button class="btn btn-secondary filter-clear-btn" onclick="clearFilters()" style="width: 100%;"><i class="fas fa-eraser"></i> Clear Filters</button></div>
                             </div>
-                            
                             <div class="text-sm text-muted mb-3" id="resultCount">Loading...</div>
-                            
-                            <div class="table-container">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr>
-                                            <th>Timestamp</th>
-                                            <th>User</th>
-                                            <th>Action</th>
-                                            <th>Module</th>
-                                            <th>Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="auditTableBody"></tbody>
-                                </table>
-                            </div>
+                            <div class="table-container"><table class="w-full"><thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Module</th><th>Description</th></tr></thead><tbody id="auditTableBody"></tbody></table></div>
                         </div>
                     </div>
                 </div>
@@ -1013,82 +617,7 @@
             renderAuditTable();
         }
 
-        function exportAuditLogs() {
-            const exportData = filteredLogs.map(log => ({
-                'Timestamp': log.timestamp,
-                'User': log.user,
-                'Role': log.role,
-                'Action': log.action,
-                'Module': log.module,
-                'Severity': log.severity,
-                'Details': log.details
-            }));
-            
-            const headers = Object.keys(exportData[0] || {});
-            const csvRows = [headers.join(',')];
-            for (const row of exportData) {
-                const values = headers.map(header => {
-                    const val = row[header]?.toString().replace(/,/g, ' ') || '';
-                    return `"${val}"`;
-                });
-                csvRows.push(values.join(','));
-            }
-            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `audit_log_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            const sidebar = document.getElementById('sidebar');
-            const main = document.querySelector('main');
-            if (sidebarOpen) {
-                sidebar.classList.remove('sidebar-closed');
-                main.classList.remove('sidebar-closed');
-            } else {
-                sidebar.classList.add('sidebar-closed');
-                main.classList.add('sidebar-closed');
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            const icon = document.querySelector('#darkModeToggle i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = 'index.html';
-            }
-        }
-
-        if (currentUser) {
-            document.getElementById('userName').innerText = currentUser?.fullName || 'User';
-            document.getElementById('userRole').innerText = getRoleDisplayName(currentUser?.role);
-        }
-        
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
-        }
-        
-        renderNavigation();
-        renderAudit();
-        
-        document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-        
-        window.navigateTo = navigateTo;
+        // Make functions available globally
         window.applyFilters = applyFilters;
         window.clearFilters = clearFilters;
         window.exportAuditLogs = exportAuditLogs;
