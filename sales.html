@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales - El Dorado Car Components</title>
-
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <script src="components/sidebar/sidebar.js"></script>
-
+    <script type="module" src="components/sidebar/sidebar.js"></script>
     <style>
         * {
             margin: 0;
@@ -269,24 +266,6 @@
         
         .pos-modal-title i {
             color: var(--soft-blue);
-        }
-        
-        .pos-modal-close {
-            position: relative;
-            top: auto;
-            right: auto;
-            width: 2rem;
-            height: 2rem;
-            border: none;
-            background: transparent;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            color: var(--color-text-secondary);
-            font-size: 1.25rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .pos-modal {
@@ -1094,7 +1073,7 @@
                                 <i class="fa-solid fa-magnifying-glass"></i>
                                 <input type="text" id="searchProduct" placeholder="Search product, UID, or supplier...">
                             </div>
-                            <select id="categoryFilter" class="pos-category-select">
+                            <select id="modalCategoryFilter" class="pos-category-select">
                                 <option value="">All Categories</option>
                             </select>
                         </div>
@@ -1253,7 +1232,13 @@
         </div>
     </div>
 
-        <script>
+        <script type="module">
+
+            import { getCurrentUser, getMergedPermissions } from './components/core/auth.js';
+
+            import { getAllProducts, getSales, addAuditLog, saveProducts, saveSales } from './components/core/data.js';
+
+            import { formatCurrency, ensureArray } from './components/core/utils.js';
 
             // Load and initialize sidebar
             (async function initPage() {
@@ -1274,7 +1259,26 @@
                         window.location.href = 'index.html';
                         return;
                     }
+
+                    // Check if user has access to Sales
+                    const permissions = getMergedPermissions(user);
+                    if (!permissions.canViewSales) {
+                        document.getElementById('mainContent').innerHTML = `
+                            <div style="display: flex; align-items: center; justify-content: center; min-height: 60vh;">
+                                <div style="text-align: center;">
+                                    <i class="fas fa-lock" style="font-size: 4rem; color: var(--color-primary-red); margin-bottom: 1rem;"></i>
+                                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Access Denied</h2>
+                                    <p style="color: var(--color-text-secondary);">You don't have permission to access the Sales module.</p>
+                                    <button class="btn btn-primary" style="margin-top: 1rem;" onclick="window.location.href='dashboard.html'">Return to Dashboard</button>
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
                     
+                    const showTodayOnly = permissions.canViewTodaySalesOnly;
+                    window.showTodayOnly = permissions.canViewTodaySalesOnly;
+
                     // Initialize sales page
                     renderSales();
                     
@@ -1284,16 +1288,28 @@
             })();
 
             // ============ SALES MODULE - MODERN POS DESIGN ============
-
-            let products = JSON.parse(localStorage.getItem('eldorado_products')) || [];
-            let sales = JSON.parse(localStorage.getItem('eldorado_sales')) || [];
             let cart = [];
             
-            function saveProducts() { localStorage.setItem('eldorado_products', JSON.stringify(products)); }
-            function saveSales() { localStorage.setItem('eldorado_sales', JSON.stringify(sales)); }
-            
-            function formatCurrency(amount) {
-                return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            let products = [];
+            let salesList = [];
+
+            function loadProductsFromStorage() {
+                products = ensureArray(getAllProducts());
+            }
+
+            function loadSalesFromStorage() {
+                salesList = ensureArray(getSales());
+            }
+
+            loadProductsFromStorage();
+            loadSalesFromStorage();
+
+            function saveProductsToStorage(productsData) {
+                saveProducts(productsData);
+            }
+
+            function saveSalesToStorage(salesData) {
+                saveSales(salesData);
             }
             
             function getCategoryLabel(cat) {
@@ -1301,17 +1317,81 @@
                 return labels[cat] || cat;
             }
             
+            function populateCategoryFilter() {
+
+                const categoryFilter = document.getElementById('modalCategoryFilter');
+
+                if (!categoryFilter) return;
+
+                const categories = [
+
+                    ...new Set(
+
+                        products
+                            .map(p => p.category)
+                            .filter(Boolean)
+                    )
+                ];
+
+                categoryFilter.innerHTML = `
+                    <option value="">
+                        All Categories
+                    </option>
+                `;
+
+                categories.sort().forEach(category => {
+
+                    categoryFilter.innerHTML += `
+                        <option value="${category}">
+                            ${getCategoryLabel(category)}
+                        </option>
+                    `;
+                });
+            }
+
             function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
-            
+
+            window.addAuditLog = addAuditLog;
+            window.formatCurrency = formatCurrency;
+
             // POS Modal Functions
-            let currentDiscount = 0;
             let currentTotal = 0;
+            let currentDiscount = 0;
             
             function renderSales() {
                 const today = new Date().toDateString();
-                const todaySales = sales.filter(s => new Date(s.date).toDateString() === today);
+                const todaySales = salesList.filter(s => new Date(s.date).toDateString() === today);                
                 const todayRevenue = todaySales.reduce((sum, s) => sum + s.total, 0);
-                const avgSale = sales.length > 0 ? sales.reduce((sum, s) => sum + s.total, 0) / sales.length : 0;
+                const avgSale = salesList.length > 0 ? salesList.reduce((sum, s) => sum + s.total, 0) / salesList.length : 0;
+                
+                // For LOA users (showTodayOnly = true), hide Average Sale stat
+                const showTodayOnly = window.showTodayOnly || false;
+                
+                let statsHtml = '';
+                if (showTodayOnly) {
+                    // LOA/Cashier: Show only Today's Sales and Today's Revenue (2 cards)
+                    statsHtml = `
+                        <div class="grid grid-cols-2">
+                            <div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Today's Sales</p><p class="stat-value">${todaySales.length}</p></div><i class="fas fa-cash-register" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">Today's Revenue</p><p class="stat-value">${formatCurrency(todayRevenue)}</p></div><i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i></div>
+                        </div>
+                    `;
+                } else {
+                    // Admin/Inventory Clerk: Show all 3 stats
+                    statsHtml = `
+                        <div class="grid grid-cols-3">
+                            <div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Today's Sales</p><p class="stat-value">${todaySales.length}</p></div><i class="fas fa-cash-register" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">Today's Revenue</p><p class="stat-value">${formatCurrency(todayRevenue)}</p></div><i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i></div>
+                            <div class="stat-card-soft" style="background: var(--soft-purple);"><div><p class="text-sm">Average Sale</p><p class="stat-value">${formatCurrency(avgSale)}</p></div><i class="fas fa-chart-line" style="font-size: 2rem; color: white;"></i></div>
+                        </div>
+                    `;
+                }
+                
+                // For LOA users, also filter the sales history to show ONLY today's transactions
+                let salesToShow = salesList;
+                if (showTodayOnly) {
+                    salesToShow = todaySales;
+                }
                 
                 const html = `
                     <div class="space-y-6">
@@ -1322,13 +1402,9 @@
                             </div>
                             <button class="sale-btn" id="newSaleBtn"><i class="fa-solid fa-plus"></i> New Sale</button>
                         </div>
-                        <div class="grid grid-cols-3">
-                            <div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Today's Sales</p><p class="stat-value">${todaySales.length}</p></div><i class="fas fa-cash-register" style="font-size: 2rem; color: white;"></i></div>
-                            <div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">Today's Revenue</p><p class="stat-value">${formatCurrency(todayRevenue)}</p></div><i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i></div>
-                            <div class="stat-card-soft" style="background: var(--soft-purple);"><div><p class="text-sm">Average Sale</p><p class="stat-value">${formatCurrency(avgSale)}</p></div><i class="fas fa-chart-line" style="font-size: 2rem; color: white;"></i></div>
-                        </div>
+                        ${statsHtml}
                         <div class="sales-card">
-                            <div class="sales-card-header"><h2><i class="fa-regular fa-file-lines"></i> Recent Sales History</h2><p>View recent transactions and receipts</p></div>
+                            <div class="sales-card-header"><h2><i class="fa-regular fa-file-lines"></i> ${showTodayOnly ? "Today's" : "Recent"} Sales History</h2><p>${showTodayOnly ? "View today's transactions only" : "View recent transactions and receipts"}</p></div>
                             <div class="table-wrapper"><table><thead><tr><th>Receipt</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="salesTableBody"></tbody></table></div>
                         </div>
                     </div>
@@ -1336,10 +1412,10 @@
                 document.getElementById('mainContent').innerHTML = html;
                 
                 const tbody = document.getElementById('salesTableBody');
-                if (sales.length === 0) {
+                if (salesToShow.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No sales yet</td></tr>';
                 } else {
-                    tbody.innerHTML = sales.slice(0, 15).map(sale => `
+                    tbody.innerHTML = salesToShow.slice(0, 15).map(sale => `
                         <tr>
                             <td>${sale.receiptNo}</td>
                             <td><div class="customer-name">${escapeHtml(sale.customerName)}</div><div class="customer-number">${escapeHtml(sale.customerPhone || '')}</div></td>
@@ -1355,23 +1431,36 @@
                 }
                 document.getElementById('newSaleBtn')?.addEventListener('click', openSaleModal);
             }
-            
+
             function openSaleModal() {
+
                 cart = [];
-                currentDiscount = 0;
                 updateCartDisplay();
                 updateSummaryPanel();
+
                 document.getElementById('customerName').value = '';
                 document.getElementById('customerPhone').value = '';
                 document.getElementById('paymentMethod').value = 'Cash';
                 document.getElementById('amountTendered').value = '';
                 document.getElementById('discountSelect').value = '0';
-                document.getElementById('tenderStatus').textContent = 'Enter amount';
-                document.getElementById('tenderStatus').className = 'pos-input-status default';
-                document.getElementById('changeDisplay').textContent = '₱0.00';
+
+                document.getElementById('tenderStatus').textContent =
+                    'Enter amount';
+
+                document.getElementById('tenderStatus').className =
+                    'pos-input-status default';
+
+                document.getElementById('changeDisplay').textContent =
+                    '₱0.00';
+
+                populateCategoryFilter();
+
                 loadProductList();
+
                 setDateTime();
-                document.getElementById('saleModal').classList.add('active');
+
+                document.getElementById('saleModal')
+                    .classList.add('active');
             }
             
             function setDateTime() {
@@ -1383,10 +1472,17 @@
             function loadProductList() {
                 const tbody = document.getElementById('posProductList');
                 const searchTerm = document.getElementById('searchProduct')?.value.toLowerCase() || '';
-                const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+                const categoryFilter = document.getElementById('modalCategoryFilter')?.value || '';                
                 
-                let filtered = products.filter(p => p.stock > 0);
-                if (searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm) || p.uid.toLowerCase().includes(searchTerm));
+                let filtered = products.filter(
+                    p => !p.archived && p.stock > 0
+                );
+                if (searchTerm)
+                    filtered = filtered.filter(p =>
+                        p.name.toLowerCase().includes(searchTerm) ||
+                        p.uid.toLowerCase().includes(searchTerm) ||
+                        (p.supplier || '').toLowerCase().includes(searchTerm)
+                    );
                 if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
                 
                 tbody.innerHTML = filtered.map(p => `
@@ -1465,6 +1561,8 @@
                 updateSummaryPanel();
             };
             
+            window.updateQtyFromInput = updateQtyFromInput;
+
             window.removeCartItem = function(idx) {
                 cart.splice(idx, 1);
                 updateCartDisplay();
@@ -1552,34 +1650,77 @@
                 const tendered = parseFloat(document.getElementById('amountTendered').value) || 0;
                 if (tendered < total) { alert('Amount tendered is insufficient'); return; }
                 
-                const receiptNo = 'RCP-' + new Date().getFullYear() + '-' + String(sales.length + 1).padStart(4, '0');
+                const receiptNo = 'RCP-' + new Date().getFullYear() + '-' + String(salesList.length + 1).padStart(4, '0');
                 
-                cart.forEach(item => {
-                    const product = products.find(p => p.id === item.productId);
-                    if (product) product.stock -= item.quantity;
-                });
-                saveProducts();
+                for (const item of cart) {
+
+                    const product =
+                        products.find(
+                            p => p.id === item.productId
+                        );
+
+                    if (!product) {
+                        continue;
+                    }
+
+                    if (product.stock < item.quantity) {
+
+                        alert(
+                            `${product.name} no longer has enough stock.`
+                        );
+
+                        return;
+                    }
+
+                    product.stock -= item.quantity;
+                }
+
+                // Save products using storage.js
+                saveProductsToStorage(products);
+                loadProductsFromStorage();
                 
                 const currentUser = getCurrentUser();
-                const saleRecord = { receiptNo, customerName, customerPhone, items: [...cart], total, discount: discountAmount, paymentMethod, date: new Date().toLocaleString(), cashier: currentUser?.username || 'admin' };
-                sales.unshift(saleRecord);
-                saveSales();
+                const saleRecord = { 
+                    receiptNo, 
+                    customerName, 
+                    customerPhone, 
+                    items: [...cart], 
+                    total, 
+                    discount: discountAmount, 
+                    paymentMethod, 
+                    date: new Date().toLocaleString(), 
+                    cashier: currentUser?.username || 'admin' 
+                };
+                salesList.unshift(saleRecord);
+                // Save sales using storage.js
+                saveSalesToStorage(salesList);
+                
+                // Add audit log
+                addAuditLog('Sale Completed', `Sale #${receiptNo} completed for ${customerName}`, currentUser?.username || 'system', currentUser?.roles || []);
+                
                 closeSaleModal();
                 renderSales();
                 alert(`Sale completed!\nReceipt: ${receiptNo}\nTotal: ${formatCurrency(total)}`);
+
+                // Auto-print receipt after sale completion
+                printReceipt(receiptNo);
             }
             
             function closeSaleModal() { document.getElementById('saleModal').classList.remove('active'); cart = []; }
             
             function printReceipt(receiptNo) {
-                const sale = sales.find(s => s.receiptNo === receiptNo);
+                const sale = salesList.find(s => s.receiptNo === receiptNo);
                 if (!sale) return;
-                const win = window.open('', '_blank', 'width=400,height=600');
-                if (win) {
-                    win.document.write(`<html><head><title>Receipt ${receiptNo}</title><style>body{font-family:monospace;padding:20px;}.center{text-align:center;}.line{border-top:1px dashed #000;margin:10px 0;}.row{display:flex;justify-content:space-between;margin:6px 0;}.total{font-weight:bold;}</style></head><body><div class="center"><h2>EL DORADO</h2><p>${sale.date}</p><p>Receipt: ${sale.receiptNo}</p></div><div class="line"></div><div class="row"><span>Customer:</span><span>${escapeHtml(sale.customerName)}</span></div><div class="line"></div>${sale.items.map(item => `<div class="row"><span>${escapeHtml(item.productName)} x${item.quantity}</span><span>₱${(item.price * item.quantity).toLocaleString()}</span></div>`).join('')}<div class="line"></div><div class="row total"><strong>TOTAL</strong><strong>₱${sale.total.toLocaleString()}</strong></div><div class="line"></div><div class="center"><p>Payment: ${sale.paymentMethod}</p><p>Thank you!</p></div></body></html>`);
-                    win.document.close();
-                    win.print();
-                } else { alert('Popup blocked. Please allow popups.'); }
+                
+                // Create a hidden iframe for printing (opens centered)
+                const printWindow = window.open('', '_blank', 'width=400,height=600,left=' + (screen.width/2 - 200) + ',top=' + (screen.height/2 - 300));
+                if (printWindow) {
+                    printWindow.document.write(`<html><head><title>Receipt ${receiptNo}</title><style>body{font-family:monospace;padding:20px;}.center{text-align:center;}.line{border-top:1px dashed #000;margin:10px 0;}.row{display:flex;justify-content:space-between;margin:6px 0;}.total{font-weight:bold;}</style></head><body><div class="center"><h2>EL DORADO</h2><p>${sale.date}</p><p>Receipt: ${sale.receiptNo}</p></div><div class="line"></div><div class="row"><span>Customer:</span><span>${escapeHtml(sale.customerName)}</span></div><div class="line"></div>${sale.items.map(item => `<div class="row"><span>${escapeHtml(item.productName)} x${item.quantity}</span><span>₱${(item.price * item.quantity).toLocaleString()}</span></div>`).join('')}<div class="line"></div><div class="row total"><strong>TOTAL</strong><strong>₱${sale.total.toLocaleString()}</strong></div><div class="line"></div><div class="center"><p>Payment: ${sale.paymentMethod}</p><p>Thank you!</p></div></body></html>`);
+                    printWindow.document.close();
+                    printWindow.print();
+                } else { 
+                    alert('Popup blocked. Please allow popups.'); 
+                }
             }
             
             // Event listeners
@@ -1587,16 +1728,48 @@
             document.getElementById('cancelSaleBtn')?.addEventListener('click', closeSaleModal);
             document.getElementById('completeSaleBtn')?.addEventListener('click', completeSale);
             document.getElementById('saleModal')?.addEventListener('click', (e) => { if(e.target.classList.contains('modal-overlay')) closeSaleModal(); });
-            
-            document.getElementById('searchProduct')?.addEventListener('keyup', () => loadProductList());
-            document.getElementById('categoryFilter')?.addEventListener('change', () => loadProductList());
-            document.getElementById('paymentMethod')?.addEventListener('change', () => {
-                document.getElementById('summaryPaymentMethod').textContent = document.getElementById('paymentMethod').value;
-            });
-            document.getElementById('discountSelect')?.addEventListener('change', () => updateDiscountAndTotal());
-            document.getElementById('amountTendered')?.addEventListener('input', () => updateDiscountAndTotal());
+                
+            const searchProduct = document.getElementById('searchProduct');
+
+            if (searchProduct) {
+                searchProduct.addEventListener('keyup', loadProductList);
+            }
+
+            const modalCategoryFilter = document.getElementById('modalCategoryFilter');
+            if (modalCategoryFilter) {
+                modalCategoryFilter.addEventListener('change', loadProductList);
+            }
+
+            const paymentMethod = document.getElementById('paymentMethod');
+
+            if (paymentMethod) {
+                paymentMethod.addEventListener('change', () => {
+
+                    document.getElementById('summaryPaymentMethod')
+                        .textContent = paymentMethod.value;
+                });
+            }
+
+            const discountSelect = document.getElementById('discountSelect');
+
+            if (discountSelect) {
+                discountSelect.addEventListener('change', updateDiscountAndTotal);
+            }
+
+            const amountTendered = document.getElementById('amountTendered');
+
+            if (amountTendered) {
+                amountTendered.addEventListener('input', updateDiscountAndTotal);
+            }
             
             window.clearCart = function() { if(confirm('Clear entire cart?')) { cart = []; updateCartDisplay(); updateSummaryPanel(); } };
+
+            window.addProductToCart = addProductToCart;
+            window.adjustQty = adjustQty;
+            window.removeCartItem = removeCartItem;
+            window.updateQtyFromInput = updateQtyFromInput;
+            window.clearCart = clearCart;
+
         </script>
 </body>
 </html>

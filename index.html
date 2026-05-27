@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - El Dorado Car Components</title>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
@@ -50,9 +48,6 @@
             --color-text-primary: #e9ecef;
             --color-text-secondary: #ced4da;
             --color-text-muted: #adb5bd;
-        }
-
-        body.dark {
             background: linear-gradient(135deg, #1a1a2e 0%, #2a2a35 50%, #1e1e2e 100%);
         }
 
@@ -375,321 +370,126 @@
 
                 <div class="demo-credentials">
                     <p><i class="fas fa-info-circle"></i> Demo Credentials</p>
+
                     <div class="cred-row">
                         <span class="cred-label">Admin:</span>
                         <span class="cred-value">admin / admin123</span>
                     </div>
+
                     <div class="cred-row">
                         <span class="cred-label">Inventory Clerk:</span>
                         <span class="cred-value">clerk / clerk123</span>
                     </div>
+
                     <div class="cred-row">
                         <span class="cred-label">LOA (Cashier):</span>
                         <span class="cred-value">loa / loa123</span>
                     </div>
+
                     <div class="cred-row">
                         <span class="cred-label">Multi-Role (Clerk+LOA):</span>
-                        <span class="cred-value">multirole / multi123</span>
+                        <span class="cred-value">multiclerk / multi123</span>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // ========================================
-        // EL DORADO - UNIFIED LOGIN SYSTEM
-        // Multi-Role Support | RBAC Ready | Consistent Time Format
-        // ========================================
+<script type="module">
+    import { initializeDataStores } from './components/core/data.js';
+    import {
+        login,
+        checkExistingSession,
+    } from './components/core/auth.js';
 
-        const DEFAULT_REDIRECT_PAGE = 'dashboard.html';
-        const LOGIN_PAGE = 'index.html';
 
-        // ========== CONSISTENT TIME FORMATTER ==========
-        function formatTimestamp(date) {
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            }) + ' • ' + date.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            });
+    function initDarkMode() {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) {
+            document.body.classList.add('dark');
+            document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
         }
+    }
 
-        // ========== INITIALIZE DATA STORES (EMPTY) ==========
-        function initializeDataStores() {
-            // Products - EMPTY, no hardcoded values
-            if (!localStorage.getItem('eldorado_products')) {
-                localStorage.setItem('eldorado_products', JSON.stringify([]));
-            }
-            
-            // Sales - EMPTY, no hardcoded values
-            if (!localStorage.getItem('eldorado_sales')) {
-                localStorage.setItem('eldorado_sales', JSON.stringify([]));
-            }
-            
-            // Users with MULTI-ROLE support (roles array)
-            if (!localStorage.getItem('systemUsers')) {
-                var defaultUsers = [
-                    {
-                        id: 1,
-                        username: 'admin',
-                        password: 'admin123',
-                        fullName: 'Admin User',
-                        roles: ['admin'],
-                        email: 'admin@eldorado.com',
-                        status: 'active',
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        username: 'clerk',
-                        password: 'clerk123',
-                        fullName: 'Inventory Clerk',
-                        roles: ['inventory_clerk'],
-                        email: 'clerk@eldorado.com',
-                        status: 'active',
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: 3,
-                        username: 'loa',
-                        password: 'loa123',
-                        fullName: 'LOA Cashier',
-                        roles: ['loa'],
-                        email: 'loa@eldorado.com',
-                        status: 'active',
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: 4,
-                        username: 'multirole',
-                        password: 'multi123',
-                        fullName: 'Multi-Role User',
-                        roles: ['inventory_clerk', 'loa'],
-                        email: 'multi@eldorado.com',
-                        status: 'active',
-                        createdAt: new Date().toISOString()
-                    }
-                ];
-                localStorage.setItem('systemUsers', JSON.stringify(defaultUsers));
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('darkMode', isDark);
+        const icon = document.querySelector('#darkModeToggle i');
+        icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('togglePassword');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.className = 'fas fa-eye';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.className = 'fas fa-eye-slash';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+
+        try {
+
+            // Initialize all localStorage data FIRST
+            await initializeDataStores();
+
+            console.log(
+                'Initialized Users:',
+                JSON.parse(localStorage.getItem('systemUsers'))
+            );
+
+            initDarkMode();
+
+            // Check existing session only after initialization
+            checkExistingSession();
+
+            // Attach login handler
+            const form = document.getElementById('loginForm');
+
+            if (form) {
+                form.addEventListener('submit', login);
             }
 
-            // System settings
-            if (!localStorage.getItem('systemSettings')) {
-                var defaultSettings = {
-                    companyName: 'El Dorado Car Components',
-                    allowRegistration: false,
-                    maintenanceMode: false,
-                    darkModeEnabled: true,
-                    auditLogsEnabled: true
-                };
-                localStorage.setItem('systemSettings', JSON.stringify(defaultSettings));
+            // Password toggle
+            const toggleBtn = document.getElementById('togglePassword');
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', togglePassword);
             }
 
-            // Activity logs
-            if (!localStorage.getItem('activityLogs')) {
-                localStorage.setItem('activityLogs', JSON.stringify([]));
-            }
-        }
+            // Dark mode toggle
+            const darkModeBtn = document.getElementById('darkModeToggle');
 
-        // ========== AUDIT LOG HELPER (CONSISTENT TIME) ==========
-        function addAuditLog(action, details, user, userRoles) {
-            try {
-                var logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-                var now = new Date();
-                var formattedTime = formatTimestamp(now);
-                
-                logs.unshift({
-                    id: Date.now(),
-                    action: action,
-                    details: details,
-                    user: user || 'system',
-                    userRoles: userRoles || ['system'],
-                    module: 'System',
-                    timestamp: formattedTime,
-                    rawTimestamp: now.toISOString()
-                });
-                
-                while (logs.length > 500) logs.pop();
-                localStorage.setItem('activityLogs', JSON.stringify(logs));
-            } catch (e) {
-                console.error('Audit log error:', e);
-            }
-        }
-
-        // ========== USER MANAGEMENT ==========
-        function getUsers() {
-            return JSON.parse(localStorage.getItem('systemUsers')) || [];
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem('systemUsers', JSON.stringify(users));
-        }
-
-        // ========== MULTI-ROLE HELPERS ==========
-        function getUserRoles(user) {
-            if (!user) return [];
-            if (Array.isArray(user.roles)) return user.roles;
-            if (typeof user.role === 'string') return [user.role];
-            return [];
-        }
-
-        function hasAnyRole(userRoles, allowedRoles) {
-            if (!userRoles || !allowedRoles) return false;
-            return userRoles.some(function(role) { return allowedRoles.includes(role); });
-        }
-
-        function isAdmin(userRoles) {
-            return userRoles && userRoles.includes('admin');
-        }
-
-        // ========== AUTHENTICATION ==========
-        function getCurrentUser() {
-            var sessionJSON = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!sessionJSON) return null;
-            try {
-                var sessionData = JSON.parse(sessionJSON);
-                if (!sessionData.expiresAt || Date.now() > sessionData.expiresAt) {
-                    localStorage.removeItem('userSession');
-                    sessionStorage.removeItem('userSession');
-                    return null;
-                }
-                return sessionData;
-            } catch (e) {
-                return null;
-            }
-        }
-
-        // Dark Mode
-        function initDarkMode() {
-            var isDark = localStorage.getItem('darkMode') === 'true';
-            if (isDark) {
-                document.body.classList.add('dark');
-                document.querySelector('#darkModeToggle i').className = 'fas fa-sun';
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            var isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            var icon = document.querySelector('#darkModeToggle i');
-            if (isDark) {
-                icon.className = 'fas fa-sun';
-            } else {
-                icon.className = 'fas fa-moon';
-            }
-        }
-
-        function showError(message) {
-            var errorDiv = document.getElementById('errorMessage');
-            var errorText = document.getElementById('errorText');
-            errorText.textContent = message;
-            errorDiv.classList.add('show');
-            setTimeout(function() {
-                errorDiv.classList.remove('show');
-            }, 3000);
-        }
-
-        function login(event) {
-            event.preventDefault();
-            
-            var username = document.getElementById('username').value.trim().toLowerCase();
-            var password = document.getElementById('password').value;
-            var rememberMe = document.getElementById('rememberMe').checked;
-
-            if (!username || !password) {
-                showError('Please enter both username and password');
-                return;
+            if (darkModeBtn) {
+                darkModeBtn.addEventListener('click', toggleDarkMode);
             }
 
-            var users = getUsers();
-            var user = users.find(function(u) { return u.username === username && u.password === password; });
+            // Focus username field
+            document.getElementById('username')?.focus();
 
-            if (user && user.status === 'active') {
-                var userRoles = getUserRoles(user);
-                
-                addAuditLog('User Logged In', user.username + ' logged into the system', user.username, userRoles);
-                
-                var sessionData = {
-                    id: user.id,
-                    sessionVersion: 1,
-                    username: user.username,
-                    fullName: user.fullName,
-                    roles: userRoles,
-                    email: user.email,
-                    status: user.status,
-                    loginTime: new Date().toISOString(),
-                    expiresAt: Date.now() + (8 * 60 * 60 * 1000)
-                };
+        } catch (error) {
 
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
+            console.error('Initialization failed:', error);
 
-                if (rememberMe) {
-                    localStorage.setItem('userSession', JSON.stringify(sessionData));
-                } else {
-                    sessionStorage.setItem('userSession', JSON.stringify(sessionData));
-                }
-
-                window.location.href = DEFAULT_REDIRECT_PAGE;
-            } else {
-                if (user && user.status !== 'active') {
-                    showError('Your account has been deactivated');
-                    return;
-                }
-                addAuditLog('Failed Login Attempt', 'Failed login for username: ' + username, username, []);
-                showError('Invalid username or password');
-            }
+            alert(
+                'System initialization failed. Check console for details.'
+            );
         }
+    });
 
-        function togglePassword() {
-            var passwordInput = document.getElementById('password');
-            var toggleIcon = document.getElementById('togglePassword');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.className = 'fas fa-eye';
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.className = 'fas fa-eye-slash';
-            }
-        }
-
-        function checkExistingSession() {
-            var currentUser = getCurrentUser();
-            if (currentUser && currentUser.status === 'active') {
-                window.location.href = DEFAULT_REDIRECT_PAGE;
-            }
-        }
-
-        // ========== INITIALIZE ==========
-        initializeDataStores();
-        initDarkMode();
-        checkExistingSession();
-
-        document.getElementById('loginForm').addEventListener('submit', login);
-        document.getElementById('togglePassword').addEventListener('click', togglePassword);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('username').focus();
-
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login(e);
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'userSession' && !event.newValue) {
+                window.location.href = 'index.html';
             }
         });
+</script>
 
-        window.addEventListener('storage', function(event) {
-            if (event.key === 'userSession') {
-                var currentUser = getCurrentUser();
-                if (!currentUser) {
-                    window.location.href = LOGIN_PAGE;
-                }
-            }
-        });
-    </script>
 </body>
 </html>

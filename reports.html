@@ -6,8 +6,7 @@
     <title>Reports - El Dorado Car Components</title>
     
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
-    <script src="components/sidebar/sidebar.js"></script>
-
+    <script type="module" src="components/sidebar/sidebar.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -41,6 +40,23 @@
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+
+            --soft-sky: #5ccbf5;
+            --soft-blue: #7ab8ff;
+            --soft-indigo: #98a2ff;
+            --soft-violet: #b59cff;
+            --soft-purple: #cfa4ff;
+            --soft-pink: #f78fc4;
+            --soft-rose: #ff92a3;
+            --soft-red: #ff9b9b;
+            --soft-orange: #ffb070;
+            --soft-peach: #ffbf9f;
+            --soft-yellow: #ffc94d;
+            --soft-lime: #b7e95f;
+            --soft-green: #72e59a;
+            --soft-emerald: #5cddb2;
+            --soft-mint: #55dcc8;
+            --soft-cyan: #4fdcf3;
         }
 
         body.dark {
@@ -50,6 +66,7 @@
             --color-text-primary: #e9ecef;
             --color-text-secondary: #ced4da;
             --color-text-muted: #adb5bd;
+
         }
 
         body {
@@ -100,7 +117,6 @@
         }
         .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
-        .card-description { font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem; }
         .card-content { padding: 1.5rem; }
 
         .grid { display: grid; gap: 1.5rem; }
@@ -109,13 +125,15 @@
         .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 
-        .stat-card { display: flex; align-items: center; justify-content: space-between; }
-        .border-l-4 { border-left: 4px solid; }
-        .border-l-green { border-left-color: var(--color-green); }
-        .border-l-blue { border-left-color: var(--color-primary-blue); }
-        .border-l-yellow { border-left-color: #ffd43b; }
-        .border-l-red { border-left-color: var(--color-red); }
-        .border-l-purple { border-left-color: var(--color-purple); }
+        .stat-card-soft {
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card-soft p { color: rgba(255,255,255,0.9); font-size: 0.875rem; }
+        .stat-card-soft .stat-value { font-size: 1.5rem; font-weight: 700; color: white; }
 
         .badge {
             display: inline-flex;
@@ -240,7 +258,14 @@
         </div>
     </div>
 
-    <script>
+        <script type="module">
+
+        import { getAllProducts, getSales, addAuditLog } from './components/core/data.js';
+
+        import { getCurrentUser } from './components/core/auth.js';
+
+        import { formatCurrency, getCategoryLabel, getCategoryIcon, getCategoryPillClass, ensureArray, escapeHtml } from './components/core/utils.js';
+
         // Load and initialize sidebar
         (async function initPage() {
             try {
@@ -258,6 +283,8 @@
                     return;
                 }
                 
+                addAuditLog('Reports Accessed', 'User viewed the reports page', user.username, user.roles);
+                
                 initReportsPage();
                 
             } catch (error) {
@@ -265,34 +292,13 @@
             }
         })();
 
-        // ============ REPORTS MODULE ============
-
-        function loadProducts() {
-            const stored = localStorage.getItem('eldorado_products');
-            if (stored) return JSON.parse(stored);
-            return []; // Empty array instead of demo data
-        }
-
-        function loadSales() {
-            const stored = localStorage.getItem('eldorado_sales');
-            if (stored) return JSON.parse(stored);
-            return []; // Empty array instead of demo data
-        }
-
-        let products = loadProducts();
-        let sales = loadSales();
-
-        function formatCurrency(amount) {
-            return '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
-        }
-
-        function getCategoryLabel(category) {
-            const labels = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
-            return labels[category] || category;
-        }
-
         function getCategoryColor(category) {
-            const colors = { mechanical: '#4dabf7', electrical: '#ffa94d', body: '#20c997', maintenance: '#9775fa' };
+            const colors = { 
+                mechanical: '#4dabf7', 
+                electrical: '#ffa94d', 
+                body: '#20c997', 
+                maintenance: '#9775fa' 
+            };
             return colors[category] || '#adb5bd';
         }
 
@@ -316,6 +322,7 @@
         }
 
         function exportSalesReport() {
+            const sales = ensureArray(getSales());  
             const salesData = sales.map(s => ({
                 'Receipt No': s.receiptNo,
                 'Customer Name': s.customerName,
@@ -329,29 +336,47 @@
         }
 
         function exportInventoryReport() {
+            const products = ensureArray(getAllProducts());  // Change this
             const inventoryData = products.map(p => ({
                 'Product Name': p.name,
                 'UID': p.uid,
                 'Category': getCategoryLabel(p.category),
                 'Price': p.price,
                 'Stock': p.stock,
-                'Units Sold': p.salesCount,
-                'Total Value': p.price * p.stock
+                'Units Sold': p.salesCount || 0,
+                'Total Value': (p.price || 0) * (p.stock || 0)
             }));
             exportToCSV(inventoryData, `inventory_report_${new Date().toISOString().split('T')[0]}.csv`);
         }
 
         function showTab(tabName, clickedButton) {
-            const tabs = ['overview', 'inventory', 'products', 'sales-detail'];
-            tabs.forEach(tab => {
+
+            console.log('Showing tab:', tabName);
+
+            // Hide all tab contents
+            const tabContents = ['overview', 'inventory', 'products', 'sales-detail'];
+            tabContents.forEach(tab => {
                 const element = document.getElementById(`${tab}-tab`);
-                if (element) element.classList.remove('active');
+                if (element) {
+                    element.classList.remove('active');
+                }
             });
-            document.getElementById(`${tabName}-tab`).classList.add('active');
             
+            // Show selected tab
+            const selectedTab = document.getElementById(`${tabName}-tab`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Update button active states
             const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            if (clickedButton) clickedButton.classList.add('active');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+            
         }
 
         function initReportsPage() {
@@ -359,6 +384,11 @@
         }
 
         function renderReports() {
+
+            // Load fresh data
+            let products = ensureArray(getAllProducts());
+            let sales = ensureArray(getSales());
+
             // Calculate statistics
             const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
             const totalTransactions = sales.length;
@@ -422,41 +452,25 @@
                     </div>
                     
                     <div class="grid grid-cols-4">
-                        <div class="card border-l-4 border-l-blue">
-                            <div class="card-content p-4">
-                                <div class="stat-card">
-                                    <div><p class="text-sm text-muted">Total Revenue</p><p class="text-2xl font-bold">${formatCurrency(totalRevenue)}</p></div>
-                                    <i class="fas fa-dollar-sign" style="font-size: 2rem; opacity: 0.6;"></i>
-                                </div>
-                            </div>
+                        <div class="stat-card-soft" style="background: var(--soft-blue);">
+                            <div><p class="text-sm">Total Revenue</p><p class="stat-value">${formatCurrency(totalRevenue)}</p></div>
+                            <i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i>
                         </div>
-                        <div class="card border-l-4 border-l-green">
-                            <div class="card-content p-4">
-                                <div class="stat-card">
-                                    <div><p class="text-sm text-muted">Transactions</p><p class="text-2xl font-bold">${totalTransactions}</p></div>
-                                    <i class="fas fa-receipt" style="font-size: 2rem; opacity: 0.6;"></i>
-                                </div>
-                            </div>
+                        <div class="stat-card-soft" style="background: var(--soft-green);">
+                            <div><p class="text-sm">Transactions</p><p class="stat-value">${totalTransactions}</p></div>
+                            <i class="fas fa-receipt" style="font-size: 2rem; color: white;"></i>
                         </div>
-                        <div class="card border-l-4 border-l-purple">
-                            <div class="card-content p-4">
-                                <div class="stat-card">
-                                    <div><p class="text-sm text-muted">Avg. Transaction</p><p class="text-2xl font-bold">${formatCurrency(avgTransaction)}</p></div>
-                                    <i class="fas fa-chart-line" style="font-size: 2rem; opacity: 0.6;"></i>
-                                </div>
-                            </div>
+                        <div class="stat-card-soft" style="background: var(--soft-purple);">
+                            <div><p class="text-sm">Avg. Transaction</p><p class="stat-value">${formatCurrency(avgTransaction)}</p></div>
+                            <i class="fas fa-chart-line" style="font-size: 2rem; color: white;"></i>
                         </div>
-                        <div class="card border-l-4 border-l-yellow">
-                            <div class="card-content p-4">
-                                <div class="stat-card">
-                                    <div><p class="text-sm text-muted">Units Sold</p><p class="text-2xl font-bold">${totalProductsSold}</p></div>
-                                    <i class="fas fa-boxes" style="font-size: 2rem; opacity: 0.6;"></i>
-                                </div>
-                            </div>
+                        <div class="stat-card-soft" style="background: var(--soft-yellow);">
+                            <div><p class="text-sm">Units Sold</p><p class="stat-value">${totalProductsSold}</p></div>
+                            <i class="fas fa-boxes" style="font-size: 2rem; color: white;"></i>
                         </div>
                     </div>
                     
-                    <div class="tabs">
+                     <div class="tabs">
                         <button class="tab-btn active" onclick="showTab('overview', this)"><i class="fas fa-chart-pie"></i> Overview</button>
                         <button class="tab-btn" onclick="showTab('inventory', this)"><i class="fas fa-boxes"></i> Inventory</button>
                         <button class="tab-btn" onclick="showTab('products', this)"><i class="fas fa-trophy"></i> Products</button>
@@ -494,17 +508,21 @@
                                     <div class="table-container">
                                         <table>
                                             <thead>
-                                                <tr><th>Payment Method</th><th>Transactions</th><th>Percentage</th></tr>
+                                                <tr>
+                                                    <th>Payment Method</th>
+                                                    <th>Transactions</th>
+                                                    <th>Percentage</th>
+                                                </tr>
                                             </thead>
                                             <tbody>
                                                 ${Object.entries(paymentMethods).map(([method, count]) => `
                                                     <tr>
                                                         <td><i class="fas fa-${method === 'Cash' ? 'money-bill' : method === 'Card' ? 'credit-card' : 'mobile-alt'}"></i> ${method}</td>
-                                                        <td class="font-bold">${count}</div></td>
-                                                        <td>${((count/totalTransactions)*100).toFixed(1)}%</div></td>
+                                                        <td class="font-bold">${count}</td>
+                                                        <td>${((count/totalTransactions)*100).toFixed(1)}%</td>
                                                     </tr>
                                                 `).join('')}
-                                                ${Object.keys(paymentMethods).length === 0 ? '<tr><td colspan="3" class="text-center">No sales data available</div></tr>' : ''}
+                                                ${Object.keys(paymentMethods).length === 0 ? '<tr><td colspan="3" class="text-center">No sales data available</td></tr>' : ''}
                                             </tbody>
                                         </table>
                                     </div>
@@ -526,20 +544,23 @@
                                         </thead>
                                         <tbody>
                                             ${products.map(p => {
-                                                const turnoverRate = p.salesCount > 0 ? (p.salesCount / (p.stock + p.salesCount) * 100).toFixed(1) : 0;
+                                                const salesCount = p.salesCount || 0;
+                                                const turnoverRate = salesCount > 0 ? (salesCount / (p.stock + salesCount) * 100).toFixed(1) : 0;
                                                 let performance = '';
                                                 let perfClass = '';
                                                 if (turnoverRate >= 70) { performance = 'Excellent'; perfClass = 'badge-success'; }
                                                 else if (turnoverRate >= 40) { performance = 'Good'; perfClass = 'badge-info'; }
                                                 else { performance = 'Average'; perfClass = 'badge-warning'; }
-                                                return `<tr>
-                                                    <td><strong>${p.name}</strong><br><small>${p.uid}</small></div></td>
-                                                    <td>${getCategoryLabel(p.category)}</div></td>
-                                                    <td>${p.salesCount}</div></td>
-                                                    <td>${p.stock}</div></td>
-                                                    <td>${turnoverRate}%</div></td>
-                                                    <td><span class="badge ${perfClass}">${performance}</span></div></td>
-                                                </tr>`;
+                                                return `
+                                                    <tr>
+                                                        <td><strong>${p.name}</strong><br><small>${p.uid}</small></td>
+                                                        <td>${getCategoryLabel(p.category)}</td>
+                                                        <td>${p.salesCount || 0}</td>
+                                                        <td>${p.stock}</td>
+                                                        <td>${turnoverRate}%</td>
+                                                        <td><span class="badge ${perfClass}">${performance}</span></td>
+                                                    </tr>
+                                                `;
                                             }).join('')}
                                         </tbody>
                                     </table>
@@ -555,18 +576,20 @@
                             </div>
                             <div class="card-content">
                                 <div class="table-container">
-                                    </table>
+                                    <table>
                                         <thead>
                                             <tr><th>Rank</th><th>Product Name</th><th>Category</th><th>Units Sold</th><th>Revenue</th></tr>
                                         </thead>
                                         <tbody>
                                             ${topProducts.map((p, i) => `
                                                 <tr>
-                                                    <td class="font-bold text-center">#${i+1}</div></div>
-                                                    <td><strong>${p.name}</strong><br><small class="text-muted">${p.uid}</small></div></div>
-                                                    <td>${getCategoryLabel(p.category)}</div></div>
-                                                    <td>${p.salesCount} units</div></div>
-                                                    <td class="font-bold" style="color: var(--color-primary-red);">${formatCurrency(p.price * p.salesCount)}</div></div>
+                                                    <td class="font-bold text-center">#${i+1}</td>
+                                                    <td><strong>${p.name}</strong><br><small class="text-muted">${p.uid}</small></td>
+                                                    <td>${getCategoryLabel(p.category)}</td>
+                                                    <td>${p.salesCount || 0} units</td>
+                                                    <td class="font-bold" style="color: var(--color-primary-red);">
+                                                        ${formatCurrency((p.price || 0) * (p.salesCount || 0))}
+                                                    </td>
                                                 </tr>
                                             `).join('')}
                                         </tbody>
@@ -590,16 +613,25 @@
                                         <tbody>
                                             ${sales.map(s => `
                                                 <tr>
-                                                    <td><i class="fas fa-receipt"></i> ${s.receiptNo}</div></div>
-                                                    <td>${s.customerName}</div></div>
-                                                    <td>${s.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div></div>
-                                                    <td class="font-bold">${formatCurrency(s.total)}</div></div>
-                                                    <td><span class="badge badge-info">${s.paymentMethod}</span></div></div>
-                                                    <td>${s.cashier}</div></div>
-                                                    <td><small>${s.date}</small></div></div>
+                                                    <td><i class="fas fa-receipt"></i> ${s.receiptNo}</td>
+
+                                                    <td>${escapeHtml(s.customerName)}</td>
+                                                    <td>${s.items.map(i => `${i.name || i.productName || 'Unknown Product'} x${i.quantity}`).join(', ')}</td>
+
+                                                    <td class="font-bold">${formatCurrency(s.total)}</td>
+
+                                                    <td>
+                                                        <span class="badge badge-info">
+                                                            ${s.paymentMethod || 'Cash'}
+                                                        </span>
+                                                    </td>
+
+                                                    <td>${s.cashier}</td>
+
+                                                    <td><small>${s.date}</small></td>
                                                 </tr>
                                             `).join('')}
-                                            ${sales.length === 0 ? '<tr><td colspan="7" class="text-center">No sales records found</div></tr>' : ''}
+                                            ${sales.length === 0 ? '<tr><td colspan="7" class="text-center">No sales records found</td></tr>' : ''}
                                         </tbody>
                                     </table>
                                 </div>
@@ -608,6 +640,7 @@
                     </div>
                 </div>
             `;
+            
             document.getElementById('mainContent').innerHTML = html;
         }
 
@@ -615,6 +648,7 @@
         window.showTab = showTab;
         window.exportSalesReport = exportSalesReport;
         window.exportInventoryReport = exportInventoryReport;
+
     </script>
 </body>
 </html>

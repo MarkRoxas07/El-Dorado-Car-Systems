@@ -6,8 +6,7 @@
     <title>Audit Log - El Dorado Car Components</title>
     
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
-    <script src="components/sidebar/sidebar.js"></script>
-
+    <script type="module" src="components/sidebar/sidebar.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -351,7 +350,12 @@
         </div>
     </div>
 
-    <script>
+        <script type="module">
+
+        import { getCurrentUser } from './components/core/auth.js';
+        import { addAuditLog } from './components/core/data.js';
+        import { STORAGE_KEYS } from './components/core/constants.js';
+
         // Load and initialize sidebar
         (async function initPage() {
             try {
@@ -368,7 +372,10 @@
                     window.location.href = 'index.html';
                     return;
                 }
-                
+
+                // Log that user viewed audit logs
+                addAuditLog('Audit Log Viewed', `User viewed audit log page`, user.username, user.roles);
+
                 initAuditPage();
                 
             } catch (error) {
@@ -379,9 +386,9 @@
         // ============ AUDIT LOG MODULE ============
 
         function loadAuditLogs() {
-            const stored = localStorage.getItem('eldorado_audit');
+            const stored = localStorage.getItem(STORAGE_KEYS.ACTIVITY_LOGS);
             if (stored) return JSON.parse(stored);
-            return []; // Empty array - no demo data
+            return [];
         }
 
         let auditLogs = loadAuditLogs();
@@ -396,7 +403,10 @@
             const icons = {
                 'Administrator': 'fa-crown',
                 'Inventory Clerk': 'fa-clipboard-check',
-                'LOA - Cashier': 'fa-receipt'
+                'LOA - Cashier': 'fa-receipt',
+                'admin': 'fa-crown',
+                'inventory_clerk': 'fa-clipboard-check',
+                'loa': 'fa-receipt'
             };
             return icons[role] || 'fa-user';
         }
@@ -425,9 +435,10 @@
                 'Inventory': 'badge-success',
                 'Sales': 'badge-purple',
                 'Users': 'badge-warning',
-                'Security': 'badge-danger'
+                'Security': 'badge-danger',
+                'Help': 'badge-info'
             };
-            return `<span class="badge ${modules[module] || 'badge-info'}">${module}</span>`;
+            return `<span class="badge ${modules[module] || 'badge-info'}">${module || 'System'}</span>`;
         }
 
         function applyFilters() {
@@ -483,9 +494,9 @@
             
             const stats = {
                 total: auditLogs.length,
-                successful: auditLogs.filter(l => l.severity === 'success').length,
-                failed: auditLogs.filter(l => l.severity === 'warning' || l.severity === 'danger').length,
-                critical: auditLogs.filter(l => l.severity === 'danger').length
+                successful: auditLogs.filter(l => l.action && !l.action.includes('Failed')).length,
+                failed: auditLogs.filter(l => l.action && l.action.includes('Failed')).length,
+                critical: auditLogs.filter(l => l.action && l.action.includes('Failed Login')).length
             };
             
             document.getElementById('statTotal').innerText = stats.total;
@@ -495,31 +506,43 @@
             document.getElementById('resultCount').innerText = `Showing ${filteredLogs.length} of ${auditLogs.length} log entries`;
             
             if (filteredLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No audit logs found</div></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No audit logs found</td></tr>';
                 return;
             }
             
             tbody.innerHTML = filteredLogs.map(log => {
                 const actionStyle = getActionIconAndColor(log.action);
+                // Get role from userRoles array if available
+                let userRole = 'User';
                 let roleClass = 'loa';
-                if (log.role === 'Administrator' || log.user === 'admin') roleClass = 'admin';
-                else if (log.role === 'Inventory Clerk' || log.user === 'clerk') roleClass = 'inventory_clerk';
+                if (log.userRoles) {
+                    if (log.userRoles.includes('admin')) {
+                        userRole = 'Administrator';
+                        roleClass = 'admin';
+                    } else if (log.userRoles.includes('inventory_clerk')) {
+                        userRole = 'Inventory Clerk';
+                        roleClass = 'inventory_clerk';
+                    } else if (log.userRoles.includes('loa')) {
+                        userRole = 'LOA - Cashier';
+                        roleClass = 'loa';
+                    }
+                }
                 
                 return `
                     <tr>
-                        <td><small>${log.timestamp}</small></div></td>
+                        <td><small>${log.timestamp || log.rawTimestamp ? new Date(log.rawTimestamp).toLocaleString() : 'N/A'}</small></td>
                         <td>
                             <div class="role-display ${roleClass}">
-                                <i class="fas ${getRoleIcon(log.role || (log.user === 'admin' ? 'Administrator' : log.user === 'clerk' ? 'Inventory Clerk' : 'LOA - Cashier'))}"></i>
-                                <span>${log.role || (log.user === 'admin' ? 'Administrator' : log.user === 'clerk' ? 'Inventory Clerk' : log.user === 'loa' ? 'LOA - Cashier' : log.user) || 'Unknown User'}</span>
+                                <i class="fas ${getRoleIcon(userRole)}"></i>
+                                <span>${log.user || 'system'}</span>
                             </div>
-                        </div></td>
+                        </td>
                         <td>
                             <i class="${actionStyle.icon}" style="color: ${actionStyle.color}; width: 1.2rem; margin-right: 0.75rem;"></i>
                             <span style="color: ${actionStyle.color}; font-weight: 500;">${log.action}</span>
-                        </div></td>
-                        <td>${getModuleBadge(log.module || 'System')}</div></td>
-                        <td>${log.details}</div></td>
+                        </td>
+                        <td>${getModuleBadge(log.module || 'System')}</td>
+                        <td>${log.details}</td>
                     </tr>
                 `;
             }).join('');
@@ -621,6 +644,7 @@
         window.applyFilters = applyFilters;
         window.clearFilters = clearFilters;
         window.exportAuditLogs = exportAuditLogs;
+        window.getCurrentUser = getCurrentUser;
     </script>
 </body>
 </html>

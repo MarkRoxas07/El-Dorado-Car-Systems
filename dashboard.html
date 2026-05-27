@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - El Dorado Car Components</title>
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
+    <script type="module">
+        import {
+            renderNavigation,
+            initializeSidebar,
+            attachSidebarEvents
+        } from './components/sidebar/sidebar.js';
+
+        window.sidebarAPI = {
+            renderNavigation,
+            initializeSidebar,
+            attachSidebarEvents
+        };
+    </script>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -134,45 +147,6 @@
         body.dark .welcome-banner { background: linear-gradient(135deg, #2d4a6e, #1e3a5f); }
         .welcome-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
 
-        .category-container {
-            background: var(--color-bg-white);
-            border-radius: 1rem;
-            overflow: hidden;
-            border: 1px solid var(--color-border);
-        }
-        .category-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--color-border);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.25rem;
-            padding: 1.5rem;
-        }
-        .category-card {
-            height: 120px;
-            border-radius: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            cursor: pointer;
-            transition: 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08), inset 0 1px 1px rgba(255,255,255,0.15);
-        }
-        .category-card:hover { transform: translateY(-4px); }
-        .category-card i { font-size: 1.875rem; margin-bottom: 0.75rem; }
-        .category-card span { font-size: 1.25rem; font-weight: 600; }
-        .category-card.mechanical { background: linear-gradient(135deg, #42A5F5 0%, #64B5F6 50%, #8ED1FC 100%); }
-        .category-card.electrical { background: linear-gradient(135deg, #B14EFF 0%, #C678F2 45%, #D7A8F3 100%); }
-        .category-card.body-parts { background: linear-gradient(135deg, #FF4B6E 0%, #FF5C7D 45%, #F58EA8 100%); }
-        .category-card.maintenance { background: linear-gradient(135deg, #24D661 0%, #43DF7A 45%, #6EE7A0 100%); }
-
         .stat-card-soft {
             border-radius: 1rem;
             padding: 1.5rem;
@@ -224,17 +198,6 @@
         .badge-danger { background: var(--color-red-light); color: #c92a2a; }
         .badge-info { background: var(--color-primary-blue-light); color: #1e40af; }
 
-        .role-display {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        .role-display.admin { color: #c084fc; }
-        .role-display.inventory_clerk { color: #60a5fa; }
-        .role-display.loa { color: #4ade80; }
-
         .flex { display: flex; }
         .items-center { align-items: center; }
         .justify-between { justify-content: space-between; }
@@ -247,11 +210,42 @@
         .text-muted { color: var(--color-text-secondary); }
         .text-center { text-align: center; }
 
-        @media (max-width: 1100px) {
-            .categories-grid { grid-template-columns: repeat(2, 1fr); }
+        /* ========== LAYOUT FIXES ========== */
+        .layout {
+            display: flex;
+            min-height: 100vh;
         }
+
+        main {
+            flex: 1;
+            margin-left: 18rem;
+            min-width: 0;
+            transition: margin-left 0.3s ease;
+            padding: 2rem;
+        }
+
+        .layout.sidebar-collapsed main {
+            margin-left: 5.5rem;
+        }
+
+        /* ========== DARK MODE TRANSITIONS ========== */
+        body,
+        body > * {
+            transition: background-color 0.25s ease,
+                        color 0.25s ease,
+                        border-color 0.25s ease;
+        }
+
         @media (max-width: 700px) {
-            .categories-grid { grid-template-columns: 1fr; }
+            main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .layout.sidebar-collapsed main {
+                margin-left: 0;
+            }
+
             .grid-cols-2, .grid-cols-4 { grid-template-columns: 1fr; }
         }
     </style>
@@ -267,293 +261,301 @@
         </div>
     </div>
 
-    <script src="components/sidebar/sidebar.js"></script>
+<script type="module">
+    import { initializeDataStores } from './components/core/data.js';
+    import {
+        getCurrentUser,
+        getMergedPermissions,
+        setupActivityListeners,
+        requireAuth
+    } from './components/core/auth.js';
+    import {
+        getAllProducts,
+        getSales,
+        getActivityLogs,
+        addAuditLog
+    } from './components/core/data.js';
+    import {
+        getLowStockProducts,
+        getOutOfStockProducts,
+        calculateAverageDailySales,
+        calculateReorderPoint,
+        calculateSuggestedOrderQuantity,
+        calculateTopSellingProducts
+    } from './components/core/calculations.js';    
+    import {
+        formatTimestamp,
+        formatCurrency,
+        getRoleDisplayName,
+        sanitizeForDisplay,
+        ensureArray,
+        ensureNumber,
+        escapeHtml
+    } from './components/core/utils.js';
 
-    <script>
+    function calculateDashboardStats(products, sales) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        let todaySales = [];
+        let todayRevenue = 0;
+        let totalRevenue = 0;
+        
+        const salesArray = ensureArray(sales);
+        for (const sale of salesArray) {
+            if (!sale || !sale.createdAt) continue;
+            const saleDate = new Date(sale.createdAt);
+            if (saleDate >= today && saleDate < tomorrow) {
+                todaySales.push(sale);
+                todayRevenue += ensureNumber(sale.total);
+            }
+            totalRevenue += ensureNumber(sale.total);
+        }
+        
+        return {
+            todaySales: todaySales,
+            todayRevenue: todayRevenue,
+            totalProducts: products.filter(p => p && !p.archived).length,
+            totalSales: salesArray.length,
+            totalRevenue: totalRevenue
+        };
+    }
 
-        // Load and initialize sidebar
+    // Prevent duplicate page initialization
+    if (window.dashboardInitialized) {
+        console.warn('Dashboard already initialized');
+    } else {
+        window.dashboardInitialized = true;
+
         (async function initPage() {
             try {
-                // Load sidebar HTML
-                const response = await fetch('components/sidebar/sidebar.html');
-                const sidebarHtml = await response.text();
-                document.getElementById('sidebar-container').innerHTML = sidebarHtml;
-                
-                // Initialize sidebar from sidebar.js
-                if (typeof renderNavigation === 'function') renderNavigation();
-                if (typeof initializeSidebar === 'function') initializeSidebar();
-                if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
-                
-                // Check authentication (using sidebar.js function)
-                const user = getCurrentUser();
+                // Step 1: Initialize data stores
+                console.log('Initializing data stores...');
+                await initializeDataStores();
+
+                // Step 2: Validate session BEFORE rendering sidebar
+                console.log('Validating session...');
+                const user = requireAuth();
                 if (!user) {
                     window.location.href = 'index.html';
                     return;
                 }
+
+                // Step 3: Load and initialize sidebar
+                console.log('Loading sidebar...');
+                const response = await fetch('components/sidebar/sidebar.html');
+                if (!response.ok) {
+                    throw new Error(`Failed to load sidebar: ${response.status} ${response.statusText}`);
+                }
+                const sidebarHtml = await response.text();
+                const sidebarContainer = document.getElementById('sidebar-container');
+                if (!sidebarContainer) {
+                    throw new Error('Sidebar container not found');
+                }
+                sidebarContainer.innerHTML = sidebarHtml;
                 
-                // Log dashboard access
-                if (typeof addAuditLog === 'function') {
-                    addAuditLog('Dashboard Accessed', user.username + ' viewed the dashboard', 'Dashboard');
+                // Step 4: Initialize sidebar functions
+                if (window.sidebarAPI && window.sidebarAPI.renderNavigation) {
+                    console.log('Initializing sidebar...');
+                    window.sidebarAPI.renderNavigation();
+                    window.sidebarAPI.initializeSidebar();
+                    window.sidebarAPI.attachSidebarEvents();
+                } else {
+                    throw new Error('Sidebar API not available');
+                }
+
+                // Step 5: Setup activity tracking (only once per session)
+                if (setupActivityListeners && !window.activityListenersAttached) {
+                    console.log('Setting up activity listeners...');
+                    setupActivityListeners();
+                }
+
+                // Step 6: Log dashboard access (with audit log deduplication)
+                console.log('Recording dashboard access...');
+                if (user && user.roles) {
+                    addAuditLog('Dashboard Accessed', `${user.username} viewed the dashboard`, user.username, user.roles);
                 }
                 
-                // Render dashboard
+                // Step 7: Render dashboard
+                console.log('Rendering dashboard...');
                 renderDashboard();
-                
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.innerHTML = '<div style="padding: 2rem; text-align: center; color: #c92a2a;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i><h3>Failed to Load Dashboard</h3><p>' + sanitizeForDisplay(error.message) + '</p><p style="color: #666; font-size: 0.875rem;">Check the browser console for more details</p></div>';
+                }
             }
         })();
 
-        // ========== DATA HELPERS ==========
-        function getProducts() {
-            const products = JSON.parse(localStorage.getItem('eldorado_products') || '[]');
-            return products.filter(p => !p.archived);
-        }
-
-        function getAllProducts() {
-            return JSON.parse(localStorage.getItem('eldorado_products') || '[]');
-        }
-
-        function getSales() {
-            return JSON.parse(localStorage.getItem('eldorado_sales') || '[]');
-        }
-
-        function getActivityLogs() {
-            return JSON.parse(localStorage.getItem('activityLogs') || '[]');
-        }
-
-        // ========== ROP CALCULATION ==========
-        function calculateAverageDailySales(productId, sales) {
-            var thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
-            var recentSales = sales.filter(function(sale) {
-                var saleDate = new Date(sale.rawTimestamp || sale.date);
-                return saleDate >= thirtyDaysAgo;
-            });
-            
-            var totalSold = 0;
-            recentSales.forEach(function(sale) {
-                if (sale.items) {
-                    var item = sale.items.find(function(i) { return i.productId === productId || i.id === productId; });
-                    if (item) totalSold += item.quantity;
-                }
-            });
-            
-            return totalSold / 30;
-        }
-
-        function calculateReorderPoint(product, sales) {
-            var avgDailySales = calculateAverageDailySales(product.id, sales);
-            var leadTime = product.leadTimeDays || 3;
-            var safetyStock = product.safetyStock || 5;
-            return Math.ceil((avgDailySales * leadTime) + safetyStock);
-        }
-
-        // ========== UI HELPERS ==========
-        function formatCurrency(amount) {
-            return '₱' + (amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
-        }
-
-        function getCategoryLabel(category) {
-            var labels = { mechanical: 'Mechanical', electrical: 'Electrical', body: 'Body', maintenance: 'Maintenance' };
-            return labels[category] || category;
-        }
-
-        function getCategoryIcon(category) {
-            var icons = { mechanical: 'fa-tools', electrical: 'fa-bolt', body: 'fa-car', maintenance: 'fa-oil-can' };
-            return icons[category] || 'fa-tag';
-        }
-
-        function getCategoryPillClass(category) {
-            var classes = { mechanical: 'mechanical', electrical: 'electrical', body: 'body', maintenance: 'maintenance' };
-            return classes[category] || 'mechanical';
-        }
-
-        // ========== RENDER DASHBOARD ==========
         function renderDashboard() {
-            var products = getProducts();
-            var allProducts = getAllProducts();
-            var sales = getSales();
-            var auditLogs = getActivityLogs();
-            
+            const allProducts = ensureArray(getAllProducts());
+            const products = allProducts.filter(p => p && !p.archived);
+            const sales = ensureArray(getSales());
+            const auditLogs = ensureArray(getActivityLogs());
             const currentUser = getCurrentUser();
 
-            var today = new Date().toDateString();
-            var todaySales = sales.filter(function(s) { return new Date(s.date).toDateString() === today; });
-            var todayRevenue = todaySales.reduce(function(sum, s) { return sum + (s.total || 0); }, 0);
-            var totalProducts = products.length;
-            var totalSales = sales.length;
-            var totalRevenue = sales.reduce(function(sum, s) { return sum + (s.total || 0); }, 0);
+            const dashboardStats = calculateDashboardStats(products, sales);
+            const lowStockItems = ensureArray(getLowStockProducts(allProducts, sales));
+            const outOfStockItems = ensureArray(getOutOfStockProducts(allProducts));
+            const topProducts = ensureArray(calculateTopSellingProducts(sales, 5));
+
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'morning' : (hour < 18 ? 'afternoon' : 'evening');
+            const firstName = sanitizeForDisplay((currentUser?.fullName || currentUser?.username || 'User').split(' ')[0]);
+            const formattedDateTime = formatTimestamp(new Date());
             
-            // Low stock items
-            var lowStockItems = [];
-            for (var i = 0; i < allProducts.length; i++) {
-                var p = allProducts[i];
-                if (p.archived || p.stock === 0) continue;
-                var reorderPoint = calculateReorderPoint(p, sales);
-                if (p.stock <= reorderPoint) {
-                    lowStockItems.push(p);
-                }
-            }
+            const permissions = getMergedPermissions(currentUser);
+
+            // For multi-role (Inventory Clerk + LOA): show both low stock AND today's sales
+            const showLowStockCard = permissions.canViewLowStockAlerts;
+            const showTodaySalesOnly = permissions.canViewTodaySalesOnly;
+            const showSalesCard = permissions.canViewSales;
+            const showRevenueCard = permissions.canViewFinancialStats || permissions.canViewTodaySalesOnly;
             
-            var outOfStockItems = allProducts.filter(function(p) { return !p.archived && p.stock === 0; });
-            
-            // Top Selling Products
-            var productSalesMap = {};
-            for (var i = 0; i < sales.length; i++) {
-                var sale = sales[i];
-                if (sale.items) {
-                    for (var j = 0; j < sale.items.length; j++) {
-                        var item = sale.items[j];
-                        var productName = item.productName;
-                        var quantity = item.quantity;
-                        var price = item.price;
-                        if (productName) {
-                            if (!productSalesMap[productName]) {
-                                productSalesMap[productName] = { name: productName, quantity: 0, revenue: 0 };
-                            }
-                            productSalesMap[productName].quantity += quantity;
-                            productSalesMap[productName].revenue += price * quantity;
-                        }
-                    }
-                }
-            }
-            
-            var topProductsArray = [];
-            for (var key in productSalesMap) {
-                topProductsArray.push(productSalesMap[key]);
-            }
-            topProductsArray.sort(function(a, b) { return b.quantity - a.quantity; });
-            var topProducts = topProductsArray.slice(0, 5);
-            
-            var hour = new Date().getHours();
-            var greeting = hour < 12 ? 'morning' : (hour < 18 ? 'afternoon' : 'evening');
-            var firstName = currentUser?.fullName?.split(' ')[0] || currentUser?.username || 'User';
-            
-            var now = new Date();
-            var formattedDateTime = formatTimestamp(now);
-            
-            const userRoles = getUserRolesFromSession(); 
-            var showLowStockCard = userRoles.includes('inventory_clerk') || isAdmin();
-            var showTodaySalesOnly = userRoles.includes('loa') && !isAdmin();
-            
-            var html = '<div class="space-y-6">';
+            let html = '<div class="space-y-6">';
             html += '<div class="welcome-banner flex justify-between items-center">';
-            html += '<div><h2 class="welcome-title">Good ' + greeting + ', ' + firstName + '!</h2>';
-            html += '<p>Welcome to the El Dorado Car Components management system</p></div>';
-            html += '<div class="text-right"><div class="text-sm" style="color: rgba(255, 255, 255, 0.9);">';
-            html += '<i class="fas fa-calendar-alt"></i> ' + formattedDateTime + '</div></div></div>';
-            
-            // Stats cards
-            html += '<div class="grid grid-cols-4">';
-            html += '<div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Total Products</p><p class="stat-value">' + totalProducts + '</p></div><i class="fas fa-box" style="font-size: 2rem; color: white;"></i></div>';
-            html += '<div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">' + (showTodaySalesOnly ? "Today's Sales" : "Total Sales") + '</p><p class="stat-value">' + (showTodaySalesOnly ? todaySales.length : totalSales) + '</p></div><i class="fas fa-shopping-cart" style="font-size: 2rem; color: white;"></i></div>';
-            html += '<div class="stat-card-soft" style="background: var(--soft-yellow);"><div><p class="text-sm">' + (showTodaySalesOnly ? "Today's Revenue" : "Total Revenue") + '</p><p class="stat-value">' + formatCurrency(showTodaySalesOnly ? todayRevenue : totalRevenue) + '</p></div><i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i></div>';
-            html += '<div class="stat-card-soft" style="background: var(--soft-red);"><div><p class="text-sm">Out of Stock</p><p class="stat-value">' + outOfStockItems.length + '</p></div><i class="fas fa-times-circle" style="font-size: 2rem; color: white;"></i></div>';
+
+            html += '<div>';
+            html += '<h2 class="welcome-title">Good ' + escapeHtml(greeting) + ', ' + firstName + '!</h2>';
+            html += '<p>Welcome to the El Dorado Car Components management system</p>';
+            html += '</div>';
+
+            html += '<div class="text-right">';
+            html += '<div class="text-sm" style="color: rgba(255, 255, 255, 0.9);">';
+            html += '<i class="fas fa-calendar-alt"></i> ' + escapeHtml(formattedDateTime);
+            html += '</div>';
+            html += '</div>';
+
             html += '</div>';
             
-            // Product Categories
-            html += '<div class="category-container"><div class="category-header"><i class="fas fa-tags"></i><h3>Product Categories</h3></div>';
-            html += '<div class="categories-grid">';
-            html += '<div class="category-card mechanical" onclick="navigateTo(\'inventory\')"><i class="fas fa-screwdriver-wrench"></i><span>Mechanical</span></div>';
-            html += '<div class="category-card electrical" onclick="navigateTo(\'inventory\')"><i class="fas fa-bolt"></i><span>Electrical</span></div>';
-            html += '<div class="category-card body-parts" onclick="navigateTo(\'inventory\')"><i class="fas fa-car"></i><span>Body Parts</span></div>';
-            html += '<div class="category-card maintenance" onclick="navigateTo(\'inventory\')"><i class="fas fa-oil-can"></i><span>Maintenance</span></div>';
-            html += '</div></div>';
+            // Stats cards - Role-based visibility
+            html += '<div class="grid grid-cols-4">';
+
+            // Total Products - Visible to ALL
+            html += '<div class="stat-card-soft" style="background: var(--soft-blue);"><div><p class="text-sm">Total Products</p><p class="stat-value">' + ensureNumber(dashboardStats.totalProducts) + '</p></div><i class="fas fa-box" style="font-size: 2rem; color: white;"></i></div>';
+
+            // Sales Card - Using permissions
+            if (showSalesCard) {
+                const salesLabel = showTodaySalesOnly ? "Today's Sales" : "Total Sales";
+                const salesCount = showTodaySalesOnly ? dashboardStats.todaySales.length : dashboardStats.totalSales;
+                html += '<div class="stat-card-soft" style="background: var(--soft-green);"><div><p class="text-sm">' + escapeHtml(salesLabel) + '</p><p class="stat-value">' + ensureNumber(salesCount) + '</p></div><i class="fas fa-shopping-cart" style="font-size: 2rem; color: white;"></i></div>';
+            } else {
+                html += '<div style="display: none;"></div>';
+            }
+
+            // Revenue Card - Using permissions
+            if (showRevenueCard) {
+                const revenueLabel = showTodaySalesOnly ? "Today's Revenue" : "Total Revenue";
+                const revenueAmount = showTodaySalesOnly ? dashboardStats.todayRevenue : dashboardStats.totalRevenue;
+                html += '<div class="stat-card-soft" style="background: var(--soft-yellow);"><div><p class="text-sm">' + escapeHtml(revenueLabel) + '</p><p class="stat-value">' + escapeHtml(formatCurrency(revenueAmount)) + '</p></div><i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i></div>';
+            } else {
+                html += '<div style="display: none;"></div>';
+            }
+
+            // Out of Stock - Visible to ALL
+            html += '<div class="stat-card-soft" style="background: var(--soft-red);"><div><p class="text-sm">Out of Stock</p><p class="stat-value">' + ensureNumber(outOfStockItems.length) + '</p></div><i class="fas fa-times-circle" style="font-size: 2rem; color: white;"></i></div>';
+
+            html += '</div>';
             
-            // Low Stock Alert
             if (showLowStockCard && lowStockItems.length > 0) {
                 html += '<div class="card" style="border-left: 4px solid var(--color-yellow);">';
-                html += '<div class="card-header"><h3 class="card-title"><i class="fas fa-exclamation-triangle" style="color: var(--color-yellow);"></i> Low Stock Alert (Reorder Needed)</h3></div>';
+                html += '<div class="card-header"><h3 class="card-title"><i class="fas fa-exclamation-triangle" style="color: var(--color-yellow);"></i> Suggested Replenishment Items</h3></div>';
                 html += '<div class="card-content"><div class="table-container"><table><thead><tr><th>Product</th><th>Current Stock</th><th>Avg Daily Sales</th><th>Lead Time</th><th>Safety Stock</th><th>Reorder Point</th><th>Action</th></tr></thead><tbody>';
-                for (var i = 0; i < Math.min(lowStockItems.length, 5); i++) {
-                    var p = lowStockItems[i];
-                    var avgDaily = calculateAverageDailySales(p.id, sales);
-                    var reorderPoint = calculateReorderPoint(p, sales);
-                    var recommendedOrder = Math.ceil((reorderPoint - p.stock) * 1.5);
-                    html += '<tr><td><strong>' + p.name + '</strong><br><small>' + p.uid + '</small></td>';
-                    html += '<td><span class="badge badge-warning">' + p.stock + ' units</span></td>';
-                    html += '<td>' + avgDaily.toFixed(1) + ' units/day</td>';
-                    html += '<td>' + (p.leadTimeDays || 3) + ' days</td>';
-                    html += '<td>' + (p.safetyStock || 5) + ' units</td>';
-                    html += '<td><strong>' + reorderPoint + ' units</strong></td>';
-                    html += '<td><button class="btn btn-primary btn-sm" onclick="navigateTo(\'inventory\')">Order ' + recommendedOrder + '</button></td></tr>';
+                for (let i = 0; i < Math.min(lowStockItems.length, 5); i++) {
+                    const p = lowStockItems[i];
+                    if (!p) continue;
+                    const avgDaily = calculateAverageDailySales(p, sales).toFixed(1);
+                    const reorderPoint = calculateReorderPoint(p, sales);
+                    const recommendedOrder = calculateSuggestedOrderQuantity(p, reorderPoint);
+                    html += '<tr><td><strong>' + sanitizeForDisplay(p.name) + '</strong></td>';
+                    html += '<td><span class="badge badge-warning">' + ensureNumber(p.stock) + ' units</span></td>';
+                    html += '<td>' + ensureNumber(avgDaily) + ' units/day</td>';
+                    html += '<td>' + ensureNumber(p.leadTimeDays || 3) + ' days</td>';
+                    html += '<td>' + ensureNumber(p.safetyStock || 5) + ' units</td>';
+                    html += '<td><strong>' + ensureNumber(reorderPoint) + ' units</strong></td>';
+                    html += '<td>';
+                    html += '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'inventory.html\'" title="Go to Inventory">';
+                    html += '<i class="fas fa-cart-plus"></i> Add ' + ensureNumber(recommendedOrder) + ' to Order';
+                    html += '</button>';
+                    html += '</td></tr>';
                 }
                 html += '</tbody></table></div></div></div>';
             }
             
-            // Top Selling Products
             html += '<div class="card"><div class="card-header"><h3 class="card-title"><i class="fas fa-chart-line"></i> Top Selling Products</h3></div>';
             html += '<div class="card-content"><div class="table-container"><table><thead><tr><th>Rank</th><th>Product Name</th><th>Units Sold</th><th>Revenue</th></tr></thead><tbody>';
             if (topProducts.length > 0) {
-                for (var i = 0; i < topProducts.length; i++) {
-                    var p = topProducts[i];
+                for (let i = 0; i < topProducts.length; i++) {
+                    const p = topProducts[i];
+                    if (!p) continue;
                     html += '<tr><td class="font-bold text-center">#' + (i+1) + '</td>';
-                    html += '<td><strong>' + p.name + '</strong></td>';
-                    html += '<td>' + p.quantity + ' units</td>';
-                    html += '<td class="font-bold" style="color: var(--color-primary-red);">' + formatCurrency(p.revenue) + '</td></tr>';
+                    html += '<td><strong>' + sanitizeForDisplay(p.name) + '</strong></td>';
+                    html += '<td>' + ensureNumber(p.quantity) + ' units</td>';
+                    html += '<td class="font-bold" style="color: var(--color-primary-red);">' + escapeHtml(formatCurrency(p.revenue)) + '</td></tr>';
                 }
             } else {
                 html += '<tr><td colspan="4" class="text-center text-muted" style="padding: 2rem;"><i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 0.5rem;"></i><div>No product sales data available yet.</div></td></tr>';
             }
             html += '</tbody></table></div></div></div>';
             
-            // Recent Activity
-            html += '<div class="card"><div class="card-header"><h3 class="card-title"><i class="fas fa-history"></i> Recent Activity</h3></div>';
-            html += '<div class="card-content"><div class="table-container"><table><thead><tr><th>Action</th><th>User</th><th>Roles</th><th>Module</th><th>Time</th></tr></thead><tbody>';
-            var recentLogs = auditLogs.slice(0, 5);
-            if (recentLogs.length > 0) {
-                for (var i = 0; i < recentLogs.length; i++) {
-                    var log = recentLogs[i];
-                    html += '<tr><td><strong>' + log.action + '</strong><br><small class="text-muted">' + (log.details || '').substring(0, 50) + ((log.details || '').length > 50 ? '...' : '') + '</small></td>';
-                    html += '<td>' + (log.user || 'system') + '</td>';
-                    html += '<td>';
-                    var userRolesList = log.userRoles || [];
-                    for (var r = 0; r < Math.min(userRolesList.length, 2); r++) {
-                        var roleName = userRolesList[r];
-                        var roleColor = '';
-                        var roleIcon = '';
-                        if (roleName === 'admin') {
-                            roleColor = '#c084fc';
-                            roleIcon = 'fa-crown';
-                        } else if (roleName === 'inventory_clerk') {
-                            roleColor = '#60a5fa';
-                            roleIcon = 'fa-clipboard-check';
-                        } else if (roleName === 'loa') {
-                            roleColor = '#4ade80';
-                            roleIcon = 'fa-receipt';
-                        } else {
-                            roleColor = '#adb5bd';
-                            roleIcon = 'fa-user';
+            // Recent Activity - Only Admin and Inventory Clerk (NOT LOA)
+            if (permissions.canViewRecentActivity) {
+                html += '<div class="card"><div class="card-header"><h3 class="card-title"><i class="fas fa-history"></i> Recent Activity</h3></div>';
+                html += '<div class="card-content"><div class="table-container"><table><thead><tr><th>Action</th><th>User</th><th>Roles</th><th>Module</th><th>Time</th></tr></thead><tbody>';
+                
+                const recentLogs = ensureArray(auditLogs).slice(0, 5);
+                if (recentLogs.length > 0) {
+                    for (const log of recentLogs) {
+                        if (!log) continue;
+                        const actionText = sanitizeForDisplay((log.action || '').substring(0, 30));
+                        const detailsText = sanitizeForDisplay(((log.details || '')).substring(0, 50));
+                        html += '<tr><td><strong>' + actionText + '</strong><br><small class="text-muted">' + detailsText + ((log.details || '').length > 50 ? '...' : '') + '</small></td>';
+                        html += '<td>' + sanitizeForDisplay(log.user || 'system') + '</td><td>';
+                        const userRolesList = ensureArray(log.userRoles);
+                        for (const roleName of userRolesList.slice(0, 2)) {
+                            let roleColor = '#adb5bd';
+                            let roleIcon = 'fa-user';
+                            if (roleName === 'admin') {
+                                roleColor = '#c084fc';
+                                roleIcon = 'fa-crown';
+                            } else if (roleName === 'inventory_clerk') {
+                                roleColor = '#60a5fa';
+                                roleIcon = 'fa-clipboard-check';
+                            } else if (roleName === 'loa') {
+                                roleColor = '#4ade80';
+                                roleIcon = 'fa-receipt';
+                            }
+                            html += '<span style="color: ' + roleColor + '; margin-right: 12px;">';
+                            html += '<i class="fas ' + roleIcon + '"></i> ';
+                            html += sanitizeForDisplay(getRoleDisplayName(roleName));
+                            html += '</span>';
                         }
-                        html += '<span style="color: ' + roleColor + '; margin-right: 12px;"><i class="fas ' + roleIcon + '"></i> ' + getRoleDisplayName(roleName) + '</span>';
+                        html += '</td>';
+                        let moduleBadgeClass = 'badge-system';
+                        if (log.module === 'Dashboard') moduleBadgeClass = 'badge-dashboard';
+                        else if (log.module === 'Inventory') moduleBadgeClass = 'badge-inventory';
+                        else if (log.module === 'Sales') moduleBadgeClass = 'badge-sales';
+                        html += '<td><span class="badge ' + moduleBadgeClass + '">' + sanitizeForDisplay(log.module || 'System') + '</span></td>';
+                        html += '<td><small>' + sanitizeForDisplay(log.timestamp || '') + '</small></td></tr>';
                     }
-                    html += '</div></td>';
-                    var moduleName = log.module || 'System';
-                    var moduleBadgeClass = 'badge-system';
-                    if (moduleName === 'Dashboard') moduleBadgeClass = 'badge-dashboard';
-                    else if (moduleName === 'Inventory') moduleBadgeClass = 'badge-inventory';
-                    else if (moduleName === 'Sales') moduleBadgeClass = 'badge-sales';
-                    else if (moduleName === 'Users') moduleBadgeClass = 'badge-users';
-                    else if (moduleName === 'Reports') moduleBadgeClass = 'badge-reports';
-                    else if (moduleName === 'Audit Logs') moduleBadgeClass = 'badge-audit';
-                    else if (moduleName === 'Maintenance') moduleBadgeClass = 'badge-maintenance';
-                    else if (moduleName === 'Search') moduleBadgeClass = 'badge-search';
-                    else if (moduleName === 'Help') moduleBadgeClass = 'badge-help';
-                    else if (moduleName === 'About') moduleBadgeClass = 'badge-about';
-                    html += '<td><span class="badge ' + moduleBadgeClass + '">' + moduleName + '</span></td>';
-                    html += '<td><small>' + (log.timestamp || '') + '</small></td></tr>';
+                } else {
+                    html += '<tr><td colspan="5" class="text-center text-muted" style="padding: 2rem;">No activity logs available</td></tr>';
                 }
-            } else {
-                html += '<tr><td colspan="5" class="text-center text-muted" style="padding: 2rem;">No activity logs available</td></tr>';
+                html += '</tbody></table></div></div></div>';
             }
-            html += '</tbody></table></div></div></div></div>';
             
-            document.getElementById('mainContent').innerHTML = html;
+            html += '</div>'; // Close space-y-6
+            
+            const mainContent = document.getElementById('mainContent');
+            if (mainContent) {
+                mainContent.innerHTML = html;
+            }
         }
-
-
-    </script>
+    }
+    
+</script>
 </body>
 </html>

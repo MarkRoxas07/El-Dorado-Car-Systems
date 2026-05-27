@@ -6,8 +6,7 @@
     <title>System Maintenance - El Dorado Car Components</title>
     
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
-    <script src="components/sidebar/sidebar.js"></script>
-
+    <script type="module" src="components/sidebar/sidebar.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -198,7 +197,13 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+
+    import { addAuditLog as coreAddAuditLog } from './components/core/data.js';
+    import { ensureArray } from './components/core/utils.js';
+    import { getCurrentUser, getMergedPermissions } from './components/core/auth.js';
+
+
     // Load and initialize sidebar
     (async function initPage() {
         try {
@@ -215,9 +220,16 @@
                 window.location.href = 'index.html';
                 return;
             }
-            
+
+            // Check if user has permission to access maintenance (admin only)
+            const permissions = getMergedPermissions(user);
+            if (!permissions.canAccessMaintenance) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
             initMaintenancePage();
-            
+
         } catch (error) {
             console.error('Error initializing maintenance page:', error);
         }
@@ -229,11 +241,8 @@
     let backups = JSON.parse(localStorage.getItem('eldorado_backups') || '[]');
 
     function addAuditLog(action, details) {
-        const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
         const currentUser = getCurrentUser();
-        logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString(), module: 'Maintenance', severity: 'info' });
-        if (logs.length > 100) logs.pop();
-        localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+        coreAddAuditLog(action, details, currentUser?.username || 'system', currentUser?.roles || []);
     }
 
     function calculateStorageSize() {
@@ -254,9 +263,9 @@
             size: '~' + Math.round(calculateStorageSize() / 1024) + ' KB',
             data: {
                 products: localStorage.getItem('eldorado_products'),
-                users: localStorage.getItem('eldorado_users'),
+                users: localStorage.getItem('systemUsers'),
                 sales: localStorage.getItem('eldorado_sales'),
-                audit: localStorage.getItem('eldorado_audit'),
+                audit: localStorage.getItem('activityLogs'),
                 backups: localStorage.getItem('eldorado_backups')
             }
         };
@@ -276,9 +285,9 @@
         
         if (confirm(`Restore backup "${backup.name}"? This will overwrite current data.`)) {
             if (backup.data.products) localStorage.setItem('eldorado_products', backup.data.products);
-            if (backup.data.users) localStorage.setItem('eldorado_users', backup.data.users);
+            if (backup.data.users) localStorage.setItem('systemUsers', backup.data.users);
             if (backup.data.sales) localStorage.setItem('eldorado_sales', backup.data.sales);
-            if (backup.data.audit) localStorage.setItem('eldorado_audit', backup.data.audit);
+            if (backup.data.audit) localStorage.setItem('activityLogs', backup.data.audit);
             
             addAuditLog('Backup Restored', `System restored from backup "${backup.name}"`);
             alert('Backup restored successfully! The page will reload.');
@@ -301,9 +310,9 @@
                 const confirmation = prompt('Type "DELETE" to confirm data deletion:');
                 if (confirmation === 'DELETE') {
                     localStorage.removeItem('eldorado_products');
-                    localStorage.removeItem('eldorado_users');
+                    localStorage.removeItem('systemUsers');
                     localStorage.removeItem('eldorado_sales');
-                    localStorage.removeItem('eldorado_audit');
+                    localStorage.removeItem('activityLogs');
                     localStorage.removeItem('eldorado_backups');
                     
                     addAuditLog('System Reset', 'All system data was cleared by administrator');
@@ -324,9 +333,9 @@
             systemVersion: 'v3.0.0',
             data: {
                 products: JSON.parse(localStorage.getItem('eldorado_products') || '[]'),
-                users: JSON.parse(localStorage.getItem('eldorado_users') || '[]'),
+                users: JSON.parse(localStorage.getItem('systemUsers') || '[]'),
                 sales: JSON.parse(localStorage.getItem('eldorado_sales') || '[]'),
-                audit: JSON.parse(localStorage.getItem('eldorado_audit') || '[]')
+                audit: JSON.parse(localStorage.getItem('activityLogs') || '[]')
             }
         };
         
@@ -356,9 +365,9 @@
                     const imported = JSON.parse(event.target.result);
                     if (imported.data) {
                         if (imported.data.products) localStorage.setItem('eldorado_products', JSON.stringify(imported.data.products));
-                        if (imported.data.users) localStorage.setItem('eldorado_users', JSON.stringify(imported.data.users));
+                        if (imported.data.users) localStorage.setItem('systemUsers', JSON.stringify(imported.data.users));
                         if (imported.data.sales) localStorage.setItem('eldorado_sales', JSON.stringify(imported.data.sales));
-                        if (imported.data.audit) localStorage.setItem('eldorado_audit', JSON.stringify(imported.data.audit));
+                        if (imported.data.audit) localStorage.setItem('activityLogs', JSON.stringify(imported.data.audit));
                         
                         addAuditLog('Data Import', `System data imported from file`);
                         alert('Data imported successfully! Page will reload.');
@@ -392,10 +401,10 @@
         const storageSize = calculateStorageSize();
         const storageMB = (storageSize / (1024 * 1024)).toFixed(2);
         
-        const products = JSON.parse(localStorage.getItem('eldorado_products') || '[]');
-        const users = JSON.parse(localStorage.getItem('eldorado_users') || '[]');
-        const sales = JSON.parse(localStorage.getItem('eldorado_sales') || '[]');
-        const audit = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
+        const products = ensureArray(JSON.parse(localStorage.getItem('eldorado_products') || '[]'));
+        const users = ensureArray(JSON.parse(localStorage.getItem('systemUsers') || '[]'));
+        const sales = ensureArray(JSON.parse(localStorage.getItem('eldorado_sales') || '[]'));
+        const audit = ensureArray(JSON.parse(localStorage.getItem('activityLogs') || '[]'));
         
         const html = `
             <div class="space-y-6">
@@ -489,7 +498,7 @@
                             <div><span class="text-muted">Database:</span><br><strong>LocalStorage API</strong></div>
                             <div><span class="text-muted">Last Backup:</span><br><strong>${backups[0]?.date || 'Never'}</strong></div>
                             <div><span class="text-muted">Total Records:</span><br><strong>${products.length + users.length + sales.length + audit.length}</strong></div>
-                            <div><span class="text-muted">Active Users:</span><br><strong>${users.filter(u => u.active !== false).length}</strong></div>
+                            <div><span class="text-muted">Active Users:</span><br><strong>${users.filter(u => u.status === 'active').length}</strong></div>
                             <div><span class="text-muted">Uptime:</span><br><strong>Session active</strong></div>
                         </div>
                         <div class="mt-4 pt-3 border-t border-border">
@@ -559,6 +568,8 @@
     window.exportSystemData = exportSystemData;
     window.importSystemData = importSystemData;
     window.optimizeStorage = optimizeStorage;
+    window.getCurrentUser = getCurrentUser;
+
     </script>
 </body>
 </html>

@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - El Dorado Car Components</title>
-    
+    <script type="module">
+        import {
+            renderNavigation,
+            initializeSidebar,
+            attachSidebarEvents
+        } from './components/sidebar/sidebar.js';
+
+        window.sidebarAPI = {
+            renderNavigation,
+            initializeSidebar,
+            attachSidebarEvents
+        };
+    </script>
+
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
-    <script src="components/sidebar/sidebar.js"></script>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -313,14 +325,41 @@
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
+            gap: 0.45rem;
+            padding: 0.42rem 0.82rem;
             border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 600;
+            font-size: 0.74rem;
+            font-weight: 700;
+            line-height: 1;
+            border: 1px solid transparent;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
-        .badge-success { background: var(--color-green-light); color: #15803d; }
-        .badge-danger { background: var(--color-red-light); color: #c92a2a; }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.10);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.14);
+        }
+
+        body.dark .badge-success {
+            background: rgba(34, 197, 94, 0.14);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.20);
+        }
+
+        .badge-danger {
+            background: rgba(248, 113, 113, 0.10);
+            color: #ef4444;
+            border: 1px solid rgba(248, 113, 113, 0.16);
+        }
+
+        body.dark .badge-danger {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.20);
+        }
 
         .role-display {
             display: inline-flex;
@@ -751,31 +790,100 @@
         </div>
     </div>
 
-        <script>
-            // Load and initialize sidebar
-            (async function initPage() {
-                try {
-                    const response = await fetch('components/sidebar/sidebar.html');
-                    const sidebarHtml = await response.text();
-                    document.getElementById('sidebar-container').innerHTML = sidebarHtml;
-                    
-                    if (typeof renderNavigation === 'function') renderNavigation();
-                    if (typeof initializeSidebar === 'function') initializeSidebar();
-                    if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
-                    
-                    const user = getCurrentUser();
-                    if (!user) {
-                        window.location.href = 'index.html';
-                        return;
+        <script type="module">
+
+            import { initializeDataStores } from './components/core/data.js';
+            import { 
+                getCurrentUser, 
+                requireAuth, 
+                setupActivityListeners, 
+                getMergedPermissions 
+            } from './components/core/auth.js';
+
+            import { 
+                addAuditLog as coreAddAuditLog, 
+                getUsers as getStoredUsers,
+                saveUsers as coreSaveUsers
+            } from './components/core/data.js';
+
+            import { escapeHtml, sanitizeForDisplay, ensureArray, ensureNumber } from './components/core/utils.js';
+
+
+            // Prevent duplicate initialization
+            if (window.usersPageInitialized) {
+                console.warn('Users page already initialized');
+            } else {
+                window.usersPageInitialized = true;
+
+                // Load and initialize sidebar
+                (async function initPage() {
+                    try {
+                        // Step 1: Initialize data stores
+                        console.log('Initializing data stores...');
+                        await initializeDataStores();
+
+                        // Step 2: Require authentication and admin role
+                        console.log('Validating authentication...');
+                        const user = requireAuth();
+                        if (!user) {
+                            window.location.href = 'index.html';
+                            return;
+                        }
+
+                        // Step 3: Check admin permission
+                        const permissions = getMergedPermissions(user);
+                        if (!permissions.canManageUsers) {
+                            console.error('User does not have permission to manage users');
+                            window.location.href = 'dashboard.html';
+                            return;
+                        }
+
+                        // Step 4: Load sidebar
+                        console.log('Loading sidebar...');
+                        const response = await fetch('components/sidebar/sidebar.html');
+                        if (!response.ok) {
+                            throw new Error(`Failed to load sidebar: ${response.status} ${response.statusText}`);
+                        }
+                        const sidebarHtml = await response.text();
+                        const container = document.getElementById('sidebar-container');
+                        if (!container) {
+                            throw new Error('Sidebar container not found');
+                        }
+                        container.innerHTML = sidebarHtml;
+                        
+                        // Step 5: Initialize sidebar
+                        console.log('Initializing sidebar...');
+                        if (window.sidebarAPI) {
+                            window.sidebarAPI.renderNavigation();
+                            window.sidebarAPI.initializeSidebar();
+                            window.sidebarAPI.attachSidebarEvents();
+                        } else {
+                            throw new Error('Sidebar API not available');
+                        }
+
+                        // Step 6: Setup activity tracking
+                        if (setupActivityListeners && !window.activityListenersAttached) {
+                            setupActivityListeners();
+                        }
+
+                        // Step 7: Initialize user management page
+                        console.log('Initializing user management...');
+                        coreAddAuditLog('User Management Accessed', `${user.username} accessed user management`, user.username, user.roles);
+                        initUserManagement();
+                        
+                    } catch (error) {
+                        console.error('Error initializing user management:', error);
+                        const mainContent = document.getElementById('mainContent');
+                        if (mainContent) {
+                            mainContent.innerHTML = `<div style="padding: 2rem; text-align: center; color: #c92a2a;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                                <h3>Failed to Load User Management</h3>
+                                <p>${sanitizeForDisplay(error.message)}</p>
+                            </div>`;
+                        }
                     }
-                    
-                    // Initialize user management page
-                    initUserManagement();
-                    
-                } catch (error) {
-                    console.error('Error initializing user management:', error);
-                }
-            })();
+                })();
+            }
 
             // ============ USER MANAGEMENT MODULE ============
             
@@ -783,27 +891,18 @@
                 const toast = document.createElement('div');
                 toast.className = 'toast-msg';
                 toast.style.borderLeftColor = isError ? 'var(--color-red)' : 'var(--color-green)';
-                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right: 8px;"></i>${message}`;
+                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right: 8px;"></i>${sanitizeForDisplay(message)}`;
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 2800);
             }
             
             function loadUsers() {
-                const stored = localStorage.getItem('eldorado_users');
-                if (!stored) {
-                    localStorage.setItem('eldorado_users', JSON.stringify([]));
-                    return [];
-                }
                 try {
-                    return JSON.parse(stored);
-                } catch {
-                    localStorage.removeItem('eldorado_users');
+                    return ensureArray(getStoredUsers());
+                } catch (error) {
+                    console.error('Error loading users:', error);
                     return [];
                 }
-            }
-            
-            function saveUsers(users) { 
-                localStorage.setItem('eldorado_users', JSON.stringify(users)); 
             }
 
             function synchronizeCurrentSession() {
@@ -815,7 +914,8 @@
                 } catch {
                     return;
                 }
-                const updatedUser = users.find(u => u.username === sessionData.username);
+                const users = loadUsers();
+                const updatedUser = users.find(u => u && u.username === sessionData.username);
                 if (!updatedUser) return;
                 const updatedSession = { ...sessionData, ...updatedUser };
                 if (localStorage.getItem('userSession')) {
@@ -827,11 +927,16 @@
             }
             
             function addAuditLog(action, details) {
-                const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
-                const currentUser = getCurrentUser();
-                logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString() });
-                if (logs.length > 100) logs.pop();
-                localStorage.setItem('eldorado_audit', JSON.stringify(logs));
+                try {
+                    const currentUser = getCurrentUser();
+                    if (currentUser) {
+                        coreAddAuditLog(action, details, currentUser.username, currentUser.roles || []);
+                    } else {
+                        coreAddAuditLog(action, details, 'system', ['system']);
+                    }
+                } catch (error) {
+                    console.error('Error adding audit log:', error);
+                }
             }
             
             let users = loadUsers();
@@ -853,9 +958,9 @@
                 
                 const stats = {
                     total: users.length,
-                    active: users.filter(u => u.active !== false).length,
-                    inactive: users.filter(u => u.active === false).length,
-                    admins: users.filter(u => u.role === 'admin').length
+                    active: users.filter(u => u.status === 'active').length,
+                    inactive: users.filter(u => u.status === 'inactive').length,
+                    admins: users.filter(u => u.roles && u.roles.includes('admin')).length
                 };
                 
                 const searchInputElement = document.getElementById('searchInput');
@@ -877,10 +982,10 @@
                         return true;
                     });
                 }
-                if (roleFilter) filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
+                if (roleFilter) filteredUsers = filteredUsers.filter(u => u.roles && u.roles.includes(roleFilter));
                 if (statusFilter) {
-                    if (statusFilter === 'active') filteredUsers = filteredUsers.filter(u => u.active !== false);
-                    if (statusFilter === 'inactive') filteredUsers = filteredUsers.filter(u => u.active === false);
+                    if (statusFilter === 'active') filteredUsers = filteredUsers.filter(u => u.status === 'active');
+                    if (statusFilter === 'inactive') filteredUsers = filteredUsers.filter(u => u.status === 'inactive');
                 }
                 
                 const html = `
@@ -932,22 +1037,22 @@
                                             <tr><th>User</th><th>Username</th><th>Role</th><th>Email</th><th>Status</th><th>Created</th><th>Actions</th></tr>
                                         </thead>
                                         <tbody>
-                                            ${filteredUsers.map(u => `<td>
-                                                <td><div class="font-medium">${u.fullName}</div></td>
-                                                <td><i class="fas fa-at"></i> ${u.username}</td>
-                                                <td>${renderRoleDisplay(u.role)}</div></td>
-                                                <td>${u.email}</td>
-                                                <td><span class="badge ${u.active !== false ? 'badge-success' : 'badge-danger'}"><i class="fas fa-circle"></i> ${u.active !== false ? 'Active' : 'Inactive'}</span></td>
-                                                <td><small>${new Date(u.createdAt).toLocaleDateString()}</small></td>
-                                                <td><div class="flex gap-2">
-                                                    <button class="btn btn-purple btn-sm edit-user" data-id="${u.id}"><i class="fas fa-edit"></i></button>
-                                                    ${u.username !== 'admin' ? `
-                                                    <button class="btn btn-danger btn-sm toggle-status" data-id="${u.id}">
-                                                        <i class="fas ${u.active !== false ? 'fa-ban' : 'fa-check-circle'}"></i>
-                                                    </button>
-                                                    ` : ''}
-                                                </div></td>
-                                            </tr>`).join('')}
+                                        ${filteredUsers.map(u => `<tr>
+                                            <td><div class="font-medium">${escapeHtml(u.fullName)}</div></td>
+                                            <td><i class="fas fa-at"></i> ${escapeHtml(u.username)}</td>
+                                            <td>${u.roles.map(role => renderRoleDisplay(role)).join('')}</td>
+                                            <td>${escapeHtml(u.email || '—')}</td>
+                                            <td><span class="badge ${u.status === 'active' ? 'badge-success' : 'badge-danger'}"><i class="fas fa-circle"></i> ${u.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+                                            <td><small>${new Date(u.createdAt).toLocaleDateString()}</small></td>
+                                            <td><div class="flex gap-2">
+                                                <button class="btn btn-purple btn-sm edit-user" data-id="${u.id}"><i class="fas fa-edit"></i></button>
+                                                ${u.username !== 'admin' ? `
+                                                <button class="btn btn-danger btn-sm toggle-status" data-id="${String(u.id)}">
+                                                    <i class="fas ${u.status === 'active' ? 'fa-ban' : 'fa-check-circle'}"></i>
+                                                </button>
+                                                ` : ''}
+                                            </div></td>
+                                                                `).join('')}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1000,7 +1105,7 @@
                 if (user) {
                     modalTitle.innerHTML = 'Edit User Account';
                     document.getElementById('modalUserId').value = user.id;
-                    document.getElementById('modalUserRole').value = user.role;
+                    document.getElementById('modalUserRole').value = user.roles?.[0] || 'loa';
                     document.getElementById('modalFirstName').value = user.firstName || '';
                     document.getElementById('modalMiddleInitial').value = user.middleInitial || '';
                     document.getElementById('modalLastName').value = user.lastName || '';
@@ -1075,41 +1180,53 @@
                         role,
                         roles: [role],
                         email,
-                        active: true,
+                        status: 'active', 
                         createdAt: new Date().toISOString()
                     };
                     users.push(newUser);
                     addAuditLog('Add User', `Created ${username}`);
                     showToast(`User ${username} created`);
                 }
-                saveUsers(users);
+                coreSaveUsers(users);
                 synchronizeCurrentSession();
                 closeUserModal();
                 renderUsers();
             }
             
             function toggleUserStatus(id) {
-                const user = users.find(u => u.id === id);
+                // Refresh users array to get latest data
+                users = loadUsers();
+                
+                // Compare as strings to handle both number and string IDs
+                const user = users.find(u => String(u.id) === String(id));
+                
                 const currentUser = getCurrentUser();
                 
+                console.log('Toggling user:', user);
+                console.log('Current user:', currentUser);
+                
                 if (user && user.username !== 'admin' && user.username !== currentUser?.username) {
-                    user.active = user.active === false ? true : false;
-                    saveUsers(users);
+                    user.status = user.status === 'active' ? 'inactive' : 'active';
+                    coreSaveUsers(users);
                     synchronizeCurrentSession();
                     
                     const sessionData = JSON.parse(localStorage.getItem('userSession') || sessionStorage.getItem('userSession') || 'null');
-                    if (sessionData && sessionData.username === user.username && user.active === false) {
+                    if (sessionData && sessionData.username === user.username && user.status === 'inactive') {
                         localStorage.removeItem('userSession');
                         sessionStorage.removeItem('userSession');
                     }
-                    
-                    addAuditLog('User ' + (user.active ? 'Activated' : 'Deactivated'), `${user.username} was ${user.active ? 'activated' : 'deactivated'}`);
-                    showToast(`${user.username} ${user.active ? 'activated' : 'deactivated'}`);
+
+                    addAuditLog('User ' + (user.status === 'active' ? 'Activated' : 'Deactivated'), `${user.username} was ${user.status === 'active' ? 'activated' : 'deactivated'}`);
+                    showToast(`${user.username} ${user.status === 'active' ? 'activated' : 'deactivated'}`);
+
                     renderUsers();
                 } else if (user?.username === 'admin') {
                     alert('Cannot change admin status');
                 } else if (user?.username === currentUser?.username) {
                     alert('You cannot deactivate your own account');
+                } else if (!user) {
+                    console.error('User not found with ID:', id);
+                    alert('User not found');
                 }
             }
             
@@ -1139,6 +1256,10 @@
                 updateUserSearchPlaceholder();
                 initUI();
             }
+
+            window.renderUsers = renderUsers;
+            window.clearFilters = clearFilters;
+            window.updateUserSearchPlaceholder = updateUserSearchPlaceholder;
         </script>
 </body>
 </html>

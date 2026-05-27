@@ -6,8 +6,7 @@
     <title>Help & Support - El Dorado Car Components</title>
     
     <link rel="stylesheet" href="components/sidebar/sidebar.css">
-    <script src="components/sidebar/sidebar.js"></script>
-
+    <script type="module" src="components/sidebar/sidebar.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -223,245 +222,250 @@
         </div>
     </div>
 
-    <script>
-        // Load and initialize sidebar
-        (async function initPage() {
-            try {
-                const response = await fetch('components/sidebar/sidebar.html');
-                const sidebarHtml = await response.text();
-                document.getElementById('sidebar-container').innerHTML = sidebarHtml;
-                
-                if (typeof renderNavigation === 'function') renderNavigation();
-                if (typeof initializeSidebar === 'function') initializeSidebar();
-                if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
-                
-                const user = getCurrentUser();
-                if (!user) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-                
-                initHelpPage();
-                
-            } catch (error) {
-                console.error('Error initializing help page:', error);
-            }
-        })();
+    <script type="module">
 
-        // ============ HELP & SUPPORT MODULE ============
+    import { getCurrentUser, setupActivityListeners } from './components/core/auth.js';
+    import { addAuditLog as coreAddAuditLog } from './components/core/data.js';
+    import { ensureArray, escapeHtml } from './components/core/utils.js';
 
-        function addAuditLog(action, details) {
-            const logs = JSON.parse(localStorage.getItem('eldorado_audit') || '[]');
-            const currentUser = getCurrentUser();
-            logs.unshift({ id: Date.now(), action, details, user: currentUser?.username || 'system', timestamp: new Date().toLocaleString(), module: 'Help', severity: 'info' });
-            if (logs.length > 100) logs.pop();
-            localStorage.setItem('eldorado_audit', JSON.stringify(logs));
-        }
-
-        function toggleFAQ(faqId) {
-            const answer = document.getElementById(`faq-answer-${faqId}`);
-            const icon = document.getElementById(`faq-icon-${faqId}`);
-            if (answer.classList.contains('show')) {
-                answer.classList.remove('show');
-                icon.className = 'fas fa-chevron-down';
-            } else {
-                answer.classList.add('show');
-                icon.className = 'fas fa-chevron-up';
-            }
-        }
-
-        function submitSupportTicket() {
-            const name = document.getElementById('supportName').value.trim();
-            const email = document.getElementById('supportEmail').value.trim();
-            const category = document.getElementById('supportCategory').value;
-            const message = document.getElementById('supportMessage').value.trim();
-
-            if (!name || !email || !message) {
-                alert('Please fill in all required fields.');
+    // Load and initialize sidebar
+    (async function initPage() {
+        try {
+            const response = await fetch('components/sidebar/sidebar.html');
+            const sidebarHtml = await response.text();
+            document.getElementById('sidebar-container').innerHTML = sidebarHtml;
+            
+            if (typeof renderNavigation === 'function') renderNavigation();
+            if (typeof initializeSidebar === 'function') initializeSidebar();
+            if (typeof attachSidebarEvents === 'function') attachSidebarEvents();
+            
+            const user = getCurrentUser();
+            if (!user) {
+                window.location.href = 'index.html';
                 return;
             }
+            setupActivityListeners(); 
+            coreAddAuditLog('Help Page Viewed', 'User viewed the Help & Support page', user.username, user.roles);
+            initHelpPage();
+            
+        } catch (error) {
+            console.error('Error initializing help page:', error);
+        }
+    })();
 
-            if (!email.includes('@')) {
-                alert('Please enter a valid email address.');
-                return;
-            }
+    // ============ HELP & SUPPORT MODULE ============
 
-            const ticketId = 'TKT-' + Date.now().toString().slice(-8);
-            const successDiv = document.getElementById('successMessage');
-            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> Support ticket #${ticketId} has been submitted successfully. Our team will contact you within 24 hours.`;
-            successDiv.style.display = 'block';
+    function addAuditLog(action, details) {
+        const currentUser = getCurrentUser();
+        coreAddAuditLog(action, details, currentUser?.username || 'system', currentUser?.roles || []);
+    }
 
-            document.getElementById('supportName').value = '';
-            document.getElementById('supportEmail').value = '';
-            document.getElementById('supportCategory').value = 'technical';
-            document.getElementById('supportMessage').value = '';
+    function toggleFAQ(faqId) {
+        const answer = document.getElementById(`faq-answer-${faqId}`);
+        const icon = document.getElementById(`faq-icon-${faqId}`);
+        if (answer.classList.contains('show')) {
+            answer.classList.remove('show');
+            icon.className = 'fas fa-chevron-down';
+        } else {
+            answer.classList.add('show');
+            icon.className = 'fas fa-chevron-up';
+        }
+    }
 
-            addAuditLog('Support Ticket', `Support ticket #${ticketId} submitted by ${name}`);
+    function submitSupportTicket() {
+        const name = document.getElementById('supportName').value.trim();
+        const email = document.getElementById('supportEmail').value.trim();
+        const category = document.getElementById('supportCategory').value;
+        const message = document.getElementById('supportMessage').value.trim();
 
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 5000);
+        if (!name || !email || !message) {
+            alert('Please fill in all required fields.');
+            return;
         }
 
-        function initHelpPage() {
-            renderHelp();
+        if (!email.includes('@')) {
+            alert('Please enter a valid email address.');
+            return;
         }
 
-        function renderHelp() {
-            const html = `
-                <div class="space-y-6">
-                    <div>
-                        <h2 class="text-3xl font-bold flex items-center gap-2">
-                            <i class="fas fa-question-circle" style="color: var(--color-primary-red);"></i>
-                            Help & Support
-                        </h2>
-                        <p class="text-muted mt-1">Get assistance with using the El Dorado Car Components system</p>
+        const ticketId = 'TKT-' + Date.now().toString().slice(-8);
+        const successDiv = document.getElementById('successMessage');
+        successDiv.innerHTML = `<i class="fas fa-check-circle"></i> Support ticket #${ticketId} has been submitted successfully. Our team will contact you within 24 hours.`;
+        successDiv.style.display = 'block';
+
+        document.getElementById('supportName').value = '';
+        document.getElementById('supportEmail').value = '';
+        document.getElementById('supportCategory').value = 'technical';
+        document.getElementById('supportMessage').value = '';
+
+        addAuditLog('Support Ticket', `Support ticket #${ticketId} submitted by ${name}`);
+
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    function initHelpPage() {
+        renderHelp();
+    }
+
+    function renderHelp() {
+        const html = `
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-3xl font-bold flex items-center gap-2">
+                        <i class="fas fa-question-circle" style="color: var(--color-primary-red);"></i>
+                        Help & Support
+                    </h2>
+                    <p class="text-muted mt-1">Get assistance with using the El Dorado Car Components system</p>
+                </div>
+                
+                <div class="grid grid-cols-3">
+                    <div class="contact-card" style="background: var(--soft-sky);">
+                        <i class="fas fa-headset" style="font-size: 2rem; color: white;"></i>
+                        <h3 class="font-bold mt-2" style="color: white;">24/7 Support</h3>
+                        <p class="text-sm" style="color: rgba(255,255,255,0.9);">Available anytime</p>
                     </div>
-                    
-                    <div class="grid grid-cols-3">
-                        <div class="contact-card" style="background: var(--soft-sky);">
-                            <i class="fas fa-headset" style="font-size: 2rem; color: white;"></i>
-                            <h3 class="font-bold mt-2" style="color: white;">24/7 Support</h3>
-                            <p class="text-sm" style="color: rgba(255,255,255,0.9);">Available anytime</p>
-                        </div>
-                        <div class="contact-card" style="background: var(--soft-yellow);">
-                            <i class="fas fa-envelope" style="font-size: 2rem; color: white;"></i>
-                            <h3 class="font-bold mt-2" style="color: white;">Email Us</h3>
-                            <p class="text-sm" style="color: rgba(255,255,255,0.9);">support@eldorado.com</p>
-                        </div>
-                        <div class="contact-card" style="background: var(--soft-green);">
-                            <i class="fas fa-phone-alt" style="font-size: 2rem; color: white;"></i>
-                            <h3 class="font-bold mt-2" style="color: white;">Call Us</h3>
-                            <p class="text-sm" style="color: rgba(255,255,255,0.9);">(02) 8123-4567</p>
-                        </div>
+                    <div class="contact-card" style="background: var(--soft-yellow);">
+                        <i class="fas fa-envelope" style="font-size: 2rem; color: white;"></i>
+                        <h3 class="font-bold mt-2" style="color: white;">Email Us</h3>
+                        <p class="text-sm" style="color: rgba(255,255,255,0.9);">support@eldorado.com</p>
                     </div>
-                    
-                    <div class="grid grid-cols-2">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-question"></i> Frequently Asked Questions</h3>
-                            </div>
-                            <div class="card-content">
-                                <div class="faq-item" onclick="toggleFAQ(1)">
-                                    <div class="faq-question">
-                                        <span><i class="fas fa-user-lock"></i> How do I reset my password?</span>
-                                        <i class="fas fa-chevron-down" id="faq-icon-1"></i>
-                                    </div>
-                                    <div class="faq-answer" id="faq-answer-1">
-                                        To reset your password, contact your system administrator. They can reset your password from the User Registration module. For security reasons, password resets are only handled by administrators.
-                                    </div>
-                                </div>
-                                <div class="faq-item" onclick="toggleFAQ(2)">
-                                    <div class="faq-question">
-                                        <span><i class="fas fa-boxes"></i> How do I add new products to inventory?</span>
-                                        <i class="fas fa-chevron-down" id="faq-icon-2"></i>
-                                    </div>
-                                    <div class="faq-answer" id="faq-answer-2">
-                                        Navigate to the Inventory Module and click the "Add Product" button. Fill in the product details including name, category, price, stock quantity, and supplier information. Click "Save" to add the product to your inventory.
-                                    </div>
-                                </div>
-                                <div class="faq-item" onclick="toggleFAQ(3)">
-                                    <div class="faq-question">
-                                        <span><i class="fas fa-chart-line"></i> How do I generate sales reports?</span>
-                                        <i class="fas fa-chevron-down" id="faq-icon-3"></i>
-                                    </div>
-                                    <div class="faq-answer" id="faq-answer-3">
-                                        Go to the Reports Module. You can view sales by category, inventory turnover, and top-selling products. Use the "Export" buttons to download reports as CSV files for further analysis.
-                                    </div>
-                                </div>
-                                <div class="faq-item" onclick="toggleFAQ(4)">
-                                    <div class="faq-question">
-                                        <span><i class="fas fa-users"></i> What are the different user roles?</span>
-                                        <i class="fas fa-chevron-down" id="faq-icon-4"></i>
-                                    </div>
-                                    <div class="faq-answer" id="faq-answer-4">
-                                        <strong>Administrator:</strong> Full system access including user management and maintenance.<br>
-                                        <strong>Inventory Clerk:</strong> Can manage products and process sales.<br>
-                                        <strong>LOA (Cashier):</strong> Limited access for processing sales transactions only.
-                                    </div>
-                                </div>
-                                <div class="faq-item" onclick="toggleFAQ(5)">
-                                    <div class="faq-question">
-                                        <span><i class="fas fa-database"></i> How do I backup my data?</span>
-                                        <i class="fas fa-chevron-down" id="faq-icon-5"></i>
-                                    </div>
-                                    <div class="faq-answer" id="faq-answer-5">
-                                        Administrators can create backups from the System Maintenance Module. Click "Create Backup" to save your current data. You can also export data as JSON files for safekeeping.
-                                    </div>
-                                </div>
-                                <div class="faq-item" onclick="toggleFAQ(6)">
-                                    <div class="faq-question">
-                                        <span><i class="fas fa-moon"></i> How do I enable dark mode?</span>
-                                        <i class="fas fa-chevron-down" id="faq-icon-6"></i>
-                                    </div>
-                                    <div class="faq-answer" id="faq-answer-6">
-                                        Click the moon/sun icon in the top-right corner of any page to toggle between light and dark mode. Your preference will be saved for future sessions.
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="contact-card" style="background: var(--soft-green);">
+                        <i class="fas fa-phone-alt" style="font-size: 2rem; color: white;"></i>
+                        <h3 class="font-bold mt-2" style="color: white;">Call Us</h3>
+                        <p class="text-sm" style="color: rgba(255,255,255,0.9);">(02) 8123-4567</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-question"></i> Frequently Asked Questions</h3>
                         </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Submit Support Ticket</h3>
+                        <div class="card-content">
+                            <div class="faq-item" onclick="toggleFAQ(1)">
+                                <div class="faq-question">
+                                    <span><i class="fas fa-user-lock"></i> How do I reset my password?</span>
+                                    <i class="fas fa-chevron-down" id="faq-icon-1"></i>
+                                </div>
+                                <div class="faq-answer" id="faq-answer-1">
+                                    To reset your password, contact your system administrator. They can reset your password from the User Registration module. For security reasons, password resets are only handled by administrators.
+                                </div>
                             </div>
-                            <div class="card-content">
-                                <div id="successMessage" class="success-message"></div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-user"></i> Full Name *</label>
-                                    <input type="text" id="supportName" class="input" placeholder="Enter your full name">
+                            <div class="faq-item" onclick="toggleFAQ(2)">
+                                <div class="faq-question">
+                                    <span><i class="fas fa-boxes"></i> How do I add new products to inventory?</span>
+                                    <i class="fas fa-chevron-down" id="faq-icon-2"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-envelope"></i> Email Address *</label>
-                                    <input type="email" id="supportEmail" class="input" placeholder="your@email.com">
+                                <div class="faq-answer" id="faq-answer-2">
+                                    Navigate to the Inventory Module and click the "Add Product" button. Fill in the product details including name, category, price, stock quantity, and supplier information. Click "Save" to add the product to your inventory.
                                 </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-tag"></i> Category *</label>
-                                    <select id="supportCategory" class="input">
-                                        <option value="technical">Technical Issue</option>
-                                        <option value="billing">Billing Question</option>
-                                        <option value="feature">Feature Request</option>
-                                        <option value="other">Other</option>
-                                    </select>
+                            </div>
+                            <div class="faq-item" onclick="toggleFAQ(3)">
+                                <div class="faq-question">
+                                    <span><i class="fas fa-chart-line"></i> How do I generate sales reports?</span>
+                                    <i class="fas fa-chevron-down" id="faq-icon-3"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label><i class="fas fa-comment"></i> Message *</label>
-                                    <textarea id="supportMessage" class="input" placeholder="Describe your issue or question..."></textarea>
+                                <div class="faq-answer" id="faq-answer-3">
+                                    Go to the Reports Module. You can view sales by category, inventory turnover, and top-selling products. Use the "Export" buttons to download reports as CSV files for further analysis.
                                 </div>
-                                <button class="btn btn-primary" onclick="submitSupportTicket()" style="width: 100%;">
-                                    <i class="fas fa-paper-plane"></i> Submit Ticket
-                                </button>
+                            </div>
+                            <div class="faq-item" onclick="toggleFAQ(4)">
+                                <div class="faq-question">
+                                    <span><i class="fas fa-users"></i> What are the different user roles?</span>
+                                    <i class="fas fa-chevron-down" id="faq-icon-4"></i>
+                                </div>
+                                <div class="faq-answer" id="faq-answer-4">
+                                    <strong>Administrator:</strong> Full system access including user management and maintenance.<br>
+                                    <strong>Inventory Clerk:</strong> Can manage products and process sales.<br>
+                                    <strong>LOA (Cashier):</strong> Limited access for processing sales transactions only.
+                                </div>
+                            </div>
+                            <div class="faq-item" onclick="toggleFAQ(5)">
+                                <div class="faq-question">
+                                    <span><i class="fas fa-database"></i> How do I backup my data?</span>
+                                    <i class="fas fa-chevron-down" id="faq-icon-5"></i>
+                                </div>
+                                <div class="faq-answer" id="faq-answer-5">
+                                    Administrators can create backups from the System Maintenance Module. Click "Create Backup" to save your current data. You can also export data as JSON files for safekeeping.
+                                </div>
+                            </div>
+                            <div class="faq-item" onclick="toggleFAQ(6)">
+                                <div class="faq-question">
+                                    <span><i class="fas fa-moon"></i> How do I enable dark mode?</span>
+                                    <i class="fas fa-chevron-down" id="faq-icon-6"></i>
+                                </div>
+                                <div class="faq-answer" id="faq-answer-6">
+                                    Click the moon/sun icon in the top-right corner of any page to toggle between light and dark mode. Your preference will be saved for future sessions.
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-check-circle"></i> System Status</h3>
+                            <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Submit Support Ticket</h3>
                         </div>
                         <div class="card-content">
-                            <div class="grid grid-cols-2">
-                                <div class="text-center">
-                                    <i class="fas fa-server" style="color: var(--color-green); font-size: 2rem;"></i>
-                                    <div class="font-bold mt-1">Database</div>
-                                    <div class="text-sm text-muted">Operational</div>
-                                </div>
-                                <div class="text-center">
-                                    <i class="fas fa-shield-alt" style="color: var(--color-green); font-size: 2rem;"></i>
-                                    <div class="font-bold mt-1">Backup System</div>
-                                    <div class="text-sm text-muted">Ready</div>
-                                </div>
+                            <div id="successMessage" class="success-message"></div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> Full Name *</label>
+                                <input type="text" id="supportName" class="input" placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> Email Address *</label>
+                                <input type="email" id="supportEmail" class="input" placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-tag"></i> Category *</label>
+                                <select id="supportCategory" class="input">
+                                    <option value="technical">Technical Issue</option>
+                                    <option value="billing">Billing Question</option>
+                                    <option value="feature">Feature Request</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-comment"></i> Message *</label>
+                                <textarea id="supportMessage" class="input" placeholder="Describe your issue or question..."></textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="submitSupportTicket()" style="width: 100%;">
+                                <i class="fas fa-paper-plane"></i> Submit Ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-check-circle"></i> System Status</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="grid grid-cols-2">
+                            <div class="text-center">
+                                <i class="fas fa-server" style="color: var(--color-green); font-size: 2rem;"></i>
+                                <div class="font-bold mt-1">Database</div>
+                                <div class="text-sm text-muted">Operational</div>
+                            </div>
+                            <div class="text-center">
+                                <i class="fas fa-shield-alt" style="color: var(--color-green); font-size: 2rem;"></i>
+                                <div class="font-bold mt-1">Backup System</div>
+                                <div class="text-sm text-muted">Ready</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-        }
+            </div>
+        `;
+        document.getElementById('mainContent').innerHTML = html;
+    }
 
-        // Make functions available globally
-        window.toggleFAQ = toggleFAQ;
-        window.submitSupportTicket = submitSupportTicket;
+    // Make functions available globally
+    window.toggleFAQ = toggleFAQ;
+    window.submitSupportTicket = submitSupportTicket;
+    window.getCurrentUser = getCurrentUser;
+
     </script>
 </body>
 </html>

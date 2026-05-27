@@ -1,66 +1,13 @@
-        // ========================================
-        // EL DORADO - UNIFIED DASHBOARD
-        // Multi-Role RBAC | Product Categories | Top Products
-        // ========================================
-
-        // ========== USER SESSION MANAGEMENT ==========
-        function getCurrentUser() {
-            const userData = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-            if (!userData) return null;
-            try {
-                const sessionData = JSON.parse(userData);
-                if (sessionData.expiresAt && Date.now() > sessionData.expiresAt) {
-                    localStorage.removeItem('userSession');
-                    sessionStorage.removeItem('userSession');
-                    return null;
-                }
-                return sessionData;
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function setCurrentUser(user) {
-            const storage = user.rememberMe ? localStorage : sessionStorage;
-            user.expiresAt = Date.now() + 24 * 60 * 60 * 1000;
-            storage.setItem('userSession', JSON.stringify(user));
-        }
-
-        function addAuditLog(action, details, category = 'System') {
-            try {
-                const user = getCurrentUser();
-                const logs = JSON.parse(localStorage.getItem('auditLogs') || '[]');
-                logs.unshift({
-                    id: Date.now(),
-                    timestamp: new Date().toISOString(),
-                    user: user?.username || 'System',
-                    roles: user?.roles || [],
-                    action: action,
-                    details: details,
-                    category: category,
-                    page: window.location.pathname
-                });
-                if (logs.length > 1000) logs.pop();
-                localStorage.setItem('auditLogs', JSON.stringify(logs));
-            } catch (err) {
-                console.error('Error adding audit log:', err);
-            }
-        }
-
-        // ========== UTILITY FUNCTIONS ==========
-        function formatTimestamp(date) {
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            }) + ' • ' + date.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            });
-        }
+        import {
+            getCurrentUser,
+            logout,
+            setupActivityListeners 
+        } from '../core/auth.js';    
+        import { addAuditLog } from '../core/data.js';
+        import { escapeHtml, sanitizeForDisplay } from '../core/utils.js';
 
         const LOGIN_PAGE = 'index.html';
+        let sidebarInitialized = false; // Prevent duplicate initialization
 
         const SYSTEM_PAGES = {
             dashboard: 'dashboard.html',
@@ -87,12 +34,39 @@
 
         const CURRENT_PAGE = getCurrentPageFromUrl();
 
-        // ========== ROLE PERMISSIONS ==========
         const ROLE_MODULES = {
-            admin: ['dashboard', 'inventory', 'sales', 'search', 'user_management', 'reports', 'audit_logs', 'maintenance', 'help', 'about'],
-            inventory_clerk: ['inventory', 'search', 'help', 'about'],
-            loa: ['sales', 'search', 'help', 'about']
+            admin: [
+                'dashboard',
+                'inventory',
+                'sales',
+                'search',
+                'user_management',
+                'reports',
+                'audit_logs',
+                'maintenance',
+                'help',
+                'about'
+            ],
+
+            inventory_clerk: [
+                'dashboard',
+                'inventory',
+                'search',
+                'audit_logs',
+                'help',
+                'about'
+            ],
+
+            loa: [
+                'dashboard',
+                'sales',
+                'search',
+                'help',
+                'about'
+            ]
         };
+
+        // ========== ROLE PERMISSIONS ==========
 
         function getUserRolesFromSession() {
             const user = getCurrentUser();
@@ -103,39 +77,42 @@
         }
 
         function hasModuleAccess(moduleName) {
+            if (!moduleName) return false;
+            
             const userRoles = getUserRolesFromSession();
+            if (!Array.isArray(userRoles) || userRoles.length === 0) return false;
+            
+            // Admin has access to everything
             if (userRoles.includes('admin')) return true;
-            return userRoles.some(role => ROLE_MODULES[role] && ROLE_MODULES[role].includes(moduleName));
-        }
-
-        function isAdmin() {
-            return getUserRolesFromSession().includes('admin');
-        }
-
-        function getRoleDisplayName(role) {
-            var roles = { admin: 'Administrator', inventory_clerk: 'Inventory Clerk', loa: 'LOA - Cashier' };
-            return roles[role] || role;
-        }
-
-        function getRoleIcon(role) {
-            var icons = { admin: 'fa-crown', inventory_clerk: 'fa-clipboard-check', loa: 'fa-receipt' };
-            return icons[role] || 'fa-user';
+            
+            // For multi-role users, merge permissions from ALL roles
+            // If user has BOTH inventory_clerk AND loa, they get access to BOTH inventory AND sales
+            for (const role of userRoles) {
+                const modules = ROLE_MODULES[role];
+                if (modules && Array.isArray(modules) && modules.includes(moduleName)) {
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         function updateSidebarAvatar(roles) {
             var avatar = document.getElementById('sidebarAvatar');
             var icon = document.getElementById('sidebarAvatarIcon');
             
-            if (roles.includes('admin')) {
+            if (!avatar || !icon) return;
+            
+            if (Array.isArray(roles) && roles.includes('admin')) {
                 avatar.className = 'sidebar-avatar admin';
                 icon.className = 'fas fa-crown';
-            } else if (roles.includes('inventory_clerk') && roles.includes('loa')) {
+            } else if (Array.isArray(roles) && roles.includes('inventory_clerk') && roles.includes('loa')) {
                 avatar.className = 'sidebar-avatar multi-role';
                 icon.className = 'fas fa-star-of-life';
-            } else if (roles.includes('inventory_clerk')) {
+            } else if (Array.isArray(roles) && roles.includes('inventory_clerk')) {
                 avatar.className = 'sidebar-avatar inventory_clerk';
                 icon.className = 'fas fa-clipboard-check';
-            } else if (roles.includes('loa')) {
+            } else if (Array.isArray(roles) && roles.includes('loa')) {
                 avatar.className = 'sidebar-avatar loa';
                 icon.className = 'fas fa-receipt';
             } else {
@@ -149,27 +126,32 @@
             const userNameSpan = document.getElementById('userName');
             const userRoleSpan = document.getElementById('userRole');
             
-            if (userNameSpan && user) {
-                userNameSpan.textContent = user.username || user.name || user.fullName || 'User';
+            if (!user) return;
+            
+            if (userNameSpan) {
+                const displayName = user.username || user.name || user.fullName || 'User';
+                userNameSpan.textContent = sanitizeForDisplay(displayName);
             }
             
-            if (userRoleSpan && user) {
+            if (userRoleSpan) {
                 const roles = getUserRolesFromSession();
                 let roleText = '';
                 let roleColor = '';
                 
-                if (roles.includes('admin')) {
-                    roleText = 'Administrator';
-                    roleColor = '#c084fc'; // Purple
-                } else if (roles.includes('inventory_clerk')) {
-                    roleText = 'Inventory Clerk';
-                    roleColor = '#60a5fa'; // Blue
-                } else if (roles.includes('loa')) {
-                    roleText = 'LOA - Cashier';
-                    roleColor = '#4ade80'; // Green
-                } else {
-                    roleText = 'No Role Assigned';
-                    roleColor = '#adb5bd'; // Gray
+                if (Array.isArray(roles)) {
+                    if (roles.includes('admin')) {
+                        roleText = 'Administrator';
+                        roleColor = '#c084fc'; // Purple
+                    } else if (roles.includes('inventory_clerk')) {
+                        roleText = 'Inventory Clerk';
+                        roleColor = '#60a5fa'; // Blue
+                    } else if (roles.includes('loa')) {
+                        roleText = 'LOA - Cashier';
+                        roleColor = '#4ade80'; // Green
+                    } else {
+                        roleText = 'No Role Assigned';
+                        roleColor = '#adb5bd'; // Gray
+                    }
                 }
                 
                 userRoleSpan.textContent = roleText;
@@ -203,16 +185,16 @@
             for (var s = 0; s < navSections.length; s++) {
                 var section = navSections[s];
                 var sectionHasItems = false;
-                var sectionHtml = '<div class="nav-section-title">' + section.section + '</div>';
+                var sectionHtml = '<div class="nav-section-title">' + escapeHtml(section.section) + '</div>';
                 
                 for (var i = 0; i < section.items.length; i++) {
                     var item = section.items[i];
                     if (hasModuleAccess(item.id)) {
                         sectionHasItems = true;
                         var activeClass = (item.id === CURRENT_PAGE) ? 'active' : '';
-                        sectionHtml += '<button class="nav-item ' + activeClass + '" onclick="navigateTo(\'' + item.id + '\')">' +
-                            '<i class="' + item.icon + '"></i>' +
-                            '<span>' + item.label + '</span>' +
+                        sectionHtml += '<button class="nav-item ' + activeClass + '" onclick="navigateTo(\'' + escapeHtml(item.id) + '\')" title="' + escapeHtml(item.label) + '">' +
+                            '<i class="' + escapeHtml(item.icon) + '"></i>' +
+                            '<span>' + escapeHtml(item.label) + '</span>' +
                             '</button>';
                     }
                 }
@@ -221,12 +203,22 @@
                     navHtml += sectionHtml;
                 }
             }
-            document.getElementById('navLinks').innerHTML = navHtml;
+            
+            const navLinksContainer = document.getElementById('navLinks');
+            if (navLinksContainer) {
+                navLinksContainer.innerHTML = navHtml;
+            }
         }
 
         function navigateTo(module) {
-            if (SYSTEM_PAGES[module]) {
-                window.location.href = SYSTEM_PAGES[module];
+            if (module && SYSTEM_PAGES[module]) {
+                // Validate module access before navigation
+                if (hasModuleAccess(module)) {
+                    window.location.href = SYSTEM_PAGES[module];
+                } else {
+                    console.warn('Access denied to module:', module);
+                    window.location.href = 'dashboard.html';
+                }
             }
         }
 
@@ -235,7 +227,7 @@
 
         function toggleSidebar() {
             sidebarCollapsed = !sidebarCollapsed;
-            localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+            localStorage.setItem('sidebarCollapsed', sidebarCollapsed.toString());
             
             var sidebar = document.getElementById('sidebar');
             var layout = document.querySelector('.layout');
@@ -256,67 +248,71 @@
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
             var isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
+            localStorage.setItem('darkMode', isDark.toString());
             var icon = document.querySelector('#darkModeToggle i');
             if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
 
         // ========== SIDEBAR EVENT ATTACHMENT ==========
+        let eventsAttached = false; // Prevent duplicate listener attachment
+
         function attachSidebarEvents() {
+            // Prevent duplicate event listeners
+            if (eventsAttached) return;
+            eventsAttached = true;
 
             const toggleBtn = document.getElementById('sidebarToggleBtn');
-            if (toggleBtn) {
-                toggleBtn.onclick = () => toggleSidebar();
+            if (toggleBtn && !toggleBtn.dataset.listenerAttached) {
+                toggleBtn.addEventListener('click', toggleSidebar);
+                toggleBtn.dataset.listenerAttached = 'true';
             }
 
             const darkModeBtn = document.getElementById('darkModeToggle');
-            if (darkModeBtn) {
-                darkModeBtn.onclick = () => toggleDarkMode();
+            if (darkModeBtn && !darkModeBtn.dataset.listenerAttached) {
+                darkModeBtn.addEventListener('click', toggleDarkMode);
+                darkModeBtn.dataset.listenerAttached = 'true';
             }
 
             const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.onclick = () => logout();
-            }
-        }
-
-        // ========== LOGOUT (FIXED) ==========
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                const user = getCurrentUser(); // Fixed: Get user from session
-                addAuditLog('User Logged Out', (user?.username || 'User') + ' logged out', 'System');
-                localStorage.removeItem('userSession');
-                sessionStorage.removeItem('userSession');
-                window.location.href = LOGIN_PAGE;
+            if (logoutBtn && !logoutBtn.dataset.listenerAttached) {
+                logoutBtn.addEventListener('click', logout);
+                logoutBtn.dataset.listenerAttached = 'true';
             }
         }
 
         // ========== INITIALIZATION ==========
         function initializeSidebar() {
-            // Apply dark mode preference
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark');
-                const darkModeIcon = document.querySelector('#darkModeToggle i');
-                if (darkModeIcon) darkModeIcon.className = 'fas fa-sun';
-            }
+            if (sidebarInitialized) return;
+            sidebarInitialized = true;
             
-            // Apply sidebar collapsed state
-            if (sidebarCollapsed) {
-                const sidebar = document.getElementById('sidebar');
-                const layout = document.querySelector('.layout');
-                const toggleIcon = document.querySelector('#sidebarToggleBtn i');
+            try {
+                // Apply dark mode preference
+                if (localStorage.getItem('darkMode') === 'true') {
+                    document.body.classList.add('dark');
+                    const darkModeIcon = document.querySelector('#darkModeToggle i');
+                    if (darkModeIcon) darkModeIcon.className = 'fas fa-sun';
+                }
                 
-                if (sidebar) sidebar.classList.add('collapsed');
-                if (layout) layout.classList.add('sidebar-collapsed');
-                if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+                // Apply sidebar collapsed state
+                if (sidebarCollapsed) {
+                    const sidebar = document.getElementById('sidebar');
+                    const layout = document.querySelector('.layout');
+                    const toggleIcon = document.querySelector('#sidebarToggleBtn i');
+                    
+                    if (sidebar) sidebar.classList.add('collapsed');
+                    if (layout) layout.classList.add('sidebar-collapsed');
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+                }
+                
+                // Update avatar with user roles
+                const userRoles = getUserRolesFromSession();
+                updateSidebarAvatar(userRoles);
+                
+                // Update user info in sidebar
+                updateSidebarUserInfo();
+            } catch (error) {
+                console.error('Error initializing sidebar:', error);
             }
-            
-            // Update avatar with user roles
-            const userRoles = getUserRolesFromSession();
-            updateSidebarAvatar(userRoles);
-            
-            // Update user info in sidebar
-            updateSidebarUserInfo();
         }
 
         // ========== SESSION VALIDATION ==========
@@ -333,15 +329,9 @@
 
         // ========== EXPORT FUNCTIONS TO GLOBAL SCOPE ==========
         // Make sure these functions are available globally
-        window.getCurrentUser = getCurrentUser;
-        window.setCurrentUser = setCurrentUser;
         window.addAuditLog = addAuditLog;
-        window.formatTimestamp = formatTimestamp;
         window.getUserRolesFromSession = getUserRolesFromSession;
         window.hasModuleAccess = hasModuleAccess;
-        window.isAdmin = isAdmin;
-        window.getRoleDisplayName = getRoleDisplayName;
-        window.getRoleIcon = getRoleIcon;
         window.updateSidebarAvatar = updateSidebarAvatar;
         window.updateSidebarUserInfo = updateSidebarUserInfo;
         window.renderNavigation = renderNavigation;
@@ -352,3 +342,13 @@
         window.initializeSidebar = initializeSidebar;
         window.attachSidebarEvents = attachSidebarEvents;
         window.validateSession = validateSession;
+
+        // ========== EXPORT ES MODULE FUNCTIONS ==========
+        export {
+            renderNavigation,
+            initializeSidebar,
+            attachSidebarEvents,
+            validateSession,
+            getCurrentPageFromUrl,
+            hasModuleAccess
+        };
